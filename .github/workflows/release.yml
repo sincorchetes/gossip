@@ -316,7 +316,7 @@ jobs:
   publish-release:
     name: Publish Official GitHub Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-linux, build-windows, build-macos]
+    needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
