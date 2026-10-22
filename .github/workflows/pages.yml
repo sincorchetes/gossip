@@ -23,36 +23,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v16
         with:
-          python-version: "3.13"
+          name: devenv
 
-      - name: Install System Dependencies for GTK4 & PyGObject
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            libgtk-4-dev \
-            libadwaita-1-dev \
-            gobject-introspection \
-            libgirepository1.0-dev \
-            gir1.2-gtk-4.0 \
-            gir1.2-adw-1 \
-            libcairo2-dev \
-            pkg-config \
-            python3-dev \
-            gettext
+      - name: Install devenv
+        run: nix profile add nixpkgs#devenv
 
-      - name: Install Python Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install wheel
-          pip install pycairo "PyGObject<3.51.0"
-          pip install -r requirements.txt
-
-      - name: Build MkDocs Site
-        run: |
-          NO_MKDOCS_2_WARNING=1 mkdocs build
+      - name: Build MkDocs Site with devenv
+        run: devenv shell mkdocs build
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
