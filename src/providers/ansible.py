@@ -187,6 +187,43 @@ def install_posix_shims() -> None:
                 mod.getgrnam = lambda name: ("user", "x", 1000, ["user"])
             sys.modules[name] = mod
 
+    # Patch ansible.config.manager.ConfigManager._read_config_yaml_file to locate base.yml
+    # in frozen PyInstaller bundles across bundle layout variants
+    try:
+        import ansible.config.manager as acm
+        if not getattr(acm.ConfigManager, "_gossip_yaml_patched", False):
+            orig_read_yaml = acm.ConfigManager._read_config_yaml_file
+
+            def _safe_read_config_yaml_file(self: Any, yml_file: Any) -> Any:
+                """Read YAML configuration, falling back to bundle search paths if missing.
+
+                Args:
+                    yml_file: Path to YAML configuration file.
+
+                Returns:
+                    Parsed YAML dictionary configuration.
+                """
+                yml_str = os.fsdecode(yml_file) if isinstance(yml_file, (bytes, bytearray)) else str(yml_file)
+                if not os.path.exists(yml_str):
+                    basename = os.path.basename(yml_str)
+                    candidates = []
+                    if getattr(sys, "frozen", False):
+                        bundle_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable)))
+                        candidates.extend([
+                            os.path.join(bundle_dir, "ansible", "config", basename),
+                            os.path.join(bundle_dir, "_internal", "ansible", "config", basename),
+                            os.path.join(bundle_dir, "lib", "ansible", "config", basename),
+                        ])
+                    for cand in candidates:
+                        if os.path.exists(cand):
+                            return orig_read_yaml(self, cand)
+                return orig_read_yaml(self, yml_file)
+
+            acm.ConfigManager._read_config_yaml_file = _safe_read_config_yaml_file
+            acm.ConfigManager._gossip_yaml_patched = True
+    except Exception:  # pragma: no cover
+        pass
+
 
 install_posix_shims()
 

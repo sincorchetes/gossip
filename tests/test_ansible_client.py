@@ -617,6 +617,52 @@ class TestAnsibleVaultClient(unittest.TestCase):
             locale.getlocale = orig_getlocale
             locale._gossip_locale_patched = orig_flag
 
+    def test_ansible_config_yaml_file_patch(self):
+        """Test Ansible ConfigManager._read_config_yaml_file fallback in frozen bundles."""
+        import sys
+        import ansible.config.manager as acm
+        from src.providers.ansible import install_posix_shims
+
+        orig_read = acm.ConfigManager._read_config_yaml_file
+        orig_flag = getattr(acm.ConfigManager, "_gossip_yaml_patched", False)
+        mock_orig = MagicMock(return_value={"ANSIBLE_TEST": "ok"})
+
+        try:
+            acm.ConfigManager._gossip_yaml_patched = False
+            acm.ConfigManager._read_config_yaml_file = mock_orig
+            install_posix_shims()
+
+            manager_inst = MagicMock()
+
+            # Case 1: file exists as-is
+            with patch("os.path.exists", return_value=True):
+                res = acm.ConfigManager._read_config_yaml_file(manager_inst, "/path/to/base.yml")
+                self.assertEqual(res, {"ANSIBLE_TEST": "ok"})
+                mock_orig.assert_called_with(manager_inst, "/path/to/base.yml")
+
+            # Case 2: file does not exist, frozen mode active, candidate exists
+            mock_orig.reset_mock()
+            with patch.object(sys, "frozen", True, create=True), \
+                 patch.object(sys, "_MEIPASS", "/bundle/dir", create=True), \
+                 patch("os.path.exists", side_effect=lambda p: p == "/bundle/dir/_internal/ansible/config/base.yml"):
+                res = acm.ConfigManager._read_config_yaml_file(manager_inst, b"/missing/base.yml")
+                self.assertEqual(res, {"ANSIBLE_TEST": "ok"})
+                mock_orig.assert_called_with(manager_inst, "/bundle/dir/_internal/ansible/config/base.yml")
+
+            # Case 3: file does not exist and no candidate exists
+            mock_orig.reset_mock()
+            with patch.object(sys, "frozen", False, create=True), \
+                 patch("os.path.exists", return_value=False):
+                res = acm.ConfigManager._read_config_yaml_file(manager_inst, "/missing/base.yml")
+                self.assertEqual(res, {"ANSIBLE_TEST": "ok"})
+                mock_orig.assert_called_with(manager_inst, "/missing/base.yml")
+
+            # Call install_posix_shims again when already patched -> no-op
+            install_posix_shims()
+        finally:
+            acm.ConfigManager._read_config_yaml_file = orig_read
+            acm.ConfigManager._gossip_yaml_patched = orig_flag
+
 
 if __name__ == "__main__":
     unittest.main()

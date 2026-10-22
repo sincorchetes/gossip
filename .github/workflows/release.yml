@@ -80,6 +80,7 @@ jobs:
             --add-data "${TYPELIB_DIR}:girepository-1.0" \
             --add-data "/usr/share/glib-2.0/schemas:glib-2.0/schemas" \
             --collect-all "gi" \
+            --collect-data "ansible.config" \
             --hidden-import "gi" \
             --hidden-import "gi.repository.Gtk" \
             --hidden-import "gi.repository.Adw" \
@@ -165,6 +166,7 @@ jobs:
           pyinstaller --noconfirm --onedir --windowed --name "gossip" \
             --add-data "locales;locales" \
             --collect-all "gi" \
+            --collect-data "ansible.config" \
             --hidden-import "gi" \
             --hidden-import "gi.repository.Gtk" \
             --hidden-import "gi.repository.Adw" \
@@ -205,6 +207,15 @@ jobs:
           cp /ucrt64/bin/libepoxy-*.dll dist/gossip/ 2>/dev/null || true
           cp /ucrt64/bin/libgraphene-*.dll dist/gossip/ 2>/dev/null || true
           cp /ucrt64/bin/libharfbuzz-*.dll dist/gossip/ 2>/dev/null || true
+
+          # Bundle Ansible configuration data (base.yml)
+          ANSIBLE_CONFIG_DIR=$(python -c "import ansible.config, os; print(os.path.dirname(ansible.config.__file__))" 2>/dev/null || true)
+          if [ -n "$ANSIBLE_CONFIG_DIR" ] && [ -d "$ANSIBLE_CONFIG_DIR" ]; then
+            echo "Copying Ansible base config from $ANSIBLE_CONFIG_DIR..."
+            mkdir -p dist/gossip/_internal/ansible/config dist/gossip/ansible/config
+            cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip/_internal/ansible/config/ 2>/dev/null || true
+            cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip/ansible/config/ 2>/dev/null || true
+          fi
 
           # Verify bundled standalone executable executes and prints version
           ./dist/gossip/gossip.exe --version
@@ -274,6 +285,7 @@ jobs:
           pyinstaller --noconfirm --onedir --windowed --name "gossip" \
             --add-data "locales:locales" \
             --collect-all "gi" \
+            --collect-data "ansible.config" \
             --hidden-import "gi" \
             --hidden-import "gi.repository.Gtk" \
             --hidden-import "gi.repository.Adw" \
