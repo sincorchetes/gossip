@@ -114,6 +114,48 @@ class TestMain(unittest.TestCase):
                 setup_frozen_environment()
                 self.assertNotIn("GI_TYPELIB_PATH", os.environ)
                 self.assertNotIn("GSETTINGS_SCHEMA_DIR", os.environ)
+                self.assertNotIn("XDG_DATA_DIRS", os.environ)
+
+    @patch("os.path.isdir", return_value=True)
+    def test_setup_frozen_environment_windows(self, mock_isdir):
+        import os
+        from src.main import setup_frozen_environment
+        with patch.object(sys, "frozen", True, create=True), \
+             patch.object(sys, "platform", "win32"), \
+             patch.object(sys, "_MEIPASS", "C:\\bundle", create=True), \
+             patch("os.add_dll_directory", create=True) as mock_add_dll, \
+             patch.dict("os.environ", {"PATH": "C:\\Windows", "XDG_DATA_DIRS": "C:\\orig\\share"}):
+            setup_frozen_environment()
+            mock_add_dll.assert_called_once_with("C:\\bundle")
+            self.assertTrue(os.environ["PATH"].startswith("C:\\bundle" + os.pathsep))
+            self.assertIn(os.path.join("C:\\bundle", "share"), os.environ["XDG_DATA_DIRS"])
+            self.assertIn("C:\\orig\\share", os.environ["XDG_DATA_DIRS"])
+
+    @patch("os.path.isdir", return_value=True)
+    def test_setup_frozen_environment_windows_dll_exception_and_empty_path(self, mock_isdir):
+        import os
+        from src.main import setup_frozen_environment
+        with patch.object(sys, "frozen", True, create=True), \
+             patch.object(sys, "platform", "win32"), \
+             patch.object(sys, "_MEIPASS", "C:\\bundle", create=True), \
+             patch("os.add_dll_directory", side_effect=OSError("Failed"), create=True), \
+             patch.dict("os.environ", {}, clear=True):
+            setup_frozen_environment()
+            self.assertEqual(os.environ.get("PATH"), "C:\\bundle")
+            self.assertIn("C:\\bundle", os.environ.get("XDG_DATA_DIRS", ""))
+
+    @patch("os.path.isdir", return_value=True)
+    def test_setup_frozen_environment_windows_no_add_dll(self, mock_isdir):
+        import os
+        from src.main import setup_frozen_environment
+        with patch.object(sys, "frozen", True, create=True), \
+             patch.object(sys, "platform", "win32"), \
+             patch.object(sys, "_MEIPASS", "C:\\bundle", create=True), \
+             patch.dict("os.environ", {}, clear=True):
+            if hasattr(os, "add_dll_directory"):
+                delattr(os, "add_dll_directory")
+            setup_frozen_environment()
+            self.assertEqual(os.environ.get("PATH"), "C:\\bundle")
 
 
 if __name__ == "__main__":

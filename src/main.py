@@ -20,15 +20,27 @@ from src.i18n import init_i18n, _
 
 
 def setup_frozen_environment() -> None:
-    """Configure GObject Introspection typelib and schema paths when frozen.
+    """Configure GObject Introspection typelib, schema, and DLL paths when frozen.
 
     Ensures that PyInstaller standalone bundles find bundled or system-level
-    typelibs (Gtk-4.0, Adw-1, etc.) and GLib schemas across diverse Linux distributions.
+    typelibs (Gtk-4.0, Adw-1, etc.), GLib schemas, and required shared libraries
+    across Linux, Windows, and macOS distributions.
     """
     if getattr(sys, "frozen", False):
         bundle_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable)))
+
+        if sys.platform == "win32":
+            if hasattr(os, "add_dll_directory") and os.path.isdir(bundle_dir):
+                try:
+                    os.add_dll_directory(bundle_dir)
+                except Exception:
+                    pass
+            current_path = os.environ.get("PATH", "")
+            os.environ["PATH"] = bundle_dir + (os.pathsep + current_path if current_path else "")
+
         typelib_candidates = [
             os.path.join(bundle_dir, "girepository-1.0"),
+            os.path.join(bundle_dir, "lib", "girepository-1.0"),
             os.path.join(bundle_dir, "gi_typelibs"),
             "/usr/lib64/girepository-1.0",
             "/usr/lib/x86_64-linux-gnu/girepository-1.0",
@@ -42,6 +54,7 @@ def setup_frozen_environment() -> None:
 
         schema_candidates = [
             os.path.join(bundle_dir, "glib-2.0", "schemas"),
+            os.path.join(bundle_dir, "share", "glib-2.0", "schemas"),
             "/usr/share/glib-2.0/schemas",
         ]
         existing_schemas = [p for p in schema_candidates if os.path.isdir(p)]
@@ -49,6 +62,16 @@ def setup_frozen_environment() -> None:
             current_schema = os.environ.get("GSETTINGS_SCHEMA_DIR", "")
             all_schemas = existing_schemas + ([current_schema] if current_schema else [])
             os.environ["GSETTINGS_SCHEMA_DIR"] = os.pathsep.join(all_schemas)
+
+        xdg_candidates = [
+            os.path.join(bundle_dir, "share"),
+            bundle_dir,
+        ]
+        existing_xdg = [p for p in xdg_candidates if os.path.isdir(p)]
+        if existing_xdg:
+            current_xdg = os.environ.get("XDG_DATA_DIRS", "")
+            all_xdg = existing_xdg + ([current_xdg] if current_xdg else [])
+            os.environ["XDG_DATA_DIRS"] = os.pathsep.join(all_xdg)
 
 
 setup_frozen_environment()
