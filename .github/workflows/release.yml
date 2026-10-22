@@ -121,6 +121,7 @@ jobs:
           msystem: UCRT64
           update: true
           install: >-
+            mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-python
             mingw-w64-ucrt-x86_64-python-pip
             mingw-w64-ucrt-x86_64-python-setuptools
@@ -128,6 +129,9 @@ jobs:
             mingw-w64-ucrt-x86_64-python-cffi
             mingw-w64-ucrt-x86_64-python-cryptography
             mingw-w64-ucrt-x86_64-python-yaml
+            mingw-w64-ucrt-x86_64-python-grpcio
+            mingw-w64-ucrt-x86_64-python-protobuf
+            mingw-w64-ucrt-x86_64-python-markupsafe
             mingw-w64-ucrt-x86_64-gtk4
             mingw-w64-ucrt-x86_64-libadwaita
             mingw-w64-ucrt-x86_64-python-gobject
@@ -137,7 +141,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install wheel pyinstaller
-          pip install --prefer-binary -r requirements.txt || pip install pyinstaller boto3 botocore google-cloud-secret-manager google-auth azure-keyvault-secrets azure-identity ansible-vault
+          pip install boto3 botocore google-cloud-secret-manager google-auth azure-keyvault-secrets azure-identity ansible-vault
 
       - name: Build Windows Executable with PyInstaller
         shell: msys2 {0}
@@ -193,16 +197,24 @@ jobs:
 
       - name: Install System Dependencies via Homebrew
         run: |
-          brew install gtk4 libadwaita gobject-introspection adwaita-icon-theme || true
+          brew install glib gtk4 libadwaita gobject-introspection adwaita-icon-theme || true
+          # Link Homebrew dylibs to /usr/local/lib so ctypes.util.find_library locates libgio and libgtk
+          sudo mkdir -p /usr/local/lib
+          sudo ln -sf /opt/homebrew/lib/* /usr/local/lib/ 2>/dev/null || true
 
       - name: Install Python Dependencies & PyInstaller
         run: |
           python3 -m pip install --upgrade pip
           pip install wheel
           pip install pycairo "PyGObject<3.51.0" || true
-          pip install -r requirements.txt pyinstaller
+          pip install boto3 botocore google-cloud-secret-manager google-auth azure-keyvault-secrets azure-identity ansible-vault pyinstaller
 
       - name: Build macOS Application Bundle with PyInstaller
+        env:
+          DYLD_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
+          DYLD_FALLBACK_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
+          GI_TYPELIB_PATH: "/opt/homebrew/lib/girepository-1.0"
+          PKG_CONFIG_PATH: "/opt/homebrew/lib/pkgconfig"
         run: |
           VERSION="${{ github.ref_name }}"
           if [ -z "$VERSION" ] || [[ "$VERSION" == *"/"* ]]; then
