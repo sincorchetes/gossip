@@ -21,11 +21,26 @@ def install_posix_shims() -> None:
     """Install mock POSIX compatibility modules on platforms lacking them (e.g. Windows).
 
     Ansible Core imports Unix-specific standard library modules ('fcntl', 'termios', 'tty',
-    'pwd', 'grp') solely for terminal and file-locking operations. Installing lightweight
-    in-memory shims allows Vault encryption and decryption routines to run cleanly on Windows.
+    'pwd', 'grp') and requests the 'fork' multiprocessing context solely for CLI/display
+    operations. Installing lightweight shims allows Vault encryption and decryption routines
+    to run cleanly on Windows.
     """
+    import multiprocessing
     import struct
     import types
+
+    # Patch multiprocessing to safely handle 'fork' context on Windows
+    methods = multiprocessing.get_all_start_methods()
+    if "fork" not in methods:
+        orig_get_context = multiprocessing.get_context
+
+        def _safe_get_context(method: Optional[str] = None) -> Any:
+            """Fall back to default multiprocessing context when 'fork' is unavailable."""
+            if method == "fork":
+                return orig_get_context()
+            return orig_get_context(method)
+
+        multiprocessing.get_context = _safe_get_context
 
     shims = ("fcntl", "termios", "tty", "pwd", "grp")
     for name in shims:

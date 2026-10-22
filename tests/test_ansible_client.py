@@ -505,6 +505,31 @@ class TestAnsibleVaultClient(unittest.TestCase):
                 else:
                     sys.modules.pop(name, None)
 
+    def test_install_posix_shims_multiprocessing_fork_patch(self):
+        """Test patching multiprocessing.get_context when 'fork' is unavailable."""
+        import multiprocessing
+        from unittest.mock import patch
+        from src.providers.ansible import install_posix_shims
+
+        orig_get_context = multiprocessing.get_context
+        try:
+            with patch("multiprocessing.get_all_start_methods", return_value=["spawn"]):
+                install_posix_shims()
+
+                # Call get_context with 'fork' -> should return default context without ValueError
+                ctx_fork = multiprocessing.get_context("fork")
+                self.assertIsNotNone(ctx_fork)
+
+                # Call get_context with 'spawn' -> should return spawn context
+                ctx_spawn = multiprocessing.get_context("spawn")
+                self.assertIsNotNone(ctx_spawn)
+
+                # Call get_context with None -> should return default context
+                ctx_none = multiprocessing.get_context(None)
+                self.assertIsNotNone(ctx_none)
+        finally:
+            multiprocessing.get_context = orig_get_context
+
 
 if __name__ == "__main__":
     unittest.main()
