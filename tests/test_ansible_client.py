@@ -530,6 +530,54 @@ class TestAnsibleVaultClient(unittest.TestCase):
         finally:
             multiprocessing.get_context = orig_get_context
 
+    def test_mock_libc_and_ctypes_load_library_patch(self):
+        """Test _MockLibcFunc, _MockLibc, and ctypes.cdll.LoadLibrary fallback on Windows."""
+        import ctypes
+        from unittest.mock import MagicMock, patch
+        from src.providers.ansible import _MockLibcFunc, _MockLibc, install_posix_shims
+
+        # Test _MockLibcFunc
+        func = _MockLibcFunc(default_ret=42)
+        self.assertEqual(func("hello"), 5)
+        self.assertEqual(func(123), 42)
+        self.assertEqual(func(), 42)
+
+        # Test _MockLibc
+        mock_libc = _MockLibc()
+        self.assertEqual(mock_libc.wcwidth("a"), 1)
+        self.assertEqual(mock_libc.wcswidth("test", 10), 4)
+        custom_func = mock_libc.non_existent_symbol
+        self.assertTrue(callable(custom_func))
+        self.assertEqual(custom_func(), 0)
+
+        # Test ctypes.cdll.LoadLibrary patch
+        orig_load = ctypes.cdll.LoadLibrary
+        orig_flag = getattr(ctypes.cdll, "_gossip_libc_patched", False)
+        mock_orig_loader = MagicMock(return_value="orig_lib")
+        try:
+            ctypes.cdll._gossip_libc_patched = False
+            ctypes.cdll.LoadLibrary = mock_orig_loader
+            install_posix_shims()
+
+            # Test LoadLibrary(None) -> returns _MockLibc
+            res_none = ctypes.cdll.LoadLibrary(None)
+            self.assertIsInstance(res_none, _MockLibc)
+
+            # Test LoadLibrary("c") -> returns _MockLibc
+            res_c = ctypes.cdll.LoadLibrary("c")
+            self.assertIsInstance(res_c, _MockLibc)
+
+            # Test LoadLibrary("custom_dll") -> delegates to original loader
+            res_custom = ctypes.cdll.LoadLibrary("custom_dll")
+            self.assertEqual(res_custom, "orig_lib")
+            mock_orig_loader.assert_called_once_with("custom_dll")
+
+            # Call install_posix_shims again when already patched -> should be no-op
+            install_posix_shims()
+        finally:
+            ctypes.cdll.LoadLibrary = orig_load
+            ctypes.cdll._gossip_libc_patched = orig_flag
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -14,20 +14,90 @@ os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 os.environ.setdefault("LANG", "C.UTF-8")
 os.environ.setdefault("LC_ALL", "C.UTF-8")
 
+import ctypes
+import ctypes.util
 import yaml
+
+
+class _MockLibcFunc:
+    """Mock implementation of standard C library functions (e.g. wcwidth, wcswidth)."""
+
+    def __init__(self, default_ret: int = 1) -> None:
+        """Initialize mock C function with default return code.
+
+        Args:
+            default_ret: Return value when no specific string length applies.
+        """
+        self.argtypes: Any = None
+        self.restype: Any = ctypes.c_int
+        self._default_ret = default_ret
+
+    def __call__(self, *args: Any, **kwargs: Any) -> int:
+        """Invoke mock C function and calculate width if string provided.
+
+        Args:
+            *args: Positional arguments passed to C function.
+            **kwargs: Keyword arguments passed to C function.
+
+        Returns:
+            Calculated text length or default integer return code.
+        """
+        if args and isinstance(args[0], str):
+            return len(args[0])
+        return self._default_ret
+
+
+class _MockLibc:
+    """Mock implementation of the C standard library for Windows environments."""
+
+    def __init__(self) -> None:
+        """Initialize mock libc with wcwidth and wcswidth functions."""
+        self.wcwidth = _MockLibcFunc(1)
+        self.wcswidth = _MockLibcFunc(1)
+
+    def __getattr__(self, name: str) -> Any:
+        """Fallback handler returning a callable for any unknown libc symbol.
+
+        Args:
+            name: Symbol name requested on libc.
+
+        Returns:
+            Callable returning 0.
+        """
+        return lambda *args, **kwargs: 0
 
 
 def install_posix_shims() -> None:
     """Install mock POSIX compatibility modules on platforms lacking them (e.g. Windows).
 
     Ansible Core imports Unix-specific standard library modules ('fcntl', 'termios', 'tty',
-    'pwd', 'grp') and requests the 'fork' multiprocessing context solely for CLI/display
-    operations. Installing lightweight shims allows Vault encryption and decryption routines
-    to run cleanly on Windows.
+    'pwd', 'grp'), requests the 'fork' multiprocessing context, and attempts to load libc
+    solely for CLI/display operations. Installing lightweight shims allows Vault encryption
+    and decryption routines to run cleanly on Windows.
     """
     import multiprocessing
     import struct
     import types
+
+    # Patch ctypes.cdll.LoadLibrary to safely handle missing libc on Windows
+    if not getattr(ctypes.cdll, "_gossip_libc_patched", False):
+        orig_load_library = ctypes.cdll.LoadLibrary
+
+        def _safe_load_library(name: Any) -> Any:
+            """Handle missing C library on Windows (e.g. find_library('c') returning None).
+
+            Args:
+                name: Name or path of the library to load.
+
+            Returns:
+                Loaded library or MockLibc fallback.
+            """
+            if name is None or name in ("c", "libc"):
+                return _MockLibc()
+            return orig_load_library(name)
+
+        ctypes.cdll.LoadLibrary = _safe_load_library
+        ctypes.cdll._gossip_libc_patched = True
 
     # Patch multiprocessing to safely handle 'fork' context on Windows
     methods = multiprocessing.get_all_start_methods()
@@ -35,7 +105,14 @@ def install_posix_shims() -> None:
         orig_get_context = multiprocessing.get_context
 
         def _safe_get_context(method: Optional[str] = None) -> Any:
-            """Fall back to default multiprocessing context when 'fork' is unavailable."""
+            """Fall back to default multiprocessing context when 'fork' is unavailable.
+
+            Args:
+                method: Requested multiprocessing start method name.
+
+            Returns:
+                Multiprocessing context instance.
+            """
             if method == "fork":
                 return orig_get_context()
             return orig_get_context(method)
