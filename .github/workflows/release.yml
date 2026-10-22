@@ -242,73 +242,73 @@ jobs:
   # ============================================================================
   # 3. MACOS BUILD (macOS Universal Bundle)
   # ============================================================================
-  build-macos:
-    name: Build macOS (Universal Bundle)
-    runs-on: macos-latest
-    continue-on-error: true
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+  # build-macos:
+  #   name: Build macOS (Universal Bundle)
+  #   runs-on: macos-latest
+  #   continue-on-error: true
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v4
 
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
+  #     - name: Set up Python 3.13
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.13"
 
-      - name: Install System Dependencies via Homebrew
-        run: |
-          brew install glib gtk4 libadwaita gobject-introspection adwaita-icon-theme || true
-          # Link Homebrew dylibs to /usr/local/lib so ctypes.util.find_library locates libgio and libgtk
-          sudo mkdir -p /usr/local/lib
-          sudo ln -sf /opt/homebrew/lib/* /usr/local/lib/ 2>/dev/null || true
+  #     - name: Install System Dependencies via Homebrew
+  #       run: |
+  #         brew install glib gtk4 libadwaita gobject-introspection adwaita-icon-theme || true
+  #         # Link Homebrew dylibs to /usr/local/lib so ctypes.util.find_library locates libgio and libgtk
+  #         sudo mkdir -p /usr/local/lib
+  #         sudo ln -sf /opt/homebrew/lib/* /usr/local/lib/ 2>/dev/null || true
 
-      - name: Install Python Dependencies & PyInstaller
-        run: |
-          python3 -m pip install --upgrade pip
-          pip install wheel
-          pip install pycairo "PyGObject<3.51.0" || true
-          pip install boto3 botocore google-cloud-secret-manager google-auth azure-keyvault-secrets azure-identity ansible-vault pyinstaller
+  #     - name: Install Python Dependencies & PyInstaller
+  #       run: |
+  #         python3 -m pip install --upgrade pip
+  #         pip install wheel
+  #         pip install pycairo "PyGObject<3.51.0" || true
+  #         pip install boto3 botocore google-cloud-secret-manager google-auth azure-keyvault-secrets azure-identity ansible-vault pyinstaller
 
-      - name: Build macOS Application Bundle with PyInstaller
-        env:
-          DYLD_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
-          DYLD_FALLBACK_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
-          GI_TYPELIB_PATH: "/opt/homebrew/lib/girepository-1.0"
-          PKG_CONFIG_PATH: "/opt/homebrew/lib/pkgconfig"
-        run: |
-          VERSION="${{ github.ref_name }}"
-          if [ -z "$VERSION" ] || [[ "$VERSION" == *"/"* ]]; then
-            VERSION="${{ github.sha }}"
-            VERSION="${VERSION:0:8}"
-          fi
-          echo "Building macOS package for version ${VERSION}..."
-          pyinstaller --noconfirm --onedir --windowed --name "gossip" \
-            --add-data "locales:locales" \
-            --collect-all "gi" \
-            --collect-data "ansible.config" \
-            --hidden-import "gi" \
-            --hidden-import "gi.repository.Gtk" \
-            --hidden-import "gi.repository.Adw" \
-            --hidden-import "gi.repository.Gio" \
-            --hidden-import "gi.repository.GLib" \
-            --hidden-import "gi.repository.GObject" \
-            --exclude-module "ansible.cli" \
-            --exclude-module "ansible.plugins" \
-            --exclude-module "ansible.executor" \
-            --exclude-module "ansible.playbook" \
-            src/main.py
-          mkdir -p dist/packages
-          if [ -d "dist/gossip.app" ]; then
-            tar -czvf "dist/packages/gossip-macos-universal-${VERSION}.tar.gz" -C dist gossip.app
-          elif [ -d "dist/gossip" ]; then
-            tar -czvf "dist/packages/gossip-macos-universal-${VERSION}.tar.gz" -C dist gossip
-          fi
+  # - name: Build macOS Application Bundle with PyInstaller
+  #   env:
+  #     DYLD_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
+  #     DYLD_FALLBACK_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
+  #     GI_TYPELIB_PATH: "/opt/homebrew/lib/girepository-1.0"
+  #     PKG_CONFIG_PATH: "/opt/homebrew/lib/pkgconfig"
+  #   run: |
+  #     VERSION="${{ github.ref_name }}"
+  #     if [ -z "$VERSION" ] || [[ "$VERSION" == *"/"* ]]; then
+  #       VERSION="${{ github.sha }}"
+  #       VERSION="${VERSION:0:8}"
+  #     fi
+  #     echo "Building macOS package for version ${VERSION}..."
+  #     pyinstaller --noconfirm --onedir --windowed --name "gossip" \
+  #       --add-data "locales:locales" \
+  #       --collect-all "gi" \
+  #       --collect-data "ansible.config" \
+  #       --hidden-import "gi" \
+  #       --hidden-import "gi.repository.Gtk" \
+  #       --hidden-import "gi.repository.Adw" \
+  #       --hidden-import "gi.repository.Gio" \
+  #       --hidden-import "gi.repository.GLib" \
+  #       --hidden-import "gi.repository.GObject" \
+  #       --exclude-module "ansible.cli" \
+  #       --exclude-module "ansible.plugins" \
+  #       --exclude-module "ansible.executor" \
+  #       --exclude-module "ansible.playbook" \
+  #       src/main.py
+  #     mkdir -p dist/packages
+  #     if [ -d "dist/gossip.app" ]; then
+  #       tar -czvf "dist/packages/gossip-macos-universal-${VERSION}.tar.gz" -C dist gossip.app
+  #     elif [ -d "dist/gossip" ]; then
+  #       tar -czvf "dist/packages/gossip-macos-universal-${VERSION}.tar.gz" -C dist gossip
+  #     fi
 
-      - name: Upload macOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: gossip-macos
-          path: dist/packages/*.tar.gz
+  # - name: Upload macOS Artifact
+  #   uses: actions/upload-artifact@v4
+  #   with:
+  #     name: gossip-macos
+  #     path: dist/packages/*.tar.gz
 
   # ============================================================================
   # 4. PUBLISH GITHUB RELEASE (Only on Git Tags v*)
@@ -335,12 +335,12 @@ jobs:
           path: release-assets/
         continue-on-error: true
 
-      - name: Download macOS Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: gossip-macos
-          path: release-assets/
-        continue-on-error: true
+      # - name: Download macOS Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: gossip-macos
+      #     path: release-assets/
+      #   continue-on-error: true
 
       - name: Create Official GitHub Release
         uses: softprops/action-gh-release@v2
