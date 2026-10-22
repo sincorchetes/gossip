@@ -20,8 +20,8 @@ flowchart LR
     end
 
     subgraph ReleaseStage ["Stage 3: Publish Release"]
-        R1["GitLab Generic Package Registry"]
-        R2["release-cli (Automated GitLab Release)"]
+        R1["GitHub Releases and Artifacts"]
+        R2["Automated Multi-Platform Release Assets"]
     end
 
     TestStage --> BuildStage

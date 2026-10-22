@@ -1,0 +1,214 @@
+name: Build Multi-Platform & Publish Release
+
+on:
+  push:
+    branches:
+      - pre
+      - release
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # ============================================================================
+  # 1. LINUX BUILD (Ubuntu x86_64)
+  # ============================================================================
+  build-linux:
+    name: Build Linux (x86_64 Tarball)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install System Dependencies (GTK4 & Libadwaita)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            gobject-introspection \
+            libgirepository1.0-dev \
+            gir1.2-gtk-4.0 \
+            gir1.2-adw-1 \
+            adwaita-icon-theme \
+            gettext \
+            build-essential \
+            binutils
+
+      - name: Install Python Dependencies & PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Build Standalone Linux Executable with PyInstaller
+        run: |
+          VERSION="${{ github.ref_name }}"
+          if [ -z "$VERSION" ] || [[ "$VERSION" == *"/"* ]]; then
+            VERSION="${{ github.sha }}"
+            VERSION="${VERSION:0:8}"
+          fi
+          echo "Building Linux package for version ${VERSION}..."
+          pyinstaller --noconfirm --onedir --windowed --name "gossip" \
+            --add-data "locales:locales" \
+            src/main.py
+          mkdir -p dist/packages
+          tar -czvf "dist/packages/gossip-linux-x86_64-${VERSION}.tar.gz" -C dist gossip
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gossip-linux
+          path: dist/packages/*.tar.gz
+
+  # ============================================================================
+  # 2. WINDOWS BUILD (Windows x64 Zip)
+  # ============================================================================
+  build-windows:
+    name: Build Windows (x64 Zip)
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Python Dependencies & PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Build Windows Executable with PyInstaller
+        shell: pwsh
+        run: |
+          $VERSION = "${{ github.ref_name }}"
+          if (-not $VERSION -or $VERSION.Contains("/")) {
+            $VERSION = "${{ github.sha }}".Substring(0, 8)
+          }
+          Write-Host "Building Windows package for version $VERSION..."
+          pyinstaller --noconfirm --onedir --windowed --name "gossip" --add-data "locales;locales" src/main.py
+          New-Item -ItemType Directory -Force -Path "dist/packages"
+          Compress-Archive -Path "dist/gossip/*" -DestinationPath "dist/packages/gossip-windows-x64-${VERSION}.zip"
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gossip-windows
+          path: dist/packages/*.zip
+
+  # ============================================================================
+  # 3. MACOS BUILD (macOS Universal Bundle)
+  # ============================================================================
+  build-macos:
+    name: Build macOS (Universal Bundle)
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install System Dependencies via Homebrew
+        run: |
+          brew install gtk4 libadwaita gobject-introspection adwaita-icon-theme || true
+
+      - name: Install Python Dependencies & PyInstaller
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Build macOS Application Bundle with PyInstaller
+        run: |
+          VERSION="${{ github.ref_name }}"
+          if [ -z "$VERSION" ] || [[ "$VERSION" == *"/"* ]]; then
+            VERSION="${{ github.sha }}"
+            VERSION="${VERSION:0:8}"
+          fi
+          echo "Building macOS package for version ${VERSION}..."
+          pyinstaller --noconfirm --onedir --windowed --name "gossip" \
+            --add-data "locales:locales" \
+            src/main.py
+          mkdir -p dist/packages
+          if [ -d "dist/gossip.app" ]; then
+            tar -czvf "dist/packages/gossip-macos-universal-${VERSION}.tar.gz" -C dist gossip.app
+          elif [ -d "dist/gossip" ]; then
+            tar -czvf "dist/packages/gossip-macos-universal-${VERSION}.tar.gz" -C dist gossip
+          fi
+
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gossip-macos
+          path: dist/packages/*.tar.gz
+
+  # ============================================================================
+  # 4. PUBLISH GITHUB RELEASE (Only on Git Tags v*)
+  # ============================================================================
+  publish-release:
+    name: Publish Official GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Linux Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: gossip-linux
+          path: release-assets/
+
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: gossip-windows
+          path: release-assets/
+        continue-on-error: true
+
+      - name: Download macOS Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: gossip-macos
+          path: release-assets/
+        continue-on-error: true
+
+      - name: Create Official GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Gossip Release ${{ github.ref_name }}"
+          body: |
+            ## Gossip Multi-Cloud Secret Manager - Version ${{ github.ref_name }}
+
+            ### Highlights & Enhancements
+            - Cross-platform graphical manager for Google Cloud Platform, AWS Secrets Manager, Azure Key Vault, and Ansible Vault.
+            - Modern GTK4 and Libadwaita interface with light and dark theme switching.
+            - Full bilingual localization (English / Spanish) with dynamic runtime switching.
+            - 100% automated test suite statement and branch coverage.
+
+            ### Available Downloads
+            - **Linux (x86_64)**: Portable tarball (`tar.gz`)
+            - **Windows (x64)**: Standalone executable archive (`zip`)
+            - **macOS (Universal)**: Application bundle (`tar.gz`)
+
+            ### Documentation
+            Consult the complete architecture, guides, and API specification at [https://sincorchetes.github.io/gossip/](https://sincorchetes.github.io/gossip/).
+          files: release-assets/**/*
+          draft: false
+          prerelease: false

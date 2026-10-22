@@ -20,8 +20,8 @@ flowchart LR
     end
 
     subgraph ReleaseStage ["Etapa 3: Publicación"]
-        R1["GitLab Generic Package Registry"]
-        R2["release-cli (Release Oficial en GitLab)"]
+        R1["GitHub Releases y Artefactos"]
+        R2["Publicación Oficial de Binarios Multiplataforma"]
     end
 
     TestStage --> BuildStage
@@ -33,10 +33,10 @@ flowchart LR
 ## Modelo de Ramas: `dev -> pre -> release`
 
 1. **`dev` (Integración Continua)**:
-   - Se integran las ramas de desarrollo y Merge Requests.
+   - Se integran las ramas de desarrollo y Pull Requests.
    - Pasan todos los tests unitarios y se exige el cumplimiento de la cobertura mínima del 90%.
 2. **`pre` (Staging / Release Candidate)**:
    - Rama de congelación de código para estabilización y pruebas de regresión.
    - Dispara la compilación preliminar de ejecutables en todas las plataformas soportadas.
 3. **`release` / `main` (Tags de Producción)**:
-   - Al etiquetar con versión SemVer (`vX.Y.Z`), compila los binarios finales, los sube al registro de paquetes y genera la release oficial en GitLab.
+   - Al etiquetar con versión SemVer (`vX.Y.Z`), compila los binarios finales, los sube como activos descargables y genera la release oficial en GitHub.
