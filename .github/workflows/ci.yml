@@ -1,0 +1,58 @@
+name: CI & Code Quality
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - pre
+      - release
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  test:
+    name: Run Pytest & Coverage Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install System Dependencies (GTK4 & Libadwaita)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            gobject-introspection \
+            libgirepository1.0-dev \
+            gir1.2-gtk-4.0 \
+            gir1.2-adw-1 \
+            gettext \
+            build-essential
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov pytest
+
+      - name: Run Tests with Coverage Gate (>= 90%)
+        run: |
+          pytest --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml --cov-fail-under=90 --junitxml=junit.xml
+
+      - name: Upload Test Coverage Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-coverage-report
+          path: |
+            coverage.xml
+            junit.xml

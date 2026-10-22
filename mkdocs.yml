@@ -1,0 +1,117 @@
+site_name: Gossip Documentation
+site_description: Complete Architecture, API Reference, and Business Logic for Gossip Multi-Cloud Secret Manager
+site_author: Antigravity & sincorchetes
+site_url: https://sincorchetes.github.io/gossip/
+repo_name: sincorchetes/gossip
+repo_url: https://github.com/sincorchetes/gossip
+hooks:
+  - docs_hooks.py
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      reconfigure_material: true
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: es
+          name: Español
+          build: true
+          nav_translations:
+            Home: Inicio
+            Architecture: Arquitectura
+            Providers (Strategy Pattern): Proveedores (Patrón Estrategia)
+            Overview: Visión General
+            Base Provider: Proveedor Base
+            Google Cloud Secret Manager: Google Cloud Secret Manager
+            AWS Secrets Manager: AWS Secrets Manager
+            Azure Key Vault: Azure Key Vault
+            Ansible Vault: Ansible Vault
+            Domain & Exceptions: Dominio y Excepciones
+            Data Models: Modelos de Datos
+            Exceptions: Excepciones
+            User Interface: Interfaz de Usuario
+            Main Window & App: Ventana Principal y App
+            Dialogs Package: Paquete de Diálogos
+            Internationalization: Internacionalización
+            CI/CD & Releases: CI/CD y Publicaciones
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_category_heading: true
+            heading_level: 2
+            separate_signature: true
+            show_if_no_docstring: true
+            members_order: source
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - Providers (Strategy Pattern):
+      - Overview: providers/index.md
+      - Base Provider: providers/base.md
+      - Google Cloud Secret Manager: providers/gcp.md
+      - AWS Secrets Manager: providers/aws.md
+      - Azure Key Vault: providers/azure.md
+      - Ansible Vault: providers/ansible.md
+  - Domain & Exceptions:
+      - Data Models: api/models.md
+      - Exceptions: api/exceptions.md
+  - User Interface:
+      - Main Window & App: ui/window.md
+      - Dialogs Package: ui/dialogs.md
+  - Internationalization: i18n.md
+  - CI/CD & Releases: cicd.md
