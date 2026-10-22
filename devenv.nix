@@ -77,12 +77,7 @@
         exec xvfb-run -a pytest "$@"
       fi
     fi
-    if [ -w /dev/tty ]; then
-      set -o pipefail
-      pytest 2>&1 | tee /dev/tty
-    else
-      pytest
-    fi
+    pytest "$@"
   '';
 
 

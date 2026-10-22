@@ -389,16 +389,20 @@ class TestAWSSecretClient(unittest.TestCase):
             with patch.object(AWSSecretClient, "list_available_profiles", return_value=[]):
                 self.assertEqual(AWSSecretClient.detect_profile(), "default")
 
-        # 6. detect_region when boto3 session region is None (162->167)
+        # 6. detect_region when boto3 session region is None vs valid
         with patch.dict("os.environ", {}, clear=True):
             with patch("boto3.Session") as mock_sess:
                 mock_sess.return_value.region_name = None
                 self.assertEqual(AWSSecretClient.detect_region(), "us-east-1")
+                mock_sess.return_value.region_name = "eu-west-1"
+                self.assertEqual(AWSSecretClient.detect_region(), "eu-west-1")
 
-        # 7. list_available_profiles when profiles is empty (175)
+        # 7. list_available_profiles when profiles is empty vs non-empty
         with patch("botocore.session.Session") as mock_bsess:
             mock_bsess.return_value.available_profiles = []
             self.assertEqual(AWSSecretClient.list_available_profiles(), ["default"])
+            mock_bsess.return_value.available_profiles = ["dev", "prod"]
+            self.assertEqual(AWSSecretClient.list_available_profiles(), ["dev", "prod"])
 
         # 8. list_available_profiles when exception is raised (177-178)
         with patch("botocore.session.Session", side_effect=Exception("Crash")):
