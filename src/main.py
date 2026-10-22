@@ -19,6 +19,41 @@ from src import __version__
 from src.i18n import init_i18n, _
 
 
+def setup_frozen_environment() -> None:
+    """Configure GObject Introspection typelib and schema paths when frozen.
+
+    Ensures that PyInstaller standalone bundles find bundled or system-level
+    typelibs (Gtk-4.0, Adw-1, etc.) and GLib schemas across diverse Linux distributions.
+    """
+    if getattr(sys, "frozen", False):
+        bundle_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable)))
+        typelib_candidates = [
+            os.path.join(bundle_dir, "girepository-1.0"),
+            os.path.join(bundle_dir, "gi_typelibs"),
+            "/usr/lib64/girepository-1.0",
+            "/usr/lib/x86_64-linux-gnu/girepository-1.0",
+            "/usr/lib/girepository-1.0",
+        ]
+        existing_typelibs = [p for p in typelib_candidates if os.path.isdir(p)]
+        if existing_typelibs:
+            current_env = os.environ.get("GI_TYPELIB_PATH", "")
+            all_paths = existing_typelibs + ([current_env] if current_env else [])
+            os.environ["GI_TYPELIB_PATH"] = ":".join(all_paths)
+
+        schema_candidates = [
+            os.path.join(bundle_dir, "glib-2.0", "schemas"),
+            "/usr/share/glib-2.0/schemas",
+        ]
+        existing_schemas = [p for p in schema_candidates if os.path.isdir(p)]
+        if existing_schemas:
+            current_schema = os.environ.get("GSETTINGS_SCHEMA_DIR", "")
+            all_schemas = existing_schemas + ([current_schema] if current_schema else [])
+            os.environ["GSETTINGS_SCHEMA_DIR"] = ":".join(all_schemas)
+
+
+setup_frozen_environment()
+
+
 def main() -> int:
     """Parse CLI options, configure runtime environment, and launch the application.
 

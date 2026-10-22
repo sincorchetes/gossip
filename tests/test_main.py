@@ -77,6 +77,44 @@ class TestMain(unittest.TestCase):
                 self.assertEqual(exit_code, 0)
                 mock_run_app.assert_called_once()
 
+    def test_setup_frozen_environment_not_frozen(self):
+        from src.main import setup_frozen_environment
+        with patch.object(sys, "frozen", False, create=True):
+            setup_frozen_environment()
+
+    @patch("os.path.isdir", return_value=True)
+    def test_setup_frozen_environment_frozen_with_existing_env(self, mock_isdir):
+        import os
+        from src.main import setup_frozen_environment
+        with patch.object(sys, "frozen", True, create=True):
+            with patch.object(sys, "_MEIPASS", "/custom/bundle", create=True):
+                with patch.dict("os.environ", {"GI_TYPELIB_PATH": "/orig/typelib", "GSETTINGS_SCHEMA_DIR": "/orig/schema"}):
+                    setup_frozen_environment()
+                    self.assertIn("/custom/bundle/girepository-1.0", os.environ["GI_TYPELIB_PATH"])
+                    self.assertIn("/orig/typelib", os.environ["GI_TYPELIB_PATH"])
+                    self.assertIn("/custom/bundle/glib-2.0/schemas", os.environ["GSETTINGS_SCHEMA_DIR"])
+                    self.assertIn("/orig/schema", os.environ["GSETTINGS_SCHEMA_DIR"])
+
+    @patch("os.path.isdir", return_value=True)
+    def test_setup_frozen_environment_frozen_empty_env(self, mock_isdir):
+        import os
+        from src.main import setup_frozen_environment
+        with patch.object(sys, "frozen", True, create=True):
+            with patch.dict("os.environ", {}, clear=True):
+                setup_frozen_environment()
+                self.assertIn("GI_TYPELIB_PATH", os.environ)
+                self.assertIn("GSETTINGS_SCHEMA_DIR", os.environ)
+
+    @patch("os.path.isdir", return_value=False)
+    def test_setup_frozen_environment_frozen_no_dirs_found(self, mock_isdir):
+        import os
+        from src.main import setup_frozen_environment
+        with patch.object(sys, "frozen", True, create=True):
+            with patch.dict("os.environ", {}, clear=True):
+                setup_frozen_environment()
+                self.assertNotIn("GI_TYPELIB_PATH", os.environ)
+                self.assertNotIn("GSETTINGS_SCHEMA_DIR", os.environ)
+
 
 if __name__ == "__main__":
     unittest.main()
