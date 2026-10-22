@@ -359,7 +359,6 @@ jobs:
             ### Available Downloads
             - **Linux (x86_64)**: Portable tarball (`tar.gz`)
             - **Windows (x64)**: Standalone executable archive (`zip`)
-            - **macOS (Universal)**: Application bundle (`tar.gz`)
 
             ### Documentation
             Consult the complete architecture, guides, and API specification at [https://sincorchetes.github.io/gossip/](https://sincorchetes.github.io/gossip/).
