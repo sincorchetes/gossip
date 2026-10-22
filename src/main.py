@@ -6,6 +6,12 @@ import argparse
 import os
 import sys
 
+# Ensure UTF-8 mode and safe environment defaults across operating systems
+os.environ.setdefault("PYTHONUTF8", "1")
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+os.environ.setdefault("LANG", "C.UTF-8")
+os.environ.setdefault("LC_ALL", "C.UTF-8")
+
 # Ensure src is in python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

@@ -4,8 +4,15 @@ from __future__ import annotations
 
 import os
 import shutil
+import sys
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple
+
+# Ensure UTF-8 locale environment defaults across platforms
+os.environ.setdefault("PYTHONUTF8", "1")
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+os.environ.setdefault("LANG", "C.UTF-8")
+os.environ.setdefault("LC_ALL", "C.UTF-8")
 
 import yaml
 from ansible.parsing.vault import AnsibleVaultError, VaultLib, VaultSecret
