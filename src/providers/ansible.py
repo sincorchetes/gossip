@@ -15,6 +15,67 @@ os.environ.setdefault("LANG", "C.UTF-8")
 os.environ.setdefault("LC_ALL", "C.UTF-8")
 
 import yaml
+
+
+def install_posix_shims() -> None:
+    """Install mock POSIX compatibility modules on platforms lacking them (e.g. Windows).
+
+    Ansible Core imports Unix-specific standard library modules ('fcntl', 'termios', 'tty',
+    'pwd', 'grp') solely for terminal and file-locking operations. Installing lightweight
+    in-memory shims allows Vault encryption and decryption routines to run cleanly on Windows.
+    """
+    import struct
+    import types
+
+    shims = ("fcntl", "termios", "tty", "pwd", "grp")
+    for name in shims:
+        if name not in sys.modules or sys.modules[name] is None:
+            mod = types.ModuleType(name)
+            if name == "fcntl":
+                mod.F_GETFD = 1
+                mod.F_SETFD = 2
+                mod.FD_CLOEXEC = 1
+                mod.fcntl = lambda *args, **kwargs: 0
+                mod.flock = lambda *args, **kwargs: 0
+                mod.lockf = lambda *args, **kwargs: 0
+                mod.ioctl = lambda fd, op, arg=0, mutate_flag=True: struct.pack("HHHH", 24, 80, 0, 0)
+            elif name == "termios":
+                mod.TIOCGWINSZ = 0x5413
+                mod.TCSAFLUSH = 2
+                mod.TCSANOW = 0
+                mod.TCSADRAIN = 1
+                mod.TCIFLUSH = 0
+                mod.BRKINT = mod.ICRNL = mod.INPCK = mod.ISTRIP = mod.IXON = 0
+                mod.OPOST = mod.CSIZE = mod.PARENB = mod.CS8 = 0
+                mod.ECHO = mod.ICANON = mod.IEXTEN = mod.ISIG = 0
+                mod.VMIN = 6
+                mod.VTIME = 5
+                mod.VINTR = 0
+                mod.VERASE = 2
+                mod.tcgetattr = lambda fd: [0, 0, 0, 0, 0, 0, [0] * 32]
+                mod.tcsetattr = lambda fd, when, mode: None
+                mod.tcflush = lambda fd, queue: None
+            elif name == "tty":
+                mod.IFLAG = 0
+                mod.OFLAG = 1
+                mod.CFLAG = 2
+                mod.LFLAG = 3
+                mod.ISPEED = 4
+                mod.OSPEED = 5
+                mod.CC = 6
+                mod.setraw = lambda fd, when=0: None
+                mod.setcbreak = lambda fd, when=0: None
+            elif name == "pwd":
+                mod.getpwuid = lambda uid: ("user", "x", 1000, 1000, "User", "/home/user", "/bin/bash")
+                mod.getpwnam = lambda name: ("user", "x", 1000, 1000, "User", "/home/user", "/bin/bash")
+            else:
+                mod.getgrgid = lambda gid: ("user", "x", 1000, ["user"])
+                mod.getgrnam = lambda name: ("user", "x", 1000, ["user"])
+            sys.modules[name] = mod
+
+
+install_posix_shims()
+
 from ansible.parsing.vault import AnsibleVaultError, VaultLib, VaultSecret
 
 from src.providers.base import BaseSecretProvider

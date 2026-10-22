@@ -38,6 +38,10 @@ def setup_frozen_environment() -> None:
             current_path = os.environ.get("PATH", "")
             os.environ["PATH"] = bundle_dir + (os.pathsep + current_path if current_path else "")
 
+            # Ensure POSIX shims are active on Windows for Ansible Core
+            from src.providers.ansible import install_posix_shims
+            install_posix_shims()
+
         typelib_candidates = [
             os.path.join(bundle_dir, "girepository-1.0"),
             os.path.join(bundle_dir, "lib", "girepository-1.0"),

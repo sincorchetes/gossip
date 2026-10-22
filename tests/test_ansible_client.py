@@ -453,6 +453,58 @@ class TestAnsibleVaultClient(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 self.client.access_secret_payload("dict_key", version="backup")
 
+    def test_install_posix_shims(self):
+        """Test installation and behavior of mock POSIX modules on platforms lacking them."""
+        import sys
+        from src.providers.ansible import install_posix_shims
+
+        shim_names = ("fcntl", "termios", "tty", "pwd", "grp")
+        saved = {name: sys.modules.get(name) for name in shim_names}
+
+        try:
+            for name in shim_names:
+                sys.modules.pop(name, None)
+
+            install_posix_shims()
+
+            # Verify fcntl
+            fc = sys.modules["fcntl"]
+            self.assertEqual(fc.fcntl(1), 0)
+            self.assertEqual(fc.flock(1, 0), 0)
+            self.assertEqual(fc.lockf(1, 0), 0)
+            raw_ioctl = fc.ioctl(1, 0)
+            self.assertIsInstance(raw_ioctl, bytes)
+
+            # Verify termios
+            tm = sys.modules["termios"]
+            self.assertEqual(tm.tcgetattr(0), [0, 0, 0, 0, 0, 0, [0] * 32])
+            self.assertIsNone(tm.tcsetattr(0, 0, []))
+            self.assertIsNone(tm.tcflush(0, 0))
+
+            # Verify tty
+            ty = sys.modules["tty"]
+            self.assertIsNone(ty.setraw(0))
+            self.assertIsNone(ty.setcbreak(0))
+
+            # Verify pwd
+            pw = sys.modules["pwd"]
+            self.assertEqual(pw.getpwuid(1000)[0], "user")
+            self.assertEqual(pw.getpwnam("user")[0], "user")
+
+            # Verify grp
+            gp = sys.modules["grp"]
+            self.assertEqual(gp.getgrgid(1000)[0], "user")
+            self.assertEqual(gp.getgrnam("user")[0], "user")
+
+            # Call install_posix_shims again when already present -> should be no-op
+            install_posix_shims()
+        finally:
+            for name, mod in saved.items():
+                if mod is not None:
+                    sys.modules[name] = mod
+                else:
+                    sys.modules.pop(name, None)
+
 
 if __name__ == "__main__":
     unittest.main()

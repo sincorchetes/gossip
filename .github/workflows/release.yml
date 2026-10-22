@@ -151,7 +151,7 @@ jobs:
           pip install wheel
           pip install --no-deps google-cloud-secret-manager grpc-google-iam-v1
           pip install azure-keyvault-secrets azure-identity ansible-vault
-          python -c "import gi; import boto3; import azure.identity; import ansible_vault; from google.cloud import secretmanager; print('ALL WINDOWS IMPORTS SUCCESSFUL!')"
+          python -c "import gi; import boto3; import azure.identity; import ansible_vault; from google.cloud import secretmanager; import src.main; import src.ui.app; print('ALL WINDOWS IMPORTS SUCCESSFUL!')"
 
       - name: Build Windows Executable with PyInstaller
         shell: msys2 {0}
