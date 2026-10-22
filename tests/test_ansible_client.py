@@ -559,6 +559,12 @@ class TestAnsibleVaultClient(unittest.TestCase):
             ctypes.cdll.LoadLibrary = mock_orig_loader
             install_posix_shims()
 
+            # Test _MockLibc item access and fallback
+            mock_libc = _MockLibc()
+            self.assertEqual(mock_libc["wcwidth"], mock_libc.wcwidth)
+            self.assertEqual(mock_libc["wcswidth"], mock_libc.wcswidth)
+            self.assertEqual(mock_libc["unknown_sym"](), 0)
+
             # Test LoadLibrary(None) -> returns _MockLibc
             res_none = ctypes.cdll.LoadLibrary(None)
             self.assertIsInstance(res_none, _MockLibc)
@@ -567,10 +573,54 @@ class TestAnsibleVaultClient(unittest.TestCase):
             res_c = ctypes.cdll.LoadLibrary("c")
             self.assertIsInstance(res_c, _MockLibc)
 
+            # Test LoadLibrary with Windows CRT name on win32 -> returns _MockLibc
+            with patch("sys.platform", "win32"):
+                res_msvcrt = ctypes.cdll.LoadLibrary("msvcrt.dll")
+                self.assertIsInstance(res_msvcrt, _MockLibc)
+
+            # Test LoadLibrary exception handling on win32 vs non-win32
+            mock_orig_loader.side_effect = OSError("DLL not found")
+            with patch("sys.platform", "win32"):
+                res_err_win = ctypes.cdll.LoadLibrary("nonexistent.dll")
+                self.assertIsInstance(res_err_win, _MockLibc)
+            with patch("sys.platform", "linux"):
+                with self.assertRaises(OSError):
+                    ctypes.cdll.LoadLibrary("nonexistent.dll")
+
+            # Restore loader mock to normal
+            mock_orig_loader.side_effect = None
+            mock_orig_loader.return_value = "orig_lib"
+            mock_orig_loader.reset_mock()
+
             # Test LoadLibrary("custom_dll") -> delegates to original loader
             res_custom = ctypes.cdll.LoadLibrary("custom_dll")
             self.assertEqual(res_custom, "orig_lib")
             mock_orig_loader.assert_called_once_with("custom_dll")
+
+            # Test ctypes.CDLL.__getitem__ patch for missing symbols
+            orig_cdll_getitem = ctypes.CDLL.__getitem__
+            orig_getitem_flag = getattr(ctypes.CDLL, "_gossip_getitem_patched", False)
+            try:
+                ctypes.CDLL._gossip_getitem_patched = False
+                mock_getitem = MagicMock(side_effect=AttributeError("Symbol not found"))
+                ctypes.CDLL.__getitem__ = mock_getitem
+                install_posix_shims()
+
+                dummy_cdll = MagicMock(spec=ctypes.CDLL)
+                # Test wcwidth fallback on AttributeError
+                wc_func = ctypes.CDLL.__getitem__(dummy_cdll, "wcwidth")
+                self.assertIsInstance(wc_func, _MockLibcFunc)
+
+                # Test wcswidth fallback on AttributeError
+                wc_func2 = ctypes.CDLL.__getitem__(dummy_cdll, "wcswidth")
+                self.assertIsInstance(wc_func2, _MockLibcFunc)
+
+                # Test non-wcwidth attribute error is re-raised
+                with self.assertRaises(AttributeError):
+                    ctypes.CDLL.__getitem__(dummy_cdll, "other_symbol")
+            finally:
+                ctypes.CDLL.__getitem__ = orig_cdll_getitem
+                ctypes.CDLL._gossip_getitem_patched = orig_getitem_flag
 
             # Call install_posix_shims again when already patched -> should be no-op
             install_posix_shims()

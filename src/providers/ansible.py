@@ -55,6 +55,17 @@ class _MockLibc:
         self.wcwidth = _MockLibcFunc(1)
         self.wcswidth = _MockLibcFunc(1)
 
+    def __getitem__(self, name: str) -> Any:
+        """Support dict-style or index lookup for libc functions (e.g. lib['wcwidth']).
+
+        Args:
+            name: Symbol name requested on libc.
+
+        Returns:
+            MockLibcFunc or fallback callable.
+        """
+        return getattr(self, name)
+
     def __getattr__(self, name: str) -> Any:
         """Fallback handler returning a callable for any unknown libc symbol.
 
@@ -79,12 +90,12 @@ def install_posix_shims() -> None:
     import struct
     import types
 
-    # Patch ctypes.cdll.LoadLibrary to safely handle missing libc on Windows
+    # Patch ctypes.cdll.LoadLibrary to safely handle missing libc or Windows CRT lacking wcwidth
     if not getattr(ctypes.cdll, "_gossip_libc_patched", False):
         orig_load_library = ctypes.cdll.LoadLibrary
 
         def _safe_load_library(name: Any) -> Any:
-            """Handle missing C library on Windows (e.g. find_library('c') returning None).
+            """Handle missing C library on Windows (e.g. find_library('c') returning None or msvcrt).
 
             Args:
                 name: Name or path of the library to load.
@@ -92,12 +103,47 @@ def install_posix_shims() -> None:
             Returns:
                 Loaded library or MockLibc fallback.
             """
-            if name is None or name in ("c", "libc"):
+            name_str = str(name).lower() if name is not None else ""
+            if (
+                name is None
+                or name in ("c", "libc")
+                or (sys.platform == "win32" and any(k in name_str for k in ("msvcrt", "ucrt", "crt", "libc")))
+            ):
                 return _MockLibc()
-            return orig_load_library(name)
+            try:
+                return orig_load_library(name)
+            except Exception:
+                if sys.platform == "win32":
+                    return _MockLibc()
+                raise
 
         ctypes.cdll.LoadLibrary = _safe_load_library
         ctypes.cdll._gossip_libc_patched = True
+
+    # Patch ctypes.CDLL.__getitem__ to safely supply wcwidth/wcswidth on platforms lacking them
+    if not getattr(ctypes.CDLL, "_gossip_getitem_patched", False):
+        orig_cdll_getitem = ctypes.CDLL.__getitem__
+
+        def _safe_cdll_getitem(self: Any, name: Any) -> Any:
+            """Catch missing wcwidth/wcswidth symbols on Windows CDLL symbol resolution.
+
+            Args:
+                name: Symbol name requested on library.
+
+            Returns:
+                Function pointer or MockLibcFunc fallback.
+            """
+            try:
+                return orig_cdll_getitem(self, name)
+            except AttributeError:
+                if isinstance(name, str) and name in ("wcwidth", "wcswidth"):
+                    func = _MockLibcFunc(1)
+                    setattr(self, name, func)
+                    return func
+                raise
+
+        ctypes.CDLL.__getitem__ = _safe_cdll_getitem
+        ctypes.CDLL._gossip_getitem_patched = True
 
     # Patch multiprocessing to safely handle 'fork' context on Windows
     methods = multiprocessing.get_all_start_methods()
