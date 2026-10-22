@@ -60,6 +60,25 @@ class TestMain(unittest.TestCase):
                 maximized=True,
             )
 
+    @patch("src.ui.app.run_app", return_value=0)
+    @patch.dict("os.environ", {"DISPLAY": ":0"}, clear=True)
+    def test_main_renderer_flags(self, mock_run_app):
+        import os
+        # Test --software-rendering
+        test_args_sw = ["gossip", "--software-rendering"]
+        with patch.object(sys, "argv", test_args_sw):
+            exit_code = main()
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(os.environ.get("GSK_RENDERER"), "cairo")
+            self.assertEqual(os.environ.get("LIBGL_ALWAYS_SOFTWARE"), "1")
+
+        # Test --renderer
+        test_args_rend = ["gossip", "--renderer", "ngl"]
+        with patch.object(sys, "argv", test_args_rend):
+            exit_code = main()
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(os.environ.get("GSK_RENDERER"), "ngl")
+
     @patch.dict("os.environ", {}, clear=True)
     def test_main_no_display_server_error(self):
         test_args = ["gossip"]

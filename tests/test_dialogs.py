@@ -58,8 +58,9 @@ class TestDialogs(unittest.TestCase):
         self.parent = Gtk.Window()
 
     def test_show_about_dialog(self):
-        with patch.object(Adw.AboutWindow, "present"):
+        with patch.object(Adw.AboutWindow, "present") as mock_present:
             show_about_dialog(self.parent)
+            mock_present.assert_called_once()
 
     def test_show_change_project_dialog_success(self):
         mock_gcp = MagicMock(spec=GCPSecretClient)

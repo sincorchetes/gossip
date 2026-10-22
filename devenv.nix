@@ -17,6 +17,7 @@
     adwaita-icon-theme
     uv
     gettext
+    xvfb-run
   ];
 
   env = {
@@ -71,6 +72,11 @@
   '';
 
   enterTest = ''
+    if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]; then
+      if command -v xvfb-run >/dev/null 2>&1; then
+        exec xvfb-run -a pytest "$@"
+      fi
+    fi
     if [ -w /dev/tty ]; then
       set -o pipefail
       pytest 2>&1 | tee /dev/tty

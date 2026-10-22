@@ -36,6 +36,8 @@ venv.bak/
 htmlcov/
 coverage.xml
 junit.xml
+job-logs.txt
+*-logs.txt
 .tox/
 .nox/
 

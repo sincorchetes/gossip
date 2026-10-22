@@ -32,7 +32,7 @@ jobs:
         run: nix profile add nixpkgs#devenv
 
       - name: Run Tests with Coverage Gate via devenv
-        run: devenv test
+        run: xvfb-run -a devenv test
 
       - name: Upload Test Coverage Artifacts
         if: always()

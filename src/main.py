@@ -151,12 +151,30 @@ def main() -> int:
         help="Alto inicial de la ventana en píxeles (por defecto: 820)",
     )
     parser.add_argument(
+        "--renderer",
+        choices=["ngl", "gl", "vulkan", "cairo"],
+        default=None,
+        help="Motor de renderizado GTK4 / GSK (GSK_RENDERER: ngl, gl, vulkan, cairo)",
+    )
+    parser.add_argument(
+        "--software-rendering",
+        action="store_true",
+        help="Fuerza renderizado por software Cairo (útil en VMs o drivers sin aceleración 3D)",
+    )
+    parser.add_argument(
         "-v", "--version",
         action="version",
         version=f"Gossip {__version__}",
     )
 
     args = parser.parse_args()
+
+    # Configure GTK4 renderer if requested
+    if args.software_rendering:
+        os.environ["GSK_RENDERER"] = "cairo"
+        os.environ["LIBGL_ALWAYS_SOFTWARE"] = "1"
+    elif args.renderer:
+        os.environ["GSK_RENDERER"] = args.renderer
 
     # Initialize localization
     init_i18n(args.lang)
