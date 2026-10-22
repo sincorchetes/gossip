@@ -38,7 +38,7 @@ def setup_frozen_environment() -> None:
         if existing_typelibs:
             current_env = os.environ.get("GI_TYPELIB_PATH", "")
             all_paths = existing_typelibs + ([current_env] if current_env else [])
-            os.environ["GI_TYPELIB_PATH"] = ":".join(all_paths)
+            os.environ["GI_TYPELIB_PATH"] = os.pathsep.join(all_paths)
 
         schema_candidates = [
             os.path.join(bundle_dir, "glib-2.0", "schemas"),
@@ -48,7 +48,7 @@ def setup_frozen_environment() -> None:
         if existing_schemas:
             current_schema = os.environ.get("GSETTINGS_SCHEMA_DIR", "")
             all_schemas = existing_schemas + ([current_schema] if current_schema else [])
-            os.environ["GSETTINGS_SCHEMA_DIR"] = ":".join(all_schemas)
+            os.environ["GSETTINGS_SCHEMA_DIR"] = os.pathsep.join(all_schemas)
 
 
 setup_frozen_environment()
