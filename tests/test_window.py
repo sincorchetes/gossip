@@ -232,14 +232,33 @@ class TestMainWindow(unittest.TestCase):
 
     def test_add_version_clicked_flow(self):
         self.window.selected_secret = SecretItem(name="projects/test/secrets/sec1", secret_id="sec1")
+        self.window.current_payload = "cached_val"
         with patch("src.ui.window.show_add_version_dialog") as mock_dlg, \
              patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
              patch("threading.Thread", side_effect=DummySyncThread):
             self.window._on_add_version_clicked()
             mock_dlg.assert_called_once()
+            self.assertEqual(mock_dlg.call_args[1].get("current_value"), "cached_val")
             on_confirm = mock_dlg.call_args[0][2]
             on_confirm("new_payload_v2")
             self.mock_gcp.add_secret_version.assert_called_with("projects/test/secrets/sec1", "new_payload_v2")
+
+        # Test fallback when current_payload is None but current_versions exists
+        self.window.current_payload = None
+        v1 = SecretVersionItem(name="projects/test/secrets/sec1/versions/1", version_id="1")
+        self.window.current_versions = [v1]
+        self.mock_gcp.access_secret_payload.return_value = ("fallback_val", False)
+        with patch("src.ui.window.show_add_version_dialog") as mock_dlg:
+            self.window._on_add_version_clicked()
+            mock_dlg.assert_called_once()
+            self.assertEqual(mock_dlg.call_args[1].get("current_value"), "fallback_val")
+
+        # Test fallback when access_secret_payload raises an exception
+        self.mock_gcp.access_secret_payload.side_effect = RuntimeError("Failed to fetch")
+        with patch("src.ui.window.show_add_version_dialog") as mock_dlg:
+            self.window._on_add_version_clicked()
+            mock_dlg.assert_called_once()
+            self.assertIsNone(mock_dlg.call_args[1].get("current_value"))
 
     def test_toggle_version_state_flow(self):
         v1 = SecretVersionItem(name="projects/test/secrets/sec1/versions/1", version_id="1", state="ENABLED")

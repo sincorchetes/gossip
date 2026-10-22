@@ -17,6 +17,7 @@ def show_add_version_dialog(
     parent_window: Gtk.Window,
     secret_id: str,
     on_confirm: Callable[[str], None],
+    current_value: Optional[str] = None,
 ) -> None:
     """Show a modal dialog to enter and submit a new payload version for an existing secret.
 
@@ -24,6 +25,7 @@ def show_add_version_dialog(
         parent_window: GTK parent window to transient the dialog for.
         secret_id: Human-readable secret identifier.
         on_confirm: Callback invoked with the new payload text upon submission.
+        current_value: Optional existing payload from the previous or active secret version.
     """
     dialog = Adw.MessageDialog(
         transient_for=parent_window,
@@ -47,6 +49,24 @@ def show_add_version_dialog(
     text_view.set_wrap_mode(Gtk.WrapMode.CHAR)
     buffer = text_view.get_buffer()
     scrolled.set_child(text_view)
+
+    if current_value is not None:
+        copy_check = Gtk.CheckButton(label=_("Copy value from previous version"))
+        copy_check.set_margin_bottom(4)
+
+        def on_toggle_copy(btn: Gtk.CheckButton) -> None:
+            """Populate or revert the buffer based on copy checkbox state."""
+            if btn.get_active():
+                buffer.set_text(current_value)
+            else:
+                start_iter = buffer.get_start_iter()
+                end_iter = buffer.get_end_iter()
+                if buffer.get_text(start_iter, end_iter, True) == current_value:
+                    buffer.set_text("")
+
+        copy_check.connect("toggled", on_toggle_copy)
+        box.append(copy_check)
+
     box.append(scrolled)
 
     dialog.set_extra_child(box)

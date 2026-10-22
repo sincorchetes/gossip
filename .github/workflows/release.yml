@@ -132,6 +132,13 @@ jobs:
             mingw-w64-ucrt-x86_64-python-grpcio
             mingw-w64-ucrt-x86_64-python-protobuf
             mingw-w64-ucrt-x86_64-python-markupsafe
+            mingw-w64-ucrt-x86_64-python-google-auth
+            mingw-w64-ucrt-x86_64-python-google-api-core
+            mingw-w64-ucrt-x86_64-python-googleapis-common-protos
+            mingw-w64-ucrt-x86_64-python-proto-plus
+            mingw-w64-ucrt-x86_64-python-boto3
+            mingw-w64-ucrt-x86_64-python-botocore
+            mingw-w64-ucrt-x86_64-python-requests
             mingw-w64-ucrt-x86_64-gtk4
             mingw-w64-ucrt-x86_64-libadwaita
             mingw-w64-ucrt-x86_64-python-gobject
@@ -141,7 +148,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install wheel pyinstaller
-          pip install boto3 botocore google-cloud-secret-manager google-auth azure-keyvault-secrets azure-identity ansible-vault
+          pip install --no-deps google-cloud-secret-manager grpc-google-iam-v1
+          pip install azure-keyvault-secrets azure-identity ansible-vault
+          python -c "import gi; import boto3; import azure.identity; import ansible_vault; from google.cloud import secretmanager; print('ALL WINDOWS IMPORTS SUCCESSFUL!')"
 
       - name: Build Windows Executable with PyInstaller
         shell: msys2 {0}

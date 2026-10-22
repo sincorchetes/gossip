@@ -241,6 +241,9 @@ msgstr "Introduce el nuevo valor para el secreto. Se creará una nueva versión 
 msgid "Save Version"
 msgstr "Guardar Versión"
 
+msgid "Copy value from previous version"
+msgstr "Copiar valor de la versión anterior"
+
 msgid "Create New Secret"
 msgstr "Crear Nuevo Secreto"
 

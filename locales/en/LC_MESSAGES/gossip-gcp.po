@@ -241,6 +241,9 @@ msgstr "Enter the new secret payload. A new active version (latest) will be crea
 msgid "Save Version"
 msgstr "Save Version"
 
+msgid "Copy value from previous version"
+msgstr "Copy value from previous version"
+
 msgid "Create New Secret"
 msgstr "Create New Secret"
 

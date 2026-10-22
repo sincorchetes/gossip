@@ -433,6 +433,61 @@ class TestDialogs(unittest.TestCase):
         # Emit cancel
         dialog.emit("response", "cancel")
 
+    def test_show_add_version_dialog_with_current_value(self):
+        """Test show_add_version_dialog with current_value and checkbox copy toggling."""
+        on_confirm = MagicMock()
+        created_dialogs = []
+        original_init = Adw.MessageDialog.__init__
+
+        def capture_init(dialog_self, *args, **kwargs):
+            original_init(dialog_self, *args, **kwargs)
+            created_dialogs.append(dialog_self)
+
+        with patch.object(Adw.MessageDialog, "__init__", capture_init):
+            show_add_version_dialog(self.parent, "secret_1", on_confirm, current_value="previous_secret_content")
+
+        dialog = created_dialogs[0]
+        box = dialog.get_extra_child()
+        text_views = find_children(box, Gtk.TextView)
+        self.assertTrue(len(text_views) > 0)
+        text_view = text_views[0]
+        buffer = text_view.get_buffer()
+
+        check_buttons = find_children(box, Gtk.CheckButton)
+        self.assertEqual(len(check_buttons), 1)
+        check_button = check_buttons[0]
+
+        # Initial buffer should be empty
+        start_iter = buffer.get_start_iter()
+        end_iter = buffer.get_end_iter()
+        self.assertEqual(buffer.get_text(start_iter, end_iter, True), "")
+
+        # Toggle check button ON -> should populate with current_value
+        check_button.set_active(True)
+        start_iter = buffer.get_start_iter()
+        end_iter = buffer.get_end_iter()
+        self.assertEqual(buffer.get_text(start_iter, end_iter, True), "previous_secret_content")
+
+        # Toggle check button OFF without modifying text -> should revert/clear
+        check_button.set_active(False)
+        start_iter = buffer.get_start_iter()
+        end_iter = buffer.get_end_iter()
+        self.assertEqual(buffer.get_text(start_iter, end_iter, True), "")
+
+        # Toggle check button ON again, then edit text
+        check_button.set_active(True)
+        buffer.set_text("previous_secret_content_appended_info")
+
+        # Toggle check button OFF after modifying text -> should NOT clear the modified text
+        check_button.set_active(False)
+        start_iter = buffer.get_start_iter()
+        end_iter = buffer.get_end_iter()
+        self.assertEqual(buffer.get_text(start_iter, end_iter, True), "previous_secret_content_appended_info")
+
+        # Emit save -> on_confirm should receive the modified payload
+        dialog.emit("response", "save")
+        on_confirm.assert_called_with("previous_secret_content_appended_info")
+
     def test_show_confirm_destroy_version_dialog(self):
         on_confirm = MagicMock()
         created_dialogs = []

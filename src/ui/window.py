@@ -1044,6 +1044,13 @@ class MainWindow(Adw.ApplicationWindow):
         secret_name = self.selected_secret.name
         client = self.active_provider
 
+        current_value = self.current_payload
+        if current_value is None and self.current_versions:
+            try:
+                current_value, _is_bin = client.access_secret_payload(self.current_versions[0].name)
+            except Exception:
+                current_value = None
+
         def on_confirm(payload: str):
             """Process confirmed payload to append as a new version."""
             self._show_toast(_("Adding new version..."))
@@ -1058,7 +1065,7 @@ class MainWindow(Adw.ApplicationWindow):
 
             threading.Thread(target=worker, daemon=True).start()
 
-        show_add_version_dialog(self, secret_id, on_confirm)
+        show_add_version_dialog(self, secret_id, on_confirm, current_value=current_value)
 
     def _on_version_added_success(self) -> None:
         """Callback executed on GTK main thread after new version is added."""
