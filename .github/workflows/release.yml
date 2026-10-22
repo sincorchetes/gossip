@@ -80,8 +80,6 @@ jobs:
             --add-data "${TYPELIB_DIR}:girepository-1.0" \
             --add-data "/usr/share/glib-2.0/schemas:glib-2.0/schemas" \
             --collect-all "gi" \
-            --collect-data "ansible" \
-            --collect-data "ansible_vault" \
             --hidden-import "gi" \
             --hidden-import "gi.repository.Gtk" \
             --hidden-import "gi.repository.Adw" \
@@ -89,6 +87,9 @@ jobs:
             --hidden-import "gi.repository.GLib" \
             --hidden-import "gi.repository.GObject" \
             --exclude-module "ansible.cli" \
+            --exclude-module "ansible.plugins" \
+            --exclude-module "ansible.executor" \
+            --exclude-module "ansible.playbook" \
             src/main.py
           mkdir -p dist/packages
           tar -czvf "dist/packages/gossip-linux-x86_64-${VERSION}.tar.gz" -C dist gossip
@@ -155,12 +156,15 @@ jobs:
 
       - name: Build Windows Executable with PyInstaller
         shell: msys2 {0}
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
+          LANG: "C.UTF-8"
+          LC_ALL: "C.UTF-8"
         run: |
           pyinstaller --noconfirm --onedir --windowed --name "gossip" \
             --add-data "locales;locales" \
             --collect-all "gi" \
-            --collect-data "ansible" \
-            --collect-data "ansible_vault" \
             --hidden-import "gi" \
             --hidden-import "gi.repository.Gtk" \
             --hidden-import "gi.repository.Adw" \
@@ -168,6 +172,9 @@ jobs:
             --hidden-import "gi.repository.GLib" \
             --hidden-import "gi.repository.GObject" \
             --exclude-module "ansible.cli" \
+            --exclude-module "ansible.plugins" \
+            --exclude-module "ansible.executor" \
+            --exclude-module "ansible.playbook" \
             src/main.py
 
           # Bundle GObject Introspection typelibs (.typelib)
@@ -267,8 +274,6 @@ jobs:
           pyinstaller --noconfirm --onedir --windowed --name "gossip" \
             --add-data "locales:locales" \
             --collect-all "gi" \
-            --collect-data "ansible" \
-            --collect-data "ansible_vault" \
             --hidden-import "gi" \
             --hidden-import "gi.repository.Gtk" \
             --hidden-import "gi.repository.Adw" \
@@ -276,6 +281,9 @@ jobs:
             --hidden-import "gi.repository.GLib" \
             --hidden-import "gi.repository.GObject" \
             --exclude-module "ansible.cli" \
+            --exclude-module "ansible.plugins" \
+            --exclude-module "ansible.executor" \
+            --exclude-module "ansible.playbook" \
             src/main.py
           mkdir -p dist/packages
           if [ -d "dist/gossip.app" ]; then

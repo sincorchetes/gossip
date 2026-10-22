@@ -119,6 +119,28 @@ def install_posix_shims() -> None:
 
         multiprocessing.get_context = _safe_get_context
 
+    # Patch locale.getlocale to guarantee UTF-8 encoding on Windows
+    import locale
+    if not getattr(locale, "_gossip_locale_patched", False):
+        orig_getlocale = locale.getlocale
+
+        def _safe_getlocale(category: int = locale.LC_CTYPE) -> Tuple[Optional[str], Optional[str]]:
+            """Return UTF-8 encoding tuple on Windows when queried by third-party CLI tools.
+
+            Args:
+                category: Locale category to query.
+
+            Returns:
+                Tuple of (language_code, encoding).
+            """
+            lang, enc = orig_getlocale(category)
+            if not enc or enc.lower() not in ("utf-8", "utf8"):
+                return lang or "en_US", "UTF-8"
+            return lang, enc
+
+        locale.getlocale = _safe_getlocale
+        locale._gossip_locale_patched = True
+
     shims = ("fcntl", "termios", "tty", "pwd", "grp")
     for name in shims:
         if name not in sys.modules or sys.modules[name] is None:

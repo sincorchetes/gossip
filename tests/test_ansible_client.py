@@ -578,6 +578,45 @@ class TestAnsibleVaultClient(unittest.TestCase):
             ctypes.cdll.LoadLibrary = orig_load
             ctypes.cdll._gossip_libc_patched = orig_flag
 
+    def test_locale_getlocale_patch(self):
+        """Test locale.getlocale patch ensuring UTF-8 encoding on platforms returning cp1252 or None."""
+        import locale
+        from unittest.mock import MagicMock
+        from src.providers.ansible import install_posix_shims
+
+        orig_getlocale = locale.getlocale
+        orig_flag = getattr(locale, "_gossip_locale_patched", False)
+        try:
+            # Case 1: returns (None, None)
+            locale._gossip_locale_patched = False
+            locale.getlocale = MagicMock(return_value=(None, None))
+            install_posix_shims()
+            lang, enc = locale.getlocale()
+            self.assertEqual(enc, "UTF-8")
+            self.assertEqual(lang, "en_US")
+
+            # Case 2: returns ('en_US', '1252')
+            locale._gossip_locale_patched = False
+            locale.getlocale = MagicMock(return_value=("en_US", "1252"))
+            install_posix_shims()
+            lang, enc = locale.getlocale()
+            self.assertEqual(enc, "UTF-8")
+            self.assertEqual(lang, "en_US")
+
+            # Case 3: already returns UTF-8
+            locale._gossip_locale_patched = False
+            locale.getlocale = MagicMock(return_value=("es_ES", "utf-8"))
+            install_posix_shims()
+            lang, enc = locale.getlocale()
+            self.assertEqual(enc, "utf-8")
+            self.assertEqual(lang, "es_ES")
+
+            # Call install_posix_shims again when already patched -> no-op
+            install_posix_shims()
+        finally:
+            locale.getlocale = orig_getlocale
+            locale._gossip_locale_patched = orig_flag
+
 
 if __name__ == "__main__":
     unittest.main()
