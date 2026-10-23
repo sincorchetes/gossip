@@ -135,6 +135,32 @@ def setup_frozen_environment() -> None:
             all_xdg = existing_xdg + ([current_xdg] if current_xdg else [])
             os.environ["XDG_DATA_DIRS"] = os.pathsep.join(all_xdg)
 
+        # Ensure GdkPixbuf has access to an SVG-capable loaders.cache
+        pixbuf_cache = os.environ.get("GDK_PIXBUF_MODULE_FILE")
+        needs_system_pixbuf = True
+        if pixbuf_cache and os.path.isfile(pixbuf_cache):
+            try:
+                with open(pixbuf_cache, "r", encoding="utf-8", errors="ignore") as f:
+                    if "svg" in f.read():
+                        needs_system_pixbuf = False
+            except Exception:
+                pass
+        if needs_system_pixbuf:
+            for sys_cache in [
+                "/usr/lib64/gdk-pixbuf-2.0/2.10.0/loaders.cache",
+                "/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders.cache",
+                "/usr/lib/aarch64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders.cache",
+                "/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache",
+            ]:
+                if os.path.isfile(sys_cache):
+                    try:
+                        with open(sys_cache, "r", encoding="utf-8", errors="ignore") as f:
+                            if "svg" in f.read():
+                                os.environ["GDK_PIXBUF_MODULE_FILE"] = sys_cache
+                                break
+                    except Exception:
+                        pass
+
 
 setup_frozen_environment()
 

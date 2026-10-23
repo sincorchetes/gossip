@@ -56,6 +56,10 @@ jobs:
             libgirepository1.0-dev \
             gir1.2-gtk-4.0 \
             gir1.2-adw-1 \
+            gir1.2-rsvg-2.0 \
+            librsvg2-common \
+            librsvg2-dev \
+            librsvg2-bin \
             adwaita-icon-theme \
             libcairo2-dev \
             pkg-config \
@@ -97,6 +101,8 @@ jobs:
             --add-data "${TYPELIB_DIR}:girepository-1.0" \
             --add-data "/usr/share/glib-2.0/schemas:glib-2.0/schemas" \
             --collect-all "gi" \
+            --collect-all "gi.repository.GdkPixbuf" \
+            --collect-all "gi.repository.Rsvg" \
             --collect-data "ansible.config" \
             --hidden-import "gi" \
             --hidden-import "gi.repository.Gtk" \
@@ -104,6 +110,8 @@ jobs:
             --hidden-import "gi.repository.Gio" \
             --hidden-import "gi.repository.GLib" \
             --hidden-import "gi.repository.GObject" \
+            --hidden-import "gi.repository.GdkPixbuf" \
+            --hidden-import "gi.repository.Rsvg" \
             --exclude-module "ansible.cli" \
             --exclude-module "ansible.plugins" \
             --exclude-module "ansible.executor" \
@@ -124,6 +132,25 @@ jobs:
           mkdir -p dist/gossip/_internal/glib-2.0/schemas
           cp -r /usr/share/glib-2.0/schemas/* dist/gossip/_internal/glib-2.0/schemas/ 2>/dev/null || true
           glib-compile-schemas dist/gossip/_internal/glib-2.0/schemas/ 2>/dev/null || true
+
+          # Ensure libpixbufloader-svg.so and librsvg-2.so are bundled and registered for vector icons
+          SVG_LOADER="$(find /usr/lib -name "libpixbufloader-svg.so" 2>/dev/null | head -n 1)"
+          if [ -n "$SVG_LOADER" ] && [ -f "$SVG_LOADER" ]; then
+            mkdir -p dist/gossip/_internal/lib/gdk-pixbuf/loaders
+            cp -f "$SVG_LOADER" dist/gossip/_internal/lib/gdk-pixbuf/loaders/
+            find /usr/lib -name "librsvg-2.so*" -exec cp -f {} dist/gossip/_internal/ \; 2>/dev/null || true
+            if [ -f dist/gossip/_internal/lib/gdk-pixbuf/loaders.cache ] && ! grep -q "svg" dist/gossip/_internal/lib/gdk-pixbuf/loaders.cache; then
+              cat >> dist/gossip/_internal/lib/gdk-pixbuf/loaders.cache << 'EOF'
+
+"@executable_path/lib/gdk-pixbuf/loaders/libpixbufloader-svg.so"
+"svg" 6 "gdk-pixbuf" "Scalable Vector Graphics" "LGPL"
+"image/svg+xml" "image/svg" "image/svg-xml" "image/vnd.adobe.svg+xml" "text/xml-svg" "image/svg+xml-compressed" ""
+"svg" "svgz" "svg.gz" ""
+" <svg" "*    " 100
+" <!DOCTYPE svg" "*             " 100
+EOF
+            fi
+          fi
 
           mkdir -p dist/packages
           PKG_VERSION="${VERSION#v}"
@@ -152,7 +179,7 @@ jobs:
           echo "Priority: optional" >> "${DEB_DIR}/DEBIAN/control"
           echo "Architecture: ${{ matrix.arch_deb }}" >> "${DEB_DIR}/DEBIAN/control"
           echo "Maintainer: sincorchetes.tech <https://sincorchetes.tech>" >> "${DEB_DIR}/DEBIAN/control"
-          echo "Depends: libc6, libglib2.0-0, libgtk-4-1, libadwaita-1-0" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Depends: libc6, libglib2.0-0, libgtk-4-1, libadwaita-1-0, librsvg2-common" >> "${DEB_DIR}/DEBIAN/control"
           echo "Homepage: https://sincorchetes.github.io/gossip/" >> "${DEB_DIR}/DEBIAN/control"
           echo "Description: Multi-Cloud Secret Manager" >> "${DEB_DIR}/DEBIAN/control"
           echo " Gossip is a modern desktop application for managing secrets across" >> "${DEB_DIR}/DEBIAN/control"
@@ -175,6 +202,7 @@ jobs:
             -d "gtk4" \
             -d "libadwaita" \
             -d "glib2" \
+            -d "librsvg2" \
             -p "dist/packages/gossip-${PKG_VERSION}-1.${{ matrix.arch_rpm }}.rpm" \
             -C "${DEB_DIR}" \
             opt usr

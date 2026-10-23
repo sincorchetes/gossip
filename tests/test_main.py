@@ -166,6 +166,87 @@ class TestMain(unittest.TestCase):
                 setup_frozen_environment()
 
     @patch("os.path.isdir", return_value=True)
+    def test_setup_frozen_environment_pixbuf_svg_already_supported(self, mock_isdir):
+        import os
+        from unittest.mock import mock_open
+
+        from src.main import setup_frozen_environment
+
+        with (
+            patch.object(sys, "frozen", True, create=True),
+            patch.dict("os.environ", {"GDK_PIXBUF_MODULE_FILE": "/bundle/loaders.cache"}),
+            patch("os.path.isfile", side_effect=lambda p: p == "/bundle/loaders.cache"),
+            patch("builtins.open", mock_open(read_data="svg loader content")),
+        ):
+            setup_frozen_environment()
+            self.assertEqual(os.environ["GDK_PIXBUF_MODULE_FILE"], "/bundle/loaders.cache")
+
+    @patch("os.path.isdir", return_value=True)
+    def test_setup_frozen_environment_pixbuf_cache_exception(self, mock_isdir):
+        from src.main import setup_frozen_environment
+
+        with (
+            patch.object(sys, "frozen", True, create=True),
+            patch.dict("os.environ", {"GDK_PIXBUF_MODULE_FILE": "/bundle/loaders.cache"}),
+            patch("os.path.isfile", return_value=True),
+            patch("builtins.open", side_effect=OSError("Read error")),
+        ):
+            setup_frozen_environment()
+
+    @patch("os.path.isdir", return_value=True)
+    def test_setup_frozen_environment_pixbuf_fallback_to_system_svg(self, mock_isdir):
+        import os
+        from unittest.mock import mock_open
+
+        from src.main import setup_frozen_environment
+
+        def fake_isfile(path):
+            return path == "/usr/lib64/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+
+        with (
+            patch.object(sys, "frozen", True, create=True),
+            patch.dict("os.environ", {}, clear=True),
+            patch("os.path.isfile", side_effect=fake_isfile),
+            patch("builtins.open", mock_open(read_data="svg libpixbufloader-svg.so")),
+        ):
+            setup_frozen_environment()
+            self.assertEqual(
+                os.environ.get("GDK_PIXBUF_MODULE_FILE"),
+                "/usr/lib64/gdk-pixbuf-2.0/2.10.0/loaders.cache",
+            )
+
+    @patch("os.path.isdir", return_value=True)
+    def test_setup_frozen_environment_pixbuf_system_cache_no_svg(self, mock_isdir):
+        import os
+        from unittest.mock import mock_open
+
+        from src.main import setup_frozen_environment
+
+        with (
+            patch.object(sys, "frozen", True, create=True),
+            patch.dict("os.environ", {}, clear=True),
+            patch("os.path.isfile", side_effect=lambda p: p.startswith("/usr/lib")),
+            patch("builtins.open", mock_open(read_data="only png bmp")),
+        ):
+            setup_frozen_environment()
+            self.assertNotIn("GDK_PIXBUF_MODULE_FILE", os.environ)
+
+    @patch("os.path.isdir", return_value=True)
+    def test_setup_frozen_environment_pixbuf_system_cache_exception(self, mock_isdir):
+        from src.main import setup_frozen_environment
+
+        def fake_isfile(path):
+            return path.startswith("/usr/lib")
+
+        with (
+            patch.object(sys, "frozen", True, create=True),
+            patch.dict("os.environ", {}, clear=True),
+            patch("os.path.isfile", side_effect=fake_isfile),
+            patch("builtins.open", side_effect=OSError("Permission denied")),
+        ):
+            setup_frozen_environment()
+
+    @patch("os.path.isdir", return_value=True)
     def test_setup_frozen_environment_windows(self, mock_isdir):
         import os
 
