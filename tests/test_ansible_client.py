@@ -713,6 +713,57 @@ class TestAnsibleVaultClient(unittest.TestCase):
             acm.ConfigManager._read_config_yaml_file = orig_read
             acm.ConfigManager._gossip_yaml_patched = orig_flag
 
+    def test_display_and_stream_patch(self):
+        """Test safe stdout/stderr null writers and Ansible Display.display patch."""
+        import sys
+        import ansible.utils.display as aud
+        from src.providers.ansible import install_posix_shims
+
+        orig_stdout = sys.stdout
+        orig_stderr = sys.stderr
+        orig_display = aud.Display.display
+        orig_flag = getattr(aud.Display, "_gossip_display_patched", False)
+
+        try:
+            # Test sys.stdout / sys.stderr assignment when None
+            sys.stdout = None
+            sys.stderr = None
+            install_posix_shims()
+            self.assertIsNotNone(sys.stdout)
+            self.assertIsNotNone(sys.stderr)
+            self.assertTrue(callable(sys.stdout.write))
+            self.assertTrue(callable(sys.stderr.write))
+
+            # Test Display.display patch
+            aud.Display._gossip_display_patched = False
+            mock_orig_disp = MagicMock(side_effect=AttributeError("'NoneType' object has no attribute 'write'"))
+            aud.Display.display = mock_orig_disp
+            install_posix_shims()
+
+            disp_inst = MagicMock(spec=aud.Display)
+            # Should catch AttributeError and return cleanly without raising
+            res = aud.Display.display(disp_inst, "warning msg", stderr=True)
+            self.assertIsNone(res)
+
+            # Test when OSError is raised
+            mock_orig_disp.side_effect = OSError("Stream closed")
+            res_os = aud.Display.display(disp_inst, "error msg")
+            self.assertIsNone(res_os)
+
+            # Test normal successful call
+            mock_orig_disp.side_effect = None
+            mock_orig_disp.return_value = "ok"
+            res_ok = aud.Display.display(disp_inst, "normal msg")
+            self.assertEqual(res_ok, "ok")
+
+            # Call install_posix_shims again when already patched -> no-op
+            install_posix_shims()
+        finally:
+            sys.stdout = orig_stdout
+            sys.stderr = orig_stderr
+            aud.Display.display = orig_display
+            aud.Display._gossip_display_patched = orig_flag
+
 
 if __name__ == "__main__":
     unittest.main()

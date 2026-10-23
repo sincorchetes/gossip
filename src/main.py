@@ -12,6 +12,13 @@ os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 os.environ.setdefault("LANG", "C.UTF-8")
 os.environ.setdefault("LC_ALL", "C.UTF-8")
 
+# In Windows GUI / PyInstaller --windowed environments, standard streams are None.
+# Provide null writers to prevent AttributeError: 'NoneType' object has no attribute 'write'.
+if sys.stdout is None:  # pragma: no cover
+    sys.stdout = open(os.devnull, "w", encoding="utf-8")
+if sys.stderr is None:  # pragma: no cover
+    sys.stderr = open(os.devnull, "w", encoding="utf-8")
+
 # Ensure src is in python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

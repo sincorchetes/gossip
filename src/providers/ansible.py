@@ -90,6 +90,12 @@ def install_posix_shims() -> None:
     import struct
     import types
 
+    # Ensure sys.stdout and sys.stderr are valid stream writers in GUI / windowed mode
+    if getattr(sys, "stdout", None) is None:
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
+    if getattr(sys, "stderr", None) is None:
+        sys.stderr = open(os.devnull, "w", encoding="utf-8")
+
     # Patch ctypes.cdll.LoadLibrary to safely handle missing libc or Windows CRT lacking wcwidth
     if not getattr(ctypes.cdll, "_gossip_libc_patched", False):
         orig_load_library = ctypes.cdll.LoadLibrary
@@ -267,6 +273,29 @@ def install_posix_shims() -> None:
 
             acm.ConfigManager._read_config_yaml_file = _safe_read_config_yaml_file
             acm.ConfigManager._gossip_yaml_patched = True
+    except Exception:  # pragma: no cover
+        pass
+
+    # Patch ansible.utils.display.Display.display to suppress write errors when streams lack write()
+    try:
+        import ansible.utils.display as aud
+        if not getattr(aud.Display, "_gossip_display_patched", False):
+            orig_display = aud.Display.display
+
+            def _safe_display(self: Any, *args: Any, **kwargs: Any) -> None:
+                """Safely write to stream, ignoring missing write attributes in GUI mode.
+
+                Args:
+                    *args: Positional arguments for display.
+                    **kwargs: Keyword arguments for display.
+                """
+                try:
+                    return orig_display(self, *args, **kwargs)
+                except (AttributeError, OSError):
+                    pass
+
+            aud.Display.display = _safe_display
+            aud.Display._gossip_display_patched = True
     except Exception:  # pragma: no cover
         pass
 
