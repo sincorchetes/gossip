@@ -56,8 +56,8 @@ class AWSSecretClient(BaseSecretProvider):
             profile_name: Optional AWS credentials profile. Defaults to detected active profile.
             region_name: Optional target AWS region code. Defaults to detected active region.
         """
-        self._profile_name = profile_name or self.detect_profile()
-        self._region_name = region_name or self.detect_region()
+        self._profile_name = profile_name
+        self._region_name = region_name
         self._session: Optional[boto3.Session] = None
         self._client = None
 

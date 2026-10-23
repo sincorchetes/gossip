@@ -106,7 +106,7 @@ class MainWindow(Adw.ApplicationWindow):
             self.maximize()
 
         self._build_ui()
-        self._load_secrets_async()
+        GLib.idle_add(self._load_secrets_async)
 
     # -------------------------------------------------------------
     # Provider Accessors (Strategy Pattern)
@@ -664,6 +664,7 @@ class MainWindow(Adw.ApplicationWindow):
                 GLib.idle_add(self._on_secrets_loaded, [], str(exc), provider_id)
 
         threading.Thread(target=worker, daemon=True).start()
+        return False
 
     def _on_secrets_loaded(
         self,

@@ -11,6 +11,8 @@ os.environ.setdefault("PYTHONUTF8", "1")
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 os.environ.setdefault("LANG", "C.UTF-8")
 os.environ.setdefault("LC_ALL", "C.UTF-8")
+# Prevent google-auth from hanging on GCE metadata server (169.254.169.254) in desktop environments
+os.environ.setdefault("NO_GCE_CHECK", "true")
 
 # In Windows GUI / PyInstaller --windowed environments, standard streams are None.
 # Provide null writers to prevent AttributeError: 'NoneType' object has no attribute 'write'.

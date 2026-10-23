@@ -31,7 +31,7 @@ class AzureSecretClient(BaseSecretProvider):
         Args:
             vault_name: Optional Key Vault name or URI. If omitted, attempts autodetection.
         """
-        self._vault_name = vault_name or self.detect_vault_name()
+        self._vault_name = vault_name
         self._credential = None
         self._client: Optional[SecretClient] = None
 
