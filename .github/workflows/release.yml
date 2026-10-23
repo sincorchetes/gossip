@@ -140,15 +140,7 @@ jobs:
             cp -f "$SVG_LOADER" dist/gossip/_internal/lib/gdk-pixbuf/loaders/
             find /usr/lib -name "librsvg-2.so*" -exec cp -f {} dist/gossip/_internal/ \; 2>/dev/null || true
             if [ -f dist/gossip/_internal/lib/gdk-pixbuf/loaders.cache ] && ! grep -q "svg" dist/gossip/_internal/lib/gdk-pixbuf/loaders.cache; then
-              cat >> dist/gossip/_internal/lib/gdk-pixbuf/loaders.cache << 'EOF'
-
-"@executable_path/lib/gdk-pixbuf/loaders/libpixbufloader-svg.so"
-"svg" 6 "gdk-pixbuf" "Scalable Vector Graphics" "LGPL"
-"image/svg+xml" "image/svg" "image/svg-xml" "image/vnd.adobe.svg+xml" "text/xml-svg" "image/svg+xml-compressed" ""
-"svg" "svgz" "svg.gz" ""
-" <svg" "*    " 100
-" <!DOCTYPE svg" "*             " 100
-EOF
+              printf '\n"@executable_path/lib/gdk-pixbuf/loaders/libpixbufloader-svg.so"\n"svg" 6 "gdk-pixbuf" "Scalable Vector Graphics" "LGPL"\n"image/svg+xml" "image/svg" "image/svg-xml" "image/vnd.adobe.svg+xml" "text/xml-svg" "image/svg+xml-compressed" ""\n"svg" "svgz" "svg.gz" ""\n" <svg" "*    " 100\n" <!DOCTYPE svg" "*             " 100\n\n' >> dist/gossip/_internal/lib/gdk-pixbuf/loaders.cache
             fi
           fi
 
