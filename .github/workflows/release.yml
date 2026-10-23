@@ -20,11 +20,23 @@ env:
 
 jobs:
   # ============================================================================
-  # 1. LINUX BUILD (Ubuntu x86_64)
+  # 1. LINUX BUILD (Ubuntu x86_64 & ARM64)
   # ============================================================================
   build-linux:
-    name: Build Linux Packages (.deb, .rpm, .tar.gz)
-    runs-on: ubuntu-latest
+    name: Build Linux Packages (${{ matrix.arch_tag }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch_deb: amd64
+            arch_rpm: x86_64
+            arch_tag: x86_64
+          - os: ubuntu-24.04-arm
+            arch_deb: arm64
+            arch_rpm: aarch64
+            arch_tag: aarch64
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -72,11 +84,11 @@ jobs:
             VERSION="${{ github.sha }}"
             VERSION="${VERSION:0:8}"
           fi
-          echo "Building Linux package for version ${VERSION}..."
+          echo "Building Linux package for version ${VERSION} on architecture ${{ matrix.arch_tag }}..."
 
-          TYPELIB_DIR="/usr/lib/x86_64-linux-gnu/girepository-1.0"
+          TYPELIB_DIR="/usr/lib/$(uname -m)-linux-gnu/girepository-1.0"
           if [ ! -d "$TYPELIB_DIR" ]; then
-            TYPELIB_DIR="/usr/lib/girepository-1.0"
+            TYPELIB_DIR="$(find /usr/lib -name "girepository-1.0" -type d 2>/dev/null | head -n 1)"
           fi
 
           pyinstaller --noconfirm --onedir --windowed --name "gossip" \
@@ -101,7 +113,7 @@ jobs:
           PKG_VERSION="${VERSION#v}"
 
           # 1. Portable tarball
-          tar -czvf "dist/packages/gossip-linux-x86_64-${VERSION}.tar.gz" -C dist gossip
+          tar -czvf "dist/packages/gossip-linux-${{ matrix.arch_tag }}-${VERSION}.tar.gz" -C dist gossip
 
           # 2. Debian / Ubuntu (.deb) package
           DEB_DIR="dist/pkg-deb"
@@ -120,7 +132,7 @@ jobs:
           echo "Version: ${PKG_VERSION}" >> "${DEB_DIR}/DEBIAN/control"
           echo "Section: utils" >> "${DEB_DIR}/DEBIAN/control"
           echo "Priority: optional" >> "${DEB_DIR}/DEBIAN/control"
-          echo "Architecture: amd64" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Architecture: ${{ matrix.arch_deb }}" >> "${DEB_DIR}/DEBIAN/control"
           echo "Maintainer: sincorchetes.tech <https://sincorchetes.tech>" >> "${DEB_DIR}/DEBIAN/control"
           echo "Depends: libc6, libglib2.0-0, libgtk-4-1, libadwaita-1-0" >> "${DEB_DIR}/DEBIAN/control"
           echo "Homepage: https://sincorchetes.github.io/gossip/" >> "${DEB_DIR}/DEBIAN/control"
@@ -129,27 +141,27 @@ jobs:
           echo " Google Cloud Secret Manager, AWS Secrets Manager, Azure Key Vault," >> "${DEB_DIR}/DEBIAN/control"
           echo " and Ansible Vault with GTK4 and Libadwaita." >> "${DEB_DIR}/DEBIAN/control"
 
-          dpkg-deb --build --root-owner-group "${DEB_DIR}" "dist/packages/gossip_${PKG_VERSION}_amd64.deb"
+          dpkg-deb --build --root-owner-group "${DEB_DIR}" "dist/packages/gossip_${PKG_VERSION}_${{ matrix.arch_deb }}.deb"
 
           # 3. Fedora / openSUSE (.rpm) package via fpm
           fpm -s dir -t rpm \
             -n gossip \
             -v "${PKG_VERSION}" \
             --iteration 1 \
-            -a x86_64 \
+            -a "${{ matrix.arch_rpm }}" \
             --license "GPL-2.0-only" \
             --vendor "sincorchetes.tech" \
             --maintainer "sincorchetes.tech <https://sincorchetes.tech>" \
             --url "https://sincorchetes.github.io/gossip/" \
             --description "Multi-Cloud Secret Manager for GCP, AWS, Azure, and Ansible Vault" \
-            -p "dist/packages/gossip-${PKG_VERSION}-1.x86_64.rpm" \
+            -p "dist/packages/gossip-${PKG_VERSION}-1.${{ matrix.arch_rpm }}.rpm" \
             -C "${DEB_DIR}" \
             opt usr
 
       - name: Upload Linux Artifacts (.tar.gz, .deb, .rpm)
         uses: actions/upload-artifact@v4
         with:
-          name: gossip-linux
+          name: gossip-linux-${{ matrix.arch_deb }}
           path: dist/packages/*
 
   # ============================================================================
@@ -390,8 +402,9 @@ jobs:
       - name: Download Linux Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: gossip-linux
+          pattern: gossip-linux-*
           path: release-assets/
+          merge-multiple: true
 
       - name: Download Windows Artifacts
         uses: actions/download-artifact@v4
@@ -422,10 +435,16 @@ jobs:
             - 100% automated test suite statement and branch coverage.
 
             ### Available Downloads
-            - **Debian / Ubuntu (.deb)**: Native `amd64` package for Ubuntu 22.04, 24.04+ & Debian 11/12 (`.deb`)
-            - **Fedora / openSUSE (.rpm)**: Native `x86_64` package for Fedora 39/40/41 & openSUSE (`.rpm`)
-            - **Linux Portable**: Standalone portable archive (`.tar.gz`)
-            - **Windows (x64)**: Standalone executable archive (`.zip`)
+            - **Debian / Ubuntu (.deb)**:
+              - `amd64` (Intel/AMD 64-bit): [`gossip_${{ github.ref_name }}_amd64.deb`](https://github.com/sincorchetes/gossip/releases)
+              - `arm64` (ARM 64-bit / Raspberry Pi): [`gossip_${{ github.ref_name }}_arm64.deb`](https://github.com/sincorchetes/gossip/releases)
+            - **Fedora / openSUSE (.rpm)**:
+              - `x86_64` (Intel/AMD 64-bit): [`gossip-${{ github.ref_name }}-1.x86_64.rpm`](https://github.com/sincorchetes/gossip/releases)
+              - `aarch64` (ARM 64-bit): [`gossip-${{ github.ref_name }}-1.aarch64.rpm`](https://github.com/sincorchetes/gossip/releases)
+            - **Linux Portable (.tar.gz)**:
+              - `x86_64` (Intel/AMD): [`gossip-linux-x86_64-${{ github.ref_name }}.tar.gz`](https://github.com/sincorchetes/gossip/releases)
+              - `aarch64` (ARM 64-bit): [`gossip-linux-aarch64-${{ github.ref_name }}.tar.gz`](https://github.com/sincorchetes/gossip/releases)
+            - **Windows (x64)**: [`gossip-windows-x64-${{ github.ref_name }}.zip`](https://github.com/sincorchetes/gossip/releases)
 
             ### Documentation
             Consult the complete architecture, guides, and API specification at [https://sincorchetes.github.io/gossip/](https://sincorchetes.github.io/gossip/).

@@ -12,10 +12,12 @@ Descarga la última versión desde la [página de Releases en GitHub](https://gi
 
 === "Debian / Ubuntu (.deb)"
  
-     1. Descarga el paquete `gossip_*_amd64.deb` de la última publicación.
+     1. Descarga el paquete para la arquitectura de tu procesador:
+        * **Intel / AMD (64-bit)**: `gossip_*_amd64.deb`
+        * **ARM 64-bit (Raspberry Pi / ARM)**: `gossip_*_arm64.deb`
      2. Instala el paquete con `apt`:
         ```bash
-        sudo apt install ./gossip_*_amd64.deb
+        sudo apt install ./gossip_*_*.deb
         ```
      3. Abre **Gossip** directamente desde el menú de aplicaciones de tu escritorio o ejecuta `gossip` en la terminal.
  
@@ -24,24 +26,26 @@ Descarga la última versión desde la [página de Releases en GitHub](https://gi
  
 === "Fedora / openSUSE (.rpm)"
  
-     1. Descarga el archivo `gossip-*-1.x86_64.rpm` de la última publicación.
+     1. Descarga el archivo para la arquitectura de tu procesador:
+        * **Intel / AMD (64-bit)**: `gossip-*-1.x86_64.rpm`
+        * **ARM 64-bit (aarch64)**: `gossip-*-1.aarch64.rpm`
      2. Instala el paquete con el gestor de software de tu distribución:
         * **Fedora / RHEL**:
           ```bash
-          sudo dnf install ./gossip-*-1.x86_64.rpm
+          sudo dnf install ./gossip-*-1.*.rpm
           ```
         * **openSUSE (Tumbleweed / Leap)**:
           ```bash
-          sudo zypper install ./gossip-*-1.x86_64.rpm
+          sudo zypper install ./gossip-*-1.*.rpm
           ```
      3. Abre **Gossip** desde el menú de aplicaciones o escribe `gossip` en tu terminal.
  
 === "Linux Portable (.tar.gz)"
  
-     1. Descarga el paquete `gossip-linux-x86_64-v*.tar.gz` de la última publicación.
+     1. Descarga el paquete `gossip-linux-x86_64-v*.tar.gz` (o `gossip-linux-aarch64-v*.tar.gz` para ARM64) de la última publicación.
      2. Descomprime el tarball en tu terminal:
         ```bash
-        tar -xvf gossip-linux-x86_64-v*.tar.gz
+        tar -xvf gossip-linux-*-v*.tar.gz
         cd gossip/
         ```
      3. Ejecuta el binario:

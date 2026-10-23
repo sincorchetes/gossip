@@ -12,10 +12,12 @@ Download the latest version from the [GitHub Releases page](https://github.com/s
 
 === "Debian / Ubuntu (.deb)"
 
-    1. Download `gossip_*_amd64.deb` from the latest release.
+    1. Download the package for your CPU architecture from the latest release:
+       * **Intel / AMD (64-bit)**: `gossip_*_amd64.deb`
+       * **ARM 64-bit (Raspberry Pi / ARM)**: `gossip_*_arm64.deb`
     2. Install the package using `apt`:
        ```bash
-       sudo apt install ./gossip_*_amd64.deb
+       sudo apt install ./gossip_*_*.deb
        ```
     3. Launch **Gossip** from your application menu or run `gossip` in your terminal.
 
@@ -24,24 +26,26 @@ Download the latest version from the [GitHub Releases page](https://github.com/s
 
 === "Fedora / openSUSE (.rpm)"
 
-    1. Download `gossip-*-1.x86_64.rpm` from the latest release.
+    1. Download the package for your CPU architecture from the latest release:
+       * **Intel / AMD (64-bit)**: `gossip-*-1.x86_64.rpm`
+       * **ARM 64-bit (aarch64)**: `gossip-*-1.aarch64.rpm`
     2. Install the package using your system package manager:
        * **Fedora / RHEL**:
          ```bash
-         sudo dnf install ./gossip-*-1.x86_64.rpm
+         sudo dnf install ./gossip-*-1.*.rpm
          ```
        * **openSUSE (Tumbleweed / Leap)**:
          ```bash
-         sudo zypper install ./gossip-*-1.x86_64.rpm
+         sudo zypper install ./gossip-*-1.*.rpm
          ```
     3. Launch **Gossip** from your application menu or run `gossip` in your terminal.
 
 === "Linux Portable (.tar.gz)"
 
-    1. Download `gossip-linux-x86_64-v*.tar.gz` from the latest release.
+    1. Download `gossip-linux-x86_64-v*.tar.gz` (or `gossip-linux-aarch64-v*.tar.gz` for ARM64) from the latest release.
     2. Extract the tarball:
        ```bash
-       tar -xvf gossip-linux-x86_64-v*.tar.gz
+       tar -xvf gossip-linux-*-v*.tar.gz
        cd gossip/
        ```
     3. Run the executable:
