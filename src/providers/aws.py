@@ -2,47 +2,23 @@
 
 from __future__ import annotations
 
-import os
-from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, List, Optional
 
 import boto3
-import botocore.session
-from botocore.exceptions import (
-    ClientError,
-    NoCredentialsError,
-    PartialCredentialsError,
-    ProfileNotFound,
-)
 
 from src.i18n import _
-from src.models import SecretItem, SecretVersionItem
+from src.providers.aws_discovery import (
+    COMMON_AWS_REGIONS,
+    detect_profile,
+    detect_region,
+    list_available_profiles,
+    list_available_regions,
+)
+from src.providers.aws_ops import AWSOperationsMixin
 from src.providers.base import BaseSecretProvider
 
-COMMON_AWS_REGIONS = [
-    "us-east-1",
-    "us-east-2",
-    "us-west-1",
-    "us-west-2",
-    "eu-west-1",
-    "eu-west-2",
-    "eu-west-3",
-    "eu-central-1",
-    "eu-north-1",
-    "eu-south-1",
-    "sa-east-1",
-    "ap-southeast-1",
-    "ap-southeast-2",
-    "ap-northeast-1",
-    "ap-northeast-2",
-    "ap-south-1",
-    "ca-central-1",
-    "me-south-1",
-    "af-south-1",
-]
 
-
-class AWSSecretClient(BaseSecretProvider):
+class AWSSecretClient(AWSOperationsMixin, BaseSecretProvider):
     """Provider implementation for AWS Secrets Manager."""
 
     def __init__(
@@ -121,7 +97,6 @@ class AWSSecretClient(BaseSecretProvider):
         from src.ui.dialogs import show_change_aws_context_dialog
 
         def on_confirm(profile: str, region: str) -> None:
-            """Update active AWS profile and region context, invoking completion callback."""
             self.set_context(profile, region)
             on_success()
 
@@ -160,12 +135,7 @@ class AWSSecretClient(BaseSecretProvider):
             self._client = None
 
     def set_context(self, profile: Optional[str], region: Optional[str]) -> None:
-        """Update active AWS profile and region simultaneously, resetting client cache.
-
-        Args:
-            profile: Optional credentials profile name (defaults to 'default').
-            region: Optional target region code (defaults to 'us-east-1').
-        """
+        """Update active AWS profile and region simultaneously, resetting client cache."""
         self._profile_name = profile.strip() if profile else "default"
         self._region_name = region.strip() if region else "us-east-1"
         self._session = None
@@ -173,457 +143,23 @@ class AWSSecretClient(BaseSecretProvider):
 
     @classmethod
     def detect_profile(cls) -> str:
-        """Detect active AWS credentials profile from environment variables or local configuration.
-
-        Returns:
-            str: Detected profile name, defaulting to 'default'.
-        """
-        for var in ("AWS_PROFILE", "AWS_DEFAULT_PROFILE"):
-            val = os.getenv(var)
-            if val and val.strip():
-                return val.strip()
-
-        available = cls.list_available_profiles()
-        if "default" in available:
-            return "default"
-        elif available:
-            return available[0]
-        return "default"
+        """Detect active AWS credentials profile from environment variables or local configuration."""
+        return detect_profile(cls.list_available_profiles)
 
     @classmethod
     def detect_region(cls) -> str:
-        """Detect active AWS target region from environment variables, session, or default.
-
-        Returns:
-            str: Detected region code, defaulting to 'us-east-1'.
-        """
-        for var in ("AWS_REGION", "AWS_DEFAULT_REGION"):
-            val = os.getenv(var)
-            if val and val.strip():
-                return val.strip()
-
-        try:
-            sess = boto3.Session()
-            if sess.region_name:
-                return sess.region_name
-        except Exception:
-            pass
-
-        return "us-east-1"
+        """Detect active AWS target region from environment variables, session, or default."""
+        return detect_region()
 
     @classmethod
     def list_available_profiles(cls) -> List[str]:
-        """List all configured AWS profiles available on the system.
-
-        Returns:
-            List[str]: Alphabetical list of configured profile names.
-        """
-        try:
-            profiles = botocore.session.Session().available_profiles
-            if not profiles:
-                return ["default"]
-            return sorted(list(set(profiles)))
-        except Exception:
-            return ["default"]
+        """List all configured AWS profiles available on the system."""
+        return list_available_profiles()
 
     @classmethod
     def list_available_regions(cls) -> List[str]:
-        """List standard AWS regions supported by Secrets Manager.
+        """List standard AWS regions supported by Secrets Manager."""
+        return list_available_regions()
 
-        Returns:
-            List[str]: List of AWS region code strings.
-        """
-        try:
-            sess = boto3.Session()
-            regions = sess.get_available_regions("secretsmanager")
-            if regions:
-                return sorted(regions)
-        except Exception:
-            pass
-        return COMMON_AWS_REGIONS
 
-    def _get_client(self):
-        """Initialize or return cached Boto3 Secrets Manager client instance."""
-        if self._client is not None:
-            return self._client
-
-        try:
-            profile = self.profile_name
-            region = self.region_name
-
-            # If profile is 'default' and no explicit credentials file exists, boto3 handles it gracefully
-            if profile and profile != "default":
-                self._session = boto3.Session(profile_name=profile, region_name=region)
-            else:
-                self._session = boto3.Session(region_name=region)
-
-            self._client = self._session.client("secretsmanager", region_name=region)
-            return self._client
-        except ProfileNotFound as exc:
-            raise RuntimeError(
-                _(
-                    "The AWS profile '{profile}' does not exist in your ~/.aws/credentials or ~/.aws/config file."
-                ).format(profile=self.profile_name)
-            ) from exc
-        except (NoCredentialsError, PartialCredentialsError) as exc:
-            raise RuntimeError(
-                _(
-                    "No active AWS credentials found.\n"
-                    "Run in your terminal:\n"
-                    "  aws configure\n"
-                    "or set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables."
-                )
-            ) from exc
-        except Exception as exc:
-            raise RuntimeError(f"{_('Error initializing AWS client')}: {exc}") from exc
-
-    def list_secrets(self) -> List[SecretItem]:
-        """List all secrets in the current AWS region and profile.
-
-        Returns:
-            List[SecretItem]: List of normalized secret item instances.
-
-        Raises:
-            AuthenticationError: If AWS credentials are missing or invalid.
-            PermissionDeniedError: If caller lacks secretsmanager:ListSecrets permission.
-            RuntimeError: If the AWS Secrets Manager request fails.
-        """
-        client = self._get_client()
-        secrets: List[SecretItem] = []
-
-        try:
-            paginator = client.get_paginator("list_secrets")
-            for page in paginator.paginate():
-                for secret in page.get("SecretList", []):
-                    name = secret.get("ARN", secret.get("Name", ""))
-                    secret_id = secret.get("Name", "")
-                    desc = secret.get("Description")
-                    created_dt = secret.get("CreatedDate")
-                    last_changed = secret.get("LastChangedDate")
-
-                    # Convert AWS tags list [{'Key': 'env', 'Value': 'prod'}] to dict
-                    tags_dict: Dict[str, str] = {}
-                    for tag in secret.get("Tags", []):
-                        k = tag.get("Key")
-                        v = tag.get("Value", "")
-                        if k:
-                            tags_dict[k] = v
-
-                    # Check replication
-                    repl_status = secret.get("ReplicationStatus", [])
-                    locations = [r.get("Region") for r in repl_status if r.get("Region")]
-                    repl_type = "REPLICATED" if locations else "SINGLE_REGION"
-
-                    secrets.append(
-                        SecretItem(
-                            name=name,
-                            secret_id=secret_id,
-                            provider="aws",
-                            description=desc,
-                            create_time=created_dt,
-                            last_changed_date=last_changed,
-                            labels=tags_dict,
-                            replication_type=repl_type,
-                            locations=locations,
-                            kms_key_id=secret.get("KmsKeyId"),
-                        )
-                    )
-
-            secrets.sort(key=lambda s: s.secret_id.lower())
-            return secrets
-
-        except (NoCredentialsError, PartialCredentialsError) as exc:
-            raise RuntimeError(
-                _(
-                    "No valid AWS credentials found.\n"
-                    "Run 'aws configure' or verify your environment variables."
-                )
-            ) from exc
-        except ClientError as exc:
-            error_code = exc.response.get("Error", {}).get("Code", "")
-            error_msg = exc.response.get("Error", {}).get("Message", str(exc))
-            if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(
-                    _(
-                        "Permission denied for AWS Secrets Manager in region '{region}'.\n"
-                        "Detail: {detail}"
-                    ).format(region=self.region_name, detail=error_msg)
-                ) from exc
-            raise RuntimeError(f"{_('AWS Secrets Manager error')}: {error_msg}") from exc
-
-    def list_versions(self, secret_id_or_arn: str) -> List[SecretVersionItem]:
-        """List all versions and staging labels of an AWS secret.
-
-        Args:
-            secret_id_or_arn: AWS Secret Name or ARN.
-
-        Returns:
-            List[SecretVersionItem]: Chronologically ordered versions with staging labels.
-
-        Raises:
-            ResourceNotFoundError: If the secret does not exist.
-            PermissionDeniedError: If caller lacks DescribeSecret permission.
-            RuntimeError: If operation fails.
-        """
-        client = self._get_client()
-        versions: List[SecretVersionItem] = []
-        actual_secret_id = secret_id_or_arn.split("@")[0]
-
-        try:
-            next_token = None
-            while True:
-                params = {
-                    "SecretId": actual_secret_id,
-                    "IncludeDeprecated": True,
-                }
-                if next_token:
-                    params["NextToken"] = next_token
-
-                resp = client.list_secret_version_ids(**params)
-                for v in resp.get("Versions", []):
-                    vid = v.get("VersionId", "")
-                    stages = v.get("VersionStages", [])
-                    created_dt = v.get("CreatedDate")
-                    state_str = stages[0] if stages else "DEPRECATED"
-
-                    versions.append(
-                        SecretVersionItem(
-                            version_id=vid,
-                            name=f"{actual_secret_id}@{vid}",
-                            state=state_str,
-                            stages=stages,
-                            create_time=created_dt,
-                            destroy_time=None,
-                        )
-                    )
-
-                next_token = resp.get("NextToken")
-                if not next_token:
-                    break
-
-            # Sort: AWSCURRENT first, then by create_time descending
-            def sort_key(ver: SecretVersionItem):
-                """Generate sorting tuple prioritizing AWSCURRENT before create_time."""
-                is_current = 1 if "AWSCURRENT" in ver.stages else 0
-                ts = ver.create_time.timestamp() if ver.create_time else 0
-                return (is_current, ts)
-
-            versions.sort(key=sort_key, reverse=True)
-            return versions
-
-        except ClientError as exc:
-            error_code = exc.response.get("Error", {}).get("Code", "")
-            error_msg = exc.response.get("Error", {}).get("Message", str(exc))
-            if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(
-                    f"{_('Permission denied while listing versions')}: {error_msg}"
-                ) from exc
-            raise RuntimeError(f"{_('Error listing secret versions')}: {error_msg}") from exc
-
-    def access_secret_payload(
-        self,
-        secret_id_or_arn: str,
-        version_id: Optional[str] = None,
-        version_stage: Optional[str] = None,
-    ) -> Tuple[str, bool]:
-        """Fetch the secret value (SecretString or SecretBinary).
-
-        Args:
-            secret_id_or_arn: AWS Secret Name or ARN.
-            version_id: Optional unique version UUID.
-            version_stage: Optional staging label (e.g. 'AWSCURRENT').
-
-        Returns:
-            Tuple[str, bool]: Decoded string value and is_binary boolean flag.
-
-        Raises:
-            FileNotFoundError: If the secret or version does not exist.
-            PermissionError: If caller lacks secretsmanager:GetSecretValue permission.
-            RuntimeError: If access fails.
-        """
-        client = self._get_client()
-
-        # Handle secret_id_or_arn if passed with '@version_id' format
-        actual_secret_id = secret_id_or_arn
-        if "@" in secret_id_or_arn:
-            parts = secret_id_or_arn.split("@", 1)
-            actual_secret_id = parts[0]
-            if not version_id:
-                version_id = parts[1]
-
-        params = {"SecretId": actual_secret_id}
-        if version_id:
-            params["VersionId"] = version_id
-        elif version_stage:
-            params["VersionStage"] = version_stage
-
-        try:
-            resp = client.get_secret_value(**params)
-            if "SecretString" in resp:
-                return resp["SecretString"], False
-            elif "SecretBinary" in resp:
-                binary_data = resp["SecretBinary"]
-                hex_str = binary_data.hex(" ")
-                return f"[{_('Binary data')} - {len(binary_data)} bytes]\n\n{hex_str}", True
-            return "", False
-
-        except ClientError as exc:
-            error_code = exc.response.get("Error", {}).get("Code", "")
-            error_msg = exc.response.get("Error", {}).get("Message", str(exc))
-            if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(
-                    _(
-                        "Permission denied to read secret value for '{secret}' in region '{region}'.\n"
-                        "Detail: {detail}"
-                    ).format(secret=actual_secret_id, region=self.region_name, detail=error_msg)
-                ) from exc
-            elif error_code == "ResourceNotFoundException":
-                raise FileNotFoundError(
-                    _("The secret or version '{secret}' was not found.").format(
-                        secret=actual_secret_id
-                    )
-                ) from exc
-            raise RuntimeError(f"{_('Error retrieving secret value')}: {error_msg}") from exc
-
-    def create_secret(
-        self,
-        secret_id: str,
-        payload_data: Optional[str] = None,
-        description: Optional[str] = None,
-        labels: Optional[dict] = None,
-        kms_key_id: Optional[str] = None,
-    ) -> SecretItem:
-        """Create a new secret in AWS Secrets Manager.
-
-        Args:
-            secret_id: Human-readable secret identifier.
-            payload_data: Initial secret string payload.
-            description: Optional human-readable description.
-            labels: Optional dictionary of tags.
-            kms_key_id: Optional KMS encryption key ID or ARN.
-
-        Returns:
-            SecretItem: Newly created secret item metadata.
-
-        Raises:
-            ValueError: If secret identifier already exists.
-            PermissionError: If caller lacks CreateSecret permissions.
-            RuntimeError: If creation fails.
-        """
-        client = self._get_client()
-
-        params = {
-            "Name": secret_id,
-        }
-        if description:
-            params["Description"] = description
-        if payload_data is not None:
-            params["SecretString"] = payload_data
-        if kms_key_id:
-            params["KmsKeyId"] = kms_key_id
-
-        if labels:
-            tags_list = [{"Key": k, "Value": str(v)} for k, v in labels.items()]
-            params["Tags"] = tags_list
-
-        try:
-            resp = client.create_secret(**params)
-            arn = resp.get("ARN", secret_id)
-
-            return SecretItem(
-                name=arn,
-                secret_id=secret_id,
-                provider="aws",
-                description=description,
-                create_time=datetime.now(),
-                labels=labels or {},
-                replication_type="SINGLE_REGION",
-                locations=[],
-            )
-        except ClientError as exc:
-            error_code = exc.response.get("Error", {}).get("Code", "")
-            error_msg = exc.response.get("Error", {}).get("Message", str(exc))
-            if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(
-                    f"{_('Permission denied to create secret')}: {error_msg}"
-                ) from exc
-            raise RuntimeError(f"{_('Error creating secret in AWS')}: {error_msg}") from exc
-
-    def add_secret_version(self, secret_id_or_arn: str, payload_data: str) -> SecretVersionItem:
-        """Add a new version payload to an existing AWS secret.
-
-        Args:
-            secret_id_or_arn: Secret Name or ARN.
-            payload_data: String payload content for the new version.
-
-        Returns:
-            SecretVersionItem: Newly created secret version item.
-
-        Raises:
-            PermissionError: If caller lacks PutSecretValue permission.
-            RuntimeError: If operation fails.
-        """
-        client = self._get_client()
-        actual_secret_id = secret_id_or_arn.split("@")[0]
-
-        try:
-            resp = client.put_secret_value(
-                SecretId=actual_secret_id,
-                SecretString=payload_data,
-            )
-            vid = resp.get("VersionId", "")
-            stages = resp.get("VersionStages", ["AWSCURRENT"])
-
-            return SecretVersionItem(
-                version_id=vid,
-                name=f"{actual_secret_id}@{vid}",
-                state="AWSCURRENT",
-                stages=stages,
-                create_time=datetime.now(),
-                destroy_time=None,
-            )
-        except ClientError as exc:
-            error_code = exc.response.get("Error", {}).get("Code", "")
-            error_msg = exc.response.get("Error", {}).get("Message", str(exc))
-            if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(
-                    f"{_('Permission denied to update secret')}: {error_msg}"
-                ) from exc
-            raise RuntimeError(f"{_('Error adding version in AWS')}: {error_msg}") from exc
-
-    def delete_secret(
-        self,
-        secret_id_or_arn: str,
-        force: bool = True,
-        recovery_days: int = 7,
-    ) -> None:
-        """Delete a secret in AWS Secrets Manager.
-
-        Args:
-            secret_id_or_arn: AWS Secret Name or ARN to delete.
-            force: If True, deletes immediately without recovery window.
-            recovery_days: Recovery window in days if force is False.
-
-        Raises:
-            PermissionError: If caller lacks DeleteSecret permission.
-            RuntimeError: If deletion fails.
-        """
-        client = self._get_client()
-        actual_secret_id = secret_id_or_arn.split("@")[0]
-
-        params = {"SecretId": actual_secret_id}
-        if force:
-            params["ForceDeleteWithoutRecovery"] = True
-        else:
-            params["RecoveryWindowInDays"] = recovery_days
-
-        try:
-            client.delete_secret(**params)
-        except ClientError as exc:
-            error_code = exc.response.get("Error", {}).get("Code", "")
-            error_msg = exc.response.get("Error", {}).get("Message", str(exc))
-            if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(
-                    f"{_('Permission denied to delete secret')}: {error_msg}"
-                ) from exc
-            raise RuntimeError(f"{_('Error deleting secret in AWS')}: {error_msg}") from exc
+__all__ = ["AWSSecretClient", "COMMON_AWS_REGIONS"]
