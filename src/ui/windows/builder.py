@@ -111,7 +111,7 @@ class WindowBuilderMixin:
         )
 
         def _open_about(_: Gtk.Button) -> None:
-            win_mod = sys.modules.get("src.ui.window")
+            win_mod = sys.modules.get("src.ui.window") or sys.modules.get("src.ui.windows")
             dlg = getattr(win_mod, "show_about_dialog", show_about_dialog)
             dlg(self)
 

@@ -63,7 +63,7 @@ class WindowActionsMixin:
 
             threading.Thread(target=worker, daemon=True).start()
 
-        win_mod = sys.modules.get("src.ui.window")
+        win_mod = sys.modules.get("src.ui.window") or sys.modules.get("src.ui.windows")
         dlg_fn = getattr(win_mod, "show_create_secret_dialog", show_create_secret_dialog)
         dlg_fn(self, on_confirm, provider=self.current_provider)  # type: ignore[arg-type]
 
@@ -102,7 +102,7 @@ class WindowActionsMixin:
 
             threading.Thread(target=worker, daemon=True).start()
 
-        win_mod = sys.modules.get("src.ui.window")
+        win_mod = sys.modules.get("src.ui.window") or sys.modules.get("src.ui.windows")
         dlg_fn = getattr(win_mod, "show_add_version_dialog", show_add_version_dialog)
         dlg_fn(self, secret_id, on_confirm, current_value=current_value)  # type: ignore[arg-type]
 
@@ -157,7 +157,7 @@ class WindowActionsMixin:
 
             threading.Thread(target=worker, daemon=True).start()
 
-        win_mod = sys.modules.get("src.ui.window")
+        win_mod = sys.modules.get("src.ui.window") or sys.modules.get("src.ui.windows")
         dlg_fn = getattr(
             win_mod, "show_confirm_destroy_version_dialog", show_confirm_destroy_version_dialog
         )
@@ -192,7 +192,7 @@ class WindowActionsMixin:
 
             threading.Thread(target=worker, daemon=True).start()
 
-        win_mod = sys.modules.get("src.ui.window")
+        win_mod = sys.modules.get("src.ui.window") or sys.modules.get("src.ui.windows")
         dlg_fn = getattr(
             win_mod, "show_confirm_delete_secret_dialog", show_confirm_delete_secret_dialog
         )
