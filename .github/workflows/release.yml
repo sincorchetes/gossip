@@ -23,7 +23,7 @@ jobs:
   # 1. LINUX BUILD (Ubuntu x86_64)
   # ============================================================================
   build-linux:
-    name: Build Linux (x86_64 Tarball)
+    name: Build Linux Packages (.deb, .rpm, .tar.gz)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
