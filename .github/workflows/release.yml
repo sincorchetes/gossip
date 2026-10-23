@@ -360,73 +360,111 @@ jobs:
   # ============================================================================
   # 3. MACOS BUILD (macOS Universal Bundle)
   # ============================================================================
-  # build-macos:
-  #   name: Build macOS (Universal Bundle)
-  #   runs-on: macos-latest
-  #   continue-on-error: true
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v4
+  build-macos:
+    name: Build macOS (Universal Bundle)
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-  #     - name: Set up Python 3.13
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: "3.13"
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
-  #     - name: Install System Dependencies via Homebrew
-  #       run: |
-  #         brew install glib gtk4 libadwaita gobject-introspection adwaita-icon-theme || true
-  #         # Link Homebrew dylibs to /usr/local/lib so ctypes.util.find_library locates libgio and libgtk
-  #         sudo mkdir -p /usr/local/lib
-  #         sudo ln -sf /opt/homebrew/lib/* /usr/local/lib/ 2>/dev/null || true
+      - name: Install System Dependencies via Homebrew
+        run: |
+          brew install glib gtk4 libadwaita gobject-introspection adwaita-icon-theme librsvg pkg-config || true
+          # Link Homebrew dylibs to /usr/local/lib so ctypes.util.find_library locates libgio and libgtk
+          sudo mkdir -p /usr/local/lib
+          sudo ln -sf /opt/homebrew/lib/* /usr/local/lib/ 2>/dev/null || true
 
-  #     - name: Install Python Dependencies & PyInstaller
-  #       run: |
-  #         python3 -m pip install --upgrade pip
-  #         pip install wheel
-  #         pip install pycairo "PyGObject<3.51.0" || true
-  #         pip install boto3 botocore google-cloud-secret-manager google-auth azure-keyvault-secrets azure-identity ansible-vault pyinstaller
+      - name: Install Python Dependencies & PyInstaller
+        env:
+          PKG_CONFIG_PATH: "/opt/homebrew/lib/pkgconfig:/usr/local/lib/pkgconfig"
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install wheel
+          pip install pycairo "PyGObject<3.51.0" || true
+          pip install boto3 botocore google-cloud-secret-manager google-auth azure-keyvault-secrets azure-identity ansible-vault pyinstaller
 
-  # - name: Build macOS Application Bundle with PyInstaller
-  #   env:
-  #     DYLD_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
-  #     DYLD_FALLBACK_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
-  #     GI_TYPELIB_PATH: "/opt/homebrew/lib/girepository-1.0"
-  #     PKG_CONFIG_PATH: "/opt/homebrew/lib/pkgconfig"
-  #   run: |
-  #     VERSION="${{ github.ref_name }}"
-  #     if [ -z "$VERSION" ] || [[ "$VERSION" == *"/"* ]]; then
-  #       VERSION="${{ github.sha }}"
-  #       VERSION="${VERSION:0:8}"
-  #     fi
-  #     echo "Building macOS package for version ${VERSION}..."
-  #     pyinstaller --noconfirm --onedir --windowed --name "gossip" \
-  #       --add-data "locales:locales" \
-  #       --collect-all "gi" \
-  #       --collect-data "ansible.config" \
-  #       --hidden-import "gi" \
-  #       --hidden-import "gi.repository.Gtk" \
-  #       --hidden-import "gi.repository.Adw" \
-  #       --hidden-import "gi.repository.Gio" \
-  #       --hidden-import "gi.repository.GLib" \
-  #       --hidden-import "gi.repository.GObject" \
-  #       --exclude-module "ansible.cli" \
-  #       --exclude-module "ansible.plugins" \
-  #       --exclude-module "ansible.executor" \
-  #       --exclude-module "ansible.playbook" \
-  #       src/main.py
-  #     mkdir -p dist/packages
-  #     if [ -d "dist/gossip.app" ]; then
-  #       tar -czvf "dist/packages/gossip-macos-universal-${VERSION}.tar.gz" -C dist gossip.app
-  #     elif [ -d "dist/gossip" ]; then
-  #       tar -czvf "dist/packages/gossip-macos-universal-${VERSION}.tar.gz" -C dist gossip
-  #     fi
+      - name: Build macOS Application Bundle with PyInstaller
+        env:
+          DYLD_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
+          DYLD_FALLBACK_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
+          GI_TYPELIB_PATH: "/opt/homebrew/lib/girepository-1.0:/usr/local/lib/girepository-1.0"
+          PKG_CONFIG_PATH: "/opt/homebrew/lib/pkgconfig:/usr/local/lib/pkgconfig"
+        run: |
+          VERSION="${{ github.ref_name }}"
+          if [ -z "$VERSION" ] || [[ "$VERSION" == *"/"* ]]; then
+            VERSION="${{ github.sha }}"
+            VERSION="${VERSION:0:8}"
+          fi
+          echo "Building macOS package for version ${VERSION}..."
 
-  # - name: Upload macOS Artifact
-  #   uses: actions/upload-artifact@v4
-  #   with:
-  #     name: gossip-macos
-  #     path: dist/packages/*.tar.gz
+          HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || echo '/opt/homebrew')"
+          TYPELIB_DIR="${HOMEBREW_PREFIX}/lib/girepository-1.0"
+          SCHEMA_DIR="${HOMEBREW_PREFIX}/share/glib-2.0/schemas"
+
+          ADD_DATA_ARGS="--add-data locales:locales"
+          if [ -d "$TYPELIB_DIR" ]; then
+            ADD_DATA_ARGS="$ADD_DATA_ARGS --add-data ${TYPELIB_DIR}:gi_typelibs --add-data ${TYPELIB_DIR}:girepository-1.0"
+          fi
+          if [ -d "$SCHEMA_DIR" ]; then
+            ADD_DATA_ARGS="$ADD_DATA_ARGS --add-data ${SCHEMA_DIR}:glib-2.0/schemas"
+          fi
+
+          pyinstaller --noconfirm --onedir --windowed --name "gossip" \
+            $ADD_DATA_ARGS \
+            --collect-all "gi" \
+            --collect-all "gi.repository.GdkPixbuf" \
+            --collect-all "gi.repository.Rsvg" \
+            --collect-data "ansible.config" \
+            --hidden-import "gi" \
+            --hidden-import "gi.repository.Gtk" \
+            --hidden-import "gi.repository.Adw" \
+            --hidden-import "gi.repository.Gio" \
+            --hidden-import "gi.repository.GLib" \
+            --hidden-import "gi.repository.GObject" \
+            --hidden-import "gi.repository.GdkPixbuf" \
+            --hidden-import "gi.repository.Rsvg" \
+            --exclude-module "ansible.cli" \
+            --exclude-module "ansible.plugins" \
+            --exclude-module "ansible.executor" \
+            --exclude-module "ansible.playbook" \
+            src/main.py
+
+          # Bundle Ansible configuration data (base.yml)
+          ANSIBLE_CONFIG_DIR=$(python -c "import ansible.config, os; print(os.path.dirname(ansible.config.__file__))" 2>/dev/null || true)
+          if [ -n "$ANSIBLE_CONFIG_DIR" ] && [ -d "$ANSIBLE_CONFIG_DIR" ]; then
+            echo "Copying Ansible base config from $ANSIBLE_CONFIG_DIR..."
+            if [ -d "dist/gossip.app" ]; then
+              mkdir -p dist/gossip.app/Contents/Resources/ansible/config dist/gossip.app/Contents/MacOS/ansible/config dist/gossip.app/Contents/_internal/ansible/config 2>/dev/null || true
+              cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip.app/Contents/Resources/ansible/config/ 2>/dev/null || true
+              cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip.app/Contents/MacOS/ansible/config/ 2>/dev/null || true
+              cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip.app/Contents/_internal/ansible/config/ 2>/dev/null || true
+            fi
+            if [ -d "dist/gossip" ]; then
+              mkdir -p dist/gossip/_internal/ansible/config dist/gossip/ansible/config 2>/dev/null || true
+              cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip/_internal/ansible/config/ 2>/dev/null || true
+              cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip/ansible/config/ 2>/dev/null || true
+            fi
+          fi
+
+          mkdir -p dist/packages
+          if [ -d "dist/gossip.app" ]; then
+            hdiutil create -volname "gossip" -srcfolder "dist/gossip.app" -ov -format UDZO "dist/packages/gossip-macos-universal-${VERSION}.dmg" || true
+            tar -czvf "dist/packages/gossip-macos-universal-${VERSION}.tar.gz" -C dist gossip.app
+          elif [ -d "dist/gossip" ]; then
+            tar -czvf "dist/packages/gossip-macos-universal-${VERSION}.tar.gz" -C dist gossip
+          fi
+
+      - name: Upload macOS Artifact (.dmg & .tar.gz)
+        uses: actions/upload-artifact@v4
+        with:
+          name: gossip-macos
+          path: dist/packages/*
 
   # ============================================================================
   # 4. PUBLISH GITHUB RELEASE (Only on Git Tags v*)
@@ -434,7 +472,7 @@ jobs:
   publish-release:
     name: Publish Official GitHub Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-linux, build-windows]
+    needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -454,12 +492,12 @@ jobs:
           path: release-assets/
         continue-on-error: true
 
-      # - name: Download macOS Artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: gossip-macos
-      #     path: release-assets/
-      #   continue-on-error: true
+      - name: Download macOS Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: gossip-macos
+          path: release-assets/
+        continue-on-error: true
 
       - name: Create Official GitHub Release
         uses: softprops/action-gh-release@v2
@@ -486,6 +524,9 @@ jobs:
               - `x86_64` (Intel/AMD): [`gossip-linux-x86_64-${{ github.ref_name }}.tar.gz`](https://github.com/sincorchetes/gossip/releases)
               - `aarch64` (ARM 64-bit): [`gossip-linux-aarch64-${{ github.ref_name }}.tar.gz`](https://github.com/sincorchetes/gossip/releases)
             - **Windows (x64)**: [`gossip-windows-x64-${{ github.ref_name }}.zip`](https://github.com/sincorchetes/gossip/releases)
+            - **macOS (Universal)**:
+              - Native Disk Image (`.dmg`): [`gossip-macos-universal-${{ github.ref_name }}.dmg`](https://github.com/sincorchetes/gossip/releases)
+              - Portable Bundle (`.tar.gz`): [`gossip-macos-universal-${{ github.ref_name }}.tar.gz`](https://github.com/sincorchetes/gossip/releases)
 
             ### Documentation
             Consult the complete architecture, guides, and API specification at [https://sincorchetes.github.io/gossip/](https://sincorchetes.github.io/gossip/).
