@@ -258,17 +258,20 @@ class AWSSecretClient(BaseSecretProvider):
             return self._client
         except ProfileNotFound as exc:
             raise RuntimeError(
-                f"El perfil de AWS '{self.profile_name}' no existe en tu archivo ~/.aws/credentials o ~/.aws/config."
+                _("The AWS profile '{profile}' does not exist in your ~/.aws/credentials or ~/.aws/config file.").format(profile=self.profile_name)
             ) from exc
         except (NoCredentialsError, PartialCredentialsError) as exc:
             raise RuntimeError(
-                "No se encontraron credenciales de AWS activas.\n"
-                "Ejecuta en tu terminal:\n"
-                "  aws configure\n"
-                "o define las variables de entorno AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY."
+                _(
+                    "No active AWS credentials found.\n"
+                    "Run in your terminal:\n"
+                    "  aws configure\n"
+                    "or set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables."
+                )
             ) from exc
         except Exception as exc:
-            raise RuntimeError(f"Error al inicializar cliente de AWS: {exc}") from exc
+            raise RuntimeError(f"{_('Error initializing AWS client')}: {exc}") from exc
+
 
     def list_secrets(self) -> List[SecretItem]:
         """List all secrets in the current AWS region and profile.
@@ -327,18 +330,23 @@ class AWSSecretClient(BaseSecretProvider):
 
         except (NoCredentialsError, PartialCredentialsError) as exc:
             raise RuntimeError(
-                "No se encontraron credenciales de AWS válidas.\n"
-                "Ejecuta 'aws configure' o verifica tus variables de entorno."
+                _(
+                    "No valid AWS credentials found.\n"
+                    "Run 'aws configure' or verify your environment variables."
+                )
             ) from exc
         except ClientError as exc:
             error_code = exc.response.get("Error", {}).get("Code", "")
             error_msg = exc.response.get("Error", {}).get("Message", str(exc))
             if error_code in ("AccessDeniedException", "UnauthorizedException"):
                 raise PermissionError(
-                    f"Permiso denegado para AWS Secrets Manager en la región '{self.region_name}'.\n"
-                    f"Detalle: {error_msg}"
+                    _(
+                        "Permission denied for AWS Secrets Manager in region '{region}'.\n"
+                        "Detail: {detail}"
+                    ).format(region=self.region_name, detail=error_msg)
                 ) from exc
-            raise RuntimeError(f"Error en AWS Secrets Manager: {error_msg}") from exc
+            raise RuntimeError(f"{_('AWS Secrets Manager error')}: {error_msg}") from exc
+
 
     def list_versions(self, secret_id_or_arn: str) -> List[SecretVersionItem]:
         """List all versions and staging labels of an AWS secret.
@@ -404,8 +412,9 @@ class AWSSecretClient(BaseSecretProvider):
             error_code = exc.response.get("Error", {}).get("Code", "")
             error_msg = exc.response.get("Error", {}).get("Message", str(exc))
             if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(f"Permiso denegado al listar versiones: {error_msg}") from exc
-            raise RuntimeError(f"Error al listar versiones del secreto: {error_msg}") from exc
+                raise PermissionError(f"{_('Permission denied while listing versions')}: {error_msg}") from exc
+            raise RuntimeError(f"{_('Error listing secret versions')}: {error_msg}") from exc
+
 
     def access_secret_payload(
         self,
@@ -451,7 +460,7 @@ class AWSSecretClient(BaseSecretProvider):
             elif "SecretBinary" in resp:
                 binary_data = resp["SecretBinary"]
                 hex_str = binary_data.hex(" ")
-                return f"[Datos binarios - {len(binary_data)} bytes]\n\n{hex_str}", True
+                return f"[{_('Binary data')} - {len(binary_data)} bytes]\n\n{hex_str}", True
             return "", False
 
         except ClientError as exc:
@@ -459,12 +468,17 @@ class AWSSecretClient(BaseSecretProvider):
             error_msg = exc.response.get("Error", {}).get("Message", str(exc))
             if error_code in ("AccessDeniedException", "UnauthorizedException"):
                 raise PermissionError(
-                    f"Permiso denegado para acceder al valor del secreto '{actual_secret_id}'.\n"
-                    f"Detalle: {error_msg}"
+                    _(
+                        "Permission denied to read secret value for '{secret}' in region '{region}'.\n"
+                        "Detail: {detail}"
+                    ).format(secret=actual_secret_id, region=self.region_name, detail=error_msg)
                 ) from exc
             elif error_code == "ResourceNotFoundException":
-                raise FileNotFoundError(f"El secreto o versión '{actual_secret_id}' no fue encontrado.") from exc
-            raise RuntimeError(f"Error al obtener el valor del secreto: {error_msg}") from exc
+                raise FileNotFoundError(
+                    _("The secret or version '{secret}' was not found.").format(secret=actual_secret_id)
+                ) from exc
+            raise RuntimeError(f"{_('Error retrieving secret value')}: {error_msg}") from exc
+
 
     def create_secret(
         self,
@@ -525,8 +539,9 @@ class AWSSecretClient(BaseSecretProvider):
             error_code = exc.response.get("Error", {}).get("Code", "")
             error_msg = exc.response.get("Error", {}).get("Message", str(exc))
             if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(f"Permiso denegado para crear el secreto: {error_msg}") from exc
-            raise RuntimeError(f"Error al crear el secreto en AWS: {error_msg}") from exc
+                raise PermissionError(f"{_('Permission denied to create secret')}: {error_msg}") from exc
+            raise RuntimeError(f"{_('Error creating secret in AWS')}: {error_msg}") from exc
+
 
     def add_secret_version(self, secret_id_or_arn: str, payload_data: str) -> SecretVersionItem:
         """Add a new version payload to an existing AWS secret.
@@ -565,8 +580,9 @@ class AWSSecretClient(BaseSecretProvider):
             error_code = exc.response.get("Error", {}).get("Code", "")
             error_msg = exc.response.get("Error", {}).get("Message", str(exc))
             if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(f"Permiso denegado para actualizar el secreto: {error_msg}") from exc
-            raise RuntimeError(f"Error al añadir versión en AWS: {error_msg}") from exc
+                raise PermissionError(f"{_('Permission denied to update secret')}: {error_msg}") from exc
+            raise RuntimeError(f"{_('Error adding version in AWS')}: {error_msg}") from exc
+
 
     def delete_secret(
         self,
@@ -600,5 +616,6 @@ class AWSSecretClient(BaseSecretProvider):
             error_code = exc.response.get("Error", {}).get("Code", "")
             error_msg = exc.response.get("Error", {}).get("Message", str(exc))
             if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(f"Permiso denegado para eliminar el secreto: {error_msg}") from exc
-            raise RuntimeError(f"Error al eliminar el secreto en AWS: {error_msg}") from exc
+                raise PermissionError(f"{_('Permission denied to delete secret')}: {error_msg}") from exc
+            raise RuntimeError(f"{_('Error deleting secret in AWS')}: {error_msg}") from exc
+

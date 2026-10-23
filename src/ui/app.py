@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from typing import Optional
 
@@ -112,6 +113,18 @@ class GossipApplication(Adw.Application):
         """Handle GTK application startup and register custom CSS providers."""
         Adw.Application.do_startup(self)
         self._load_css()
+        self._register_icon_theme()
+
+    def _register_icon_theme(self):
+        """Register bundled share/icons search paths into GTK IconTheme."""
+        display = Gdk.Display.get_default()
+        if display:
+            theme = Gtk.IconTheme.get_for_display(display)
+            if getattr(sys, "frozen", False):
+                bundle_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable)))
+                for cand in (os.path.join(bundle_dir, "share", "icons"), os.path.join(bundle_dir, "icons")):
+                    if os.path.isdir(cand):
+                        theme.add_search_path(cand)
 
     def _load_css(self):
         """Load and apply application-wide custom CSS pill styling."""
@@ -124,6 +137,7 @@ class GossipApplication(Adw.Application):
                 css_provider,
                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
             )
+
 
     def do_activate(self):
         """Handle GTK application activation, creating and presenting MainWindow."""

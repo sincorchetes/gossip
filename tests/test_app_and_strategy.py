@@ -160,6 +160,37 @@ class TestAppAndStrategy(unittest.TestCase):
             self.assertEqual(mock_main_window_cls.call_count, 1)
             self.assertEqual(mock_win.present.call_count, 2)
 
+    def test_register_icon_theme(self):
+        import os
+        import sys
+        import tempfile
+        from gi.repository import Gdk, Gtk
+        app = GossipApplication()
+
+        # 1. Without display
+        with patch("gi.repository.Gdk.Display.get_default", return_value=None):
+            app._register_icon_theme()
+
+        # 2. With display, not frozen
+        with patch("gi.repository.Gdk.Display.get_default") as mock_disp:
+            mock_theme = MagicMock()
+            with patch("gi.repository.Gtk.IconTheme.get_for_display", return_value=mock_theme):
+                with patch.object(sys, "frozen", False, create=True):
+                    app._register_icon_theme()
+                    mock_theme.add_search_path.assert_not_called()
+
+        # 3. With display, frozen and existing candidate dirs
+        with tempfile.TemporaryDirectory() as tmpdir:
+            share_icons = os.path.join(tmpdir, "share", "icons")
+            os.makedirs(share_icons)
+            with patch("gi.repository.Gdk.Display.get_default") as mock_disp:
+                mock_theme = MagicMock()
+                with patch("gi.repository.Gtk.IconTheme.get_for_display", return_value=mock_theme):
+                    with patch.object(sys, "frozen", True, create=True):
+                        with patch.object(sys, "_MEIPASS", tmpdir, create=True):
+                            app._register_icon_theme()
+                            mock_theme.add_search_path.assert_called_with(share_icons)
+
 
 if __name__ == "__main__":
     unittest.main()

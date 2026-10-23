@@ -145,6 +145,8 @@ jobs:
             mingw-w64-ucrt-x86_64-libadwaita
             mingw-w64-ucrt-x86_64-python-gobject
             mingw-w64-ucrt-x86_64-pyinstaller
+            mingw-w64-ucrt-x86_64-adwaita-icon-theme
+            mingw-w64-ucrt-x86_64-hicolor-icon-theme
 
       - name: Install Python Dependencies & PyInstaller
         shell: msys2 {0}
@@ -190,8 +192,16 @@ jobs:
           cp -rf /ucrt64/share/glib-2.0/schemas/* dist/gossip/share/glib-2.0/schemas/ 2>/dev/null || true
 
           # Bundle standard icons (Adwaita & hicolor)
-          mkdir -p dist/gossip/share/icons
+          mkdir -p dist/gossip/share/icons dist/gossip/icons dist/gossip/_internal/share/icons dist/gossip/_internal/icons
           cp -rf /ucrt64/share/icons/* dist/gossip/share/icons/ 2>/dev/null || true
+          cp -rf /ucrt64/share/icons/* dist/gossip/icons/ 2>/dev/null || true
+          cp -rf /ucrt64/share/icons/* dist/gossip/_internal/share/icons/ 2>/dev/null || true
+          cp -rf /ucrt64/share/icons/* dist/gossip/_internal/icons/ 2>/dev/null || true
+
+          # Bundle system locales (Libadwaita & GTK4 native gettext catalogs)
+          mkdir -p dist/gossip/share/locale dist/gossip/_internal/share/locale
+          cp -rf /ucrt64/share/locale/* dist/gossip/share/locale/ 2>/dev/null || true
+          cp -rf /ucrt64/share/locale/* dist/gossip/_internal/share/locale/ 2>/dev/null || true
 
           # Bundle GTK4 and Libadwaita native dynamic libraries into the application directory
           cp /ucrt64/bin/libgtk-*.dll dist/gossip/ 2>/dev/null || true
@@ -207,6 +217,10 @@ jobs:
           cp /ucrt64/bin/libepoxy-*.dll dist/gossip/ 2>/dev/null || true
           cp /ucrt64/bin/libgraphene-*.dll dist/gossip/ 2>/dev/null || true
           cp /ucrt64/bin/libharfbuzz-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libintl-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libintl-*.dll dist/gossip/_internal/ 2>/dev/null || true
+          cp /ucrt64/bin/libiconv-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libiconv-*.dll dist/gossip/_internal/ 2>/dev/null || true
 
           # Bundle Ansible configuration data (base.yml)
           ANSIBLE_CONFIG_DIR=$(python -c "import ansible.config, os; print(os.path.dirname(ansible.config.__file__))" 2>/dev/null || true)

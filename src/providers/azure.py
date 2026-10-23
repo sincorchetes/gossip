@@ -207,9 +207,12 @@ class AzureSecretClient(BaseSecretProvider):
         url = self.vault_url
         if not url:
             raise ValueError(
-                "No se ha configurado ningún Azure Key Vault.\n"
-                "Usa el botón de selección de almacén para ingresar el nombre de tu Key Vault o define la variable AZURE_KEYVAULT_NAME."
+                _(
+                    "No Azure Key Vault configured.\n"
+                    "Use the vault switcher button to enter your Key Vault name or set the AZURE_KEYVAULT_NAME environment variable."
+                )
             )
+
 
         if self._credential is None:
             self._credential = DefaultAzureCredential()
@@ -256,23 +259,30 @@ class AzureSecretClient(BaseSecretProvider):
 
         except ClientAuthenticationError as exc:
             raise RuntimeError(
-                "Error de autenticación con Azure.\n"
-                "Inicia sesión en Azure CLI ejecutando:\n"
-                "  az login\n"
-                "o configura las variables de entorno AZURE_CLIENT_ID, AZURE_CLIENT_SECRET y AZURE_TENANT_ID."
+                _(
+                    "Azure authentication error.\n"
+                    "Log in with the Azure CLI by running:\n"
+                    "  az login\n"
+                    "or set AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, and AZURE_TENANT_ID environment variables."
+                )
             ) from exc
         except HttpResponseError as exc:
             if exc.status_code == 403:
                 raise PermissionError(
-                    f"Permiso denegado para acceder a Azure Key Vault '{self.vault_name}'.\n"
-                    "Verifica que tu cuenta tenga el rol de RBAC 'Key Vault Secrets User' / 'Key Vault Secrets Officer' "
-                    "o una directiva de acceso (Access Policy) asignada."
+                    _(
+                        "Permission denied accessing Azure Key Vault '{vault}'.\n"
+                        "Verify that your account has the 'Key Vault Secrets User' / 'Key Vault Secrets Officer' RBAC role "
+                        "or an assigned Access Policy."
+                    ).format(vault=self.vault_name)
                 ) from exc
             elif exc.status_code == 404:
-                raise FileNotFoundError(f"El almacén Azure Key Vault '{self.vault_name}' no existe o no fue encontrado.") from exc
-            raise RuntimeError(f"Error de Azure Key Vault: {exc.message}") from exc
+                raise FileNotFoundError(
+                    _("The Azure Key Vault '{vault}' does not exist or was not found.").format(vault=self.vault_name)
+                ) from exc
+            raise RuntimeError(f"{_('Azure Key Vault error')}: {exc.message}") from exc
         except Exception as exc:
-            raise RuntimeError(f"Error al consultar secretos de Azure Key Vault: {exc}") from exc
+            raise RuntimeError(f"{_('Error querying Azure Key Vault secrets')}: {exc}") from exc
+
 
     def list_versions(self, secret_name: str) -> List[SecretVersionItem]:
         """List all versions of an Azure Key Vault secret.
@@ -317,8 +327,9 @@ class AzureSecretClient(BaseSecretProvider):
 
         except HttpResponseError as exc:
             if exc.status_code == 403:
-                raise PermissionError(f"Permiso denegado al listar versiones en Azure: {exc.message}") from exc
-            raise RuntimeError(f"Error al listar versiones: {exc.message}") from exc
+                raise PermissionError(f"{_('Permission denied while listing versions in Azure')}: {exc.message}") from exc
+            raise RuntimeError(f"{_('Error listing versions')}: {exc.message}") from exc
+
 
     def access_secret_payload(self, secret_name: str, version: Optional[str] = None) -> Tuple[str, bool]:
         """Fetch the value of an Azure Key Vault secret.
@@ -350,14 +361,19 @@ class AzureSecretClient(BaseSecretProvider):
             return val, False
 
         except ResourceNotFoundError as exc:
-            raise FileNotFoundError(f"El secreto '{actual_name}' no existe en Azure Key Vault.") from exc
+            raise FileNotFoundError(
+                _("The secret '{secret}' does not exist in Azure Key Vault.").format(secret=actual_name)
+            ) from exc
         except HttpResponseError as exc:
             if exc.status_code == 403:
                 raise PermissionError(
-                    f"Permiso denegado para leer el valor del secreto '{actual_name}'.\n"
-                    "Se requiere permiso 'secrets/get' o rol 'Key Vault Secrets User'."
+                    _(
+                        "Permission denied to read secret value for '{secret}'.\n"
+                        "Requires 'secrets/get' permission or 'Key Vault Secrets User' role."
+                    ).format(secret=actual_name)
                 ) from exc
-            raise RuntimeError(f"Error al acceder al secreto: {exc.message}") from exc
+            raise RuntimeError(f"{_('Error accessing secret')}: {exc.message}") from exc
+
 
     def create_secret(
         self,
@@ -405,8 +421,9 @@ class AzureSecretClient(BaseSecretProvider):
             )
         except HttpResponseError as exc:
             if exc.status_code == 403:
-                raise PermissionError(f"Permiso denegado para crear secretos en Azure Key Vault: {exc.message}") from exc
-            raise RuntimeError(f"Error al crear el secreto en Azure: {exc.message}") from exc
+                raise PermissionError(f"{_('Permission denied to create secrets in Azure Key Vault')}: {exc.message}") from exc
+            raise RuntimeError(f"{_('Error creating secret in Azure')}: {exc.message}") from exc
+
 
     def add_secret_version(self, secret_name: str, payload_data: str) -> SecretVersionItem:
         """Add a new version to an existing Azure secret.
@@ -439,8 +456,9 @@ class AzureSecretClient(BaseSecretProvider):
             )
         except HttpResponseError as exc:
             if exc.status_code == 403:
-                raise PermissionError(f"Permiso denegado para añadir versión: {exc.message}") from exc
-            raise RuntimeError(f"Error al añadir versión en Azure: {exc.message}") from exc
+                raise PermissionError(f"{_('Permission denied to add version')}: {exc.message}") from exc
+            raise RuntimeError(f"{_('Error adding version in Azure')}: {exc.message}") from exc
+
 
     def enable_secret_version(self, version_full_name: str) -> SecretVersionItem:
         """Enables a specific version in Azure Key Vault."""
@@ -482,10 +500,15 @@ class AzureSecretClient(BaseSecretProvider):
                 destroy_time=None,
             )
         except HttpResponseError as exc:
-            action = "habilitar" if enabled else "deshabilitar"
+            action_str = _("enable") if enabled else _("disable")
             if exc.status_code == 403:
-                raise PermissionError(f"Permiso denegado para {action} versión en Azure: {exc.message}") from exc
-            raise RuntimeError(f"Error al {action} versión en Azure: {exc.message}") from exc
+                raise PermissionError(
+                    _("Permission denied to {action} version in Azure: {message}").format(action=action_str, message=exc.message)
+                ) from exc
+            raise RuntimeError(
+                _("Error while trying to {action} version in Azure: {message}").format(action=action_str, message=exc.message)
+            ) from exc
+
 
     def delete_secret(self, secret_name: str) -> None:
         """Delete a secret in Azure Key Vault.
@@ -504,5 +527,6 @@ class AzureSecretClient(BaseSecretProvider):
             client.begin_delete_secret(actual_name)
         except HttpResponseError as exc:
             if exc.status_code == 403:
-                raise PermissionError(f"Permiso denegado para eliminar secreto en Azure: {exc.message}") from exc
-            raise RuntimeError(f"Error al eliminar secreto en Azure: {exc.message}") from exc
+                raise PermissionError(f"{_('Permission denied to delete secret in Azure')}: {exc.message}") from exc
+            raise RuntimeError(f"{_('Error deleting secret in Azure')}: {exc.message}") from exc
+

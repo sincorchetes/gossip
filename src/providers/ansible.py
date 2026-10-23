@@ -601,9 +601,12 @@ class AnsibleVaultClient(BaseSecretProvider):
         pwd = self._get_active_password()
         if not pwd:
             raise PermissionError(
-                "No se ha proporcionado ninguna contraseña para desbloquear el Ansible Vault.\n"
-                "Introduce la contraseña o selecciona tu archivo .vault_pass."
+                _(
+                    "No password provided to unlock Ansible Vault.\n"
+                    "Enter password or select your .vault_pass file."
+                )
             )
+
         secret = VaultSecret(pwd.encode("utf-8"))
         vault_id = self.vault_id or "default"
         return VaultLib([(vault_id, secret)])
@@ -645,12 +648,17 @@ class AnsibleVaultClient(BaseSecretProvider):
         vf = self.vault_file
         if not vf:
             raise FileNotFoundError(
-                "No se ha seleccionado ningún archivo de Ansible Vault.\n"
-                "Usa el botón de selección para elegir o crear un archivo vault.yml."
+                _(
+                    "No Ansible Vault file selected.\n"
+                    "Use the file switcher button to choose or create a vault.yml file."
+                )
             )
 
         if not os.path.exists(vf):
-            raise FileNotFoundError(f"El archivo de Ansible Vault '{vf}' no existe.")
+            raise FileNotFoundError(
+                _("The Ansible Vault file '{path}' does not exist.").format(path=vf)
+            )
+
 
         current_mtime = os.path.getmtime(vf)
         if self._cached_dict is not None and self._cached_mtime == current_mtime:
@@ -673,12 +681,15 @@ class AnsibleVaultClient(BaseSecretProvider):
             except AnsibleVaultError as exc:
                 self._is_unlocked = False
                 raise PermissionError(
-                    f"Contraseña incorrecta o fallo al descifrar Ansible Vault '{os.path.basename(vf)}'.\n"
-                    f"Detalle: {exc}"
+                    _(
+                        "Incorrect password or failed to decrypt Ansible Vault '{filename}'.\n"
+                        "Detail: {detail}"
+                    ).format(filename=os.path.basename(vf), detail=exc)
                 ) from exc
             except Exception as exc:
                 self._is_unlocked = False
-                raise RuntimeError(f"Error al descifrar Ansible Vault: {exc}") from exc
+                raise RuntimeError(f"{_('Error decrypting Ansible Vault')}: {exc}") from exc
+
         else:
             # File is not encrypted yet
             plaintext = raw_bytes.decode("utf-8", errors="replace")
@@ -691,7 +702,12 @@ class AnsibleVaultClient(BaseSecretProvider):
                 # Wrap scalar or list
                 parsed = {"content": parsed}
         except Exception as exc:
-            raise RuntimeError(f"El contenido descifrado de '{os.path.basename(vf)}' no es un YAML válido: {exc}") from exc
+            raise RuntimeError(
+                _("Decrypted content of '{filename}' is not valid YAML: {detail}").format(
+                    filename=os.path.basename(vf), detail=exc
+                )
+            ) from exc
+
 
         self._cached_dict = parsed
         self._cached_mtime = current_mtime
@@ -702,7 +718,8 @@ class AnsibleVaultClient(BaseSecretProvider):
         """Serializes dictionary to YAML, encrypts with VaultLib, and saves atomically."""
         vf = self.vault_file
         if not vf:
-            raise ValueError("No se ha configurado la ruta del archivo Ansible Vault.")
+            raise ValueError(_("Ansible Vault file path is not configured."))
+
 
         # Create parent directory if needed
         os.makedirs(os.path.dirname(os.path.abspath(vf)), exist_ok=True)
@@ -846,11 +863,13 @@ class AnsibleVaultClient(BaseSecretProvider):
                             return yaml.dump(val, sort_keys=False, default_flow_style=False), False
                         return str(val), False
                 except Exception as exc:
-                    raise RuntimeError(f"No se pudo leer la versión de copia de seguridad: {exc}") from exc
+                    raise RuntimeError(f"{_('Could not read backup version')}: {exc}") from exc
+
 
         data = self._load_data()
         if key not in data:
-            raise KeyError(f"La variable '{key}' no existe en el archivo Ansible Vault.")
+            raise KeyError(_("The variable '{variable}' does not exist in the Ansible Vault file.").format(variable=key))
+
 
         val = data[key]
         if isinstance(val, (dict, list)):
@@ -880,7 +899,10 @@ class AnsibleVaultClient(BaseSecretProvider):
         """
         data = self._load_data()
         if secret_id in data:
-            raise ValueError(f"La variable '{secret_id}' ya existe en el vault. Usa 'Añadir versión' para modificarla.")
+            raise ValueError(
+                _("The variable '{variable}' already exists in the vault. Use 'New Version' to modify it.").format(variable=secret_id)
+            )
+
 
         # Attempt to parse as YAML/JSON scalar or structure if applicable
         parsed_val = self._parse_payload(payload_data)

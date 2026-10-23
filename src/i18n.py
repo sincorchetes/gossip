@@ -6,7 +6,8 @@ import gettext
 import locale
 import os
 import struct
-from typing import Dict, Optional
+import sys
+from typing import Dict, List, Optional, Set
 
 DOMAIN = "gossip-gcp"
 LOCALE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "locales")
@@ -152,6 +153,107 @@ def compile_po_to_mo(po_file: str, mo_file: str) -> None:
         f.write(strs)
 
 
+def get_locale_search_dirs() -> list[str]:
+    """Return all candidate directories containing gettext locale message catalogs.
+
+    Returns:
+        list[str]: Existing filesystem directories where .mo catalogs may reside.
+    """
+    candidates = [LOCALE_DIR]
+
+    if getattr(sys, "frozen", False):
+        bundle_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable)))
+        candidates.append(os.path.join(bundle_dir, "locales"))
+        candidates.append(os.path.join(bundle_dir, "share", "locale"))
+
+    for prefix in ("/ucrt64/share/locale", "/usr/share/locale", "/usr/local/share/locale"):
+        candidates.append(prefix)
+
+    for var in ("XDG_DATA_DIRS", "GI_TYPELIB_PATH"):
+        for entry in os.environ.get(var, "").split(os.pathsep):
+            if entry:
+                cand = os.path.join(entry, "locale") if not entry.endswith("girepository-1.0") else os.path.join(os.path.dirname(os.path.dirname(entry)), "share", "locale")
+                candidates.append(cand)
+
+    seen = set()
+    res = []
+    for d in candidates:
+        norm = os.path.normpath(d)
+        if norm not in seen and os.path.isdir(norm):
+            seen.add(norm)
+            res.append(norm)
+    return res
+
+
+def bind_domain(domain: str, localedir: str) -> None:
+    """Bind a gettext domain to a target directory for both Python and native C libraries.
+
+    Args:
+        domain: Gettext domain name string (e.g. 'libadwaita', 'gtk40', 'gossip-gcp').
+        localedir: Filesystem path to the root locale directory containing language subfolders.
+    """
+    if hasattr(locale, "bindtextdomain"):
+        try:
+            locale.bindtextdomain(domain, localedir)
+        except Exception:
+            pass
+    if hasattr(locale, "bind_textdomain_codeset"):
+        try:
+            locale.bind_textdomain_codeset(domain, "UTF-8")
+        except Exception:
+            pass
+
+    try:
+        import ctypes
+        for libname in ("libintl-8.dll", "libintl.dll", "libc.so.6", None):
+            try:
+                c_lib = ctypes.cdll.LoadLibrary(libname) if libname else ctypes.CDLL(None)
+                if hasattr(c_lib, "bindtextdomain"):
+                    c_lib.bindtextdomain.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+                    c_lib.bindtextdomain.restype = ctypes.c_char_p
+                    c_lib.bindtextdomain(domain.encode("utf-8"), localedir.encode("utf-8"))
+                if hasattr(c_lib, "bind_textdomain_codeset"):
+                    c_lib.bind_textdomain_codeset.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+                    c_lib.bind_textdomain_codeset.restype = ctypes.c_char_p
+                    c_lib.bind_textdomain_codeset(domain.encode("utf-8"), b"UTF-8")
+                break
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+
+def configure_system_locale(lang: str) -> None:
+    """Synchronize environment variables and C runtime locale for the active language.
+
+    Args:
+        lang: Target two-letter language identifier (e.g. 'es' or 'en').
+    """
+    os.environ["LANGUAGE"] = lang
+    if lang == "es":
+        candidates = ("es_ES.UTF-8", "es_ES.utf8", "es_ES", "es", "Spanish_Spain.1252", "Spanish")
+    else:
+        candidates = ("en_US.UTF-8", "en_US.utf8", "en_US", "en", "C.UTF-8", "C")
+
+    for loc in candidates:
+        try:
+            locale.setlocale(locale.LC_ALL, loc)
+            break
+        except Exception:
+            pass
+
+    try:
+        from gi.repository import GLib
+        GLib.setenv("LANGUAGE", lang, True)
+    except Exception:
+        pass
+
+    locale_dirs = get_locale_search_dirs()
+    for domain in ("gossip-gcp", "libadwaita", "gtk40"):
+        for ldir in locale_dirs:
+            bind_domain(domain, ldir)
+
+
 def ensure_mo_compiled() -> None:
     """Ensure all supported language .po catalog files have up-to-date compiled .mo binaries."""
     for lang in SUPPORTED_LANGUAGES.keys():
@@ -198,6 +300,7 @@ def init_i18n(preferred_lang: Optional[str] = None) -> None:
         lang = "es"
 
     _current_lang = lang
+    configure_system_locale(lang)
 
     try:
         _current_translation = gettext.translation(
@@ -238,3 +341,8 @@ def _(message: str) -> str:
         str: Translated message string, or original message if translation is unavailable.
     """
     return _current_translation.gettext(message)
+
+
+# Initialize default Spanish localization on module import
+init_i18n("es")
+

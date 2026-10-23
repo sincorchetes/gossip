@@ -548,6 +548,29 @@ class TestMainWindow(unittest.TestCase):
         self.window._toggle_theme(None)
         self.window._toggle_theme(None)
 
+        # 20. _toggle_language when error state is active and banner is revealed (577, 586)
+        self.window.sidebar_stack.set_visible_child_name("error")
+        self.window.banner.set_revealed(True)
+        with patch.object(self.window, "_load_secrets_async") as mock_lsa:
+            self.window._toggle_language(self.window.lang_btn)
+            mock_lsa.assert_called_once()
+            self.assertEqual(self.window.banner.get_title(), self.window._get_error_text())
+
+    def test_resolve_icon_name_edge_cases(self):
+        from src.ui.window import resolve_icon_name
+        # 1. Nonexistent icons return candidates[0]
+        name = resolve_icon_name(["nonexistent-xyz-123", "nonexistent-abc-456"], fallback="custom-fallback")
+        self.assertEqual(name, "nonexistent-xyz-123")
+
+        # 2. Empty candidates return fallback
+        name = resolve_icon_name([], fallback="custom-fallback")
+        self.assertEqual(name, "custom-fallback")
+
+        # 3. Without display
+        with patch("gi.repository.Gdk.Display.get_default", return_value=None):
+            self.assertEqual(resolve_icon_name(["icon-a"], fallback="fb"), "icon-a")
+            self.assertEqual(resolve_icon_name([], fallback="fb"), "fb")
+
 
 if __name__ == "__main__":
     unittest.main()

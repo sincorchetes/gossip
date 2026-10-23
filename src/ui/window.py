@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import threading
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence
 
 import gi
 
@@ -30,7 +30,27 @@ from src.ui.dialogs import (
 )
 
 
+def resolve_icon_name(candidates: Sequence[str], fallback: str = "image-missing") -> str:
+    """Return the first icon name from candidates available in the current GTK theme.
+
+    Args:
+        candidates: Sequence of icon name strings to check in priority order.
+        fallback: Fallback icon name if none of the candidates are available.
+
+    Returns:
+        str: First available icon name, or fallback if none exist.
+    """
+    display = Gdk.Display.get_default()
+    if display:
+        theme = Gtk.IconTheme.get_for_display(display)
+        for name in candidates:
+            if theme.has_icon(name):
+                return name
+    return candidates[0] if candidates else fallback
+
+
 class MainWindow(Adw.ApplicationWindow):
+
     """Primary application window for Gossip multi-cloud secret manager.
 
     Implements the Strategy Pattern using BaseSecretProvider instances, delegating
@@ -134,8 +154,15 @@ class MainWindow(Adw.ApplicationWindow):
         return self.active_provider.context_btn_tooltip
 
     def _get_context_btn_icon(self) -> str:
-        """Retrieve icon name for the active provider."""
-        return self.active_provider.icon_name
+        """Retrieve icon name for the active provider, resolving fallback icons if missing."""
+        icon = self.active_provider.icon_name
+        fallback_map = {
+            "preferences-system-symbolic": ["preferences-system-symbolic", "network-server-symbolic", "system-run-symbolic"],
+            "security-high-symbolic": ["security-high-symbolic", "changes-prevent-symbolic", "dialog-password-symbolic"],
+        }
+        if icon in fallback_map:
+            return resolve_icon_name(fallback_map[icon], fallback=icon)
+        return icon
 
     def _get_loading_text(self) -> str:
         """Retrieve loading text for the active provider."""
@@ -202,18 +229,25 @@ class MainWindow(Adw.ApplicationWindow):
         header.pack_end(self.lang_btn)
 
         self.theme_btn = Gtk.Button(
-            icon_name="weather-clear-night-symbolic",
+            icon_name=resolve_icon_name(
+                ["weather-clear-night-symbolic", "display-brightness-symbolic"],
+                fallback="display-brightness-symbolic",
+            ),
             tooltip_text=_("Toggle light/dark theme"),
         )
         self.theme_btn.connect("clicked", self._toggle_theme)
         header.pack_end(self.theme_btn)
 
         self.about_btn = Gtk.Button(
-            icon_name="help-about-symbolic",
+            icon_name=resolve_icon_name(
+                ["help-about-symbolic", "dialog-information-symbolic", "info-outline-symbolic"],
+                fallback="dialog-information-symbolic",
+            ),
             tooltip_text=_("About Gossip"),
         )
         self.about_btn.connect("clicked", lambda _: show_about_dialog(self))
         header.pack_end(self.about_btn)
+
 
         main_box.append(header)
 
@@ -536,19 +570,25 @@ class MainWindow(Adw.ApplicationWindow):
     # -------------------------------------------------------------
     def _toggle_language(self, _btn: Gtk.Button) -> None:
         """Toggle the application UI language between English and Spanish."""
+        was_error = self.sidebar_stack.get_visible_child_name() == "error"
         new_lang = "en" if get_current_language() == "es" else "es"
         set_language(new_lang)
         self.lang_btn.set_label(new_lang.upper())
         self._update_ui_texts()
+        if was_error:
+            self._load_secrets_async()
 
     def _update_ui_texts(self) -> None:
         """Dynamically reloads all visible UI strings according to the active language."""
         self.set_title(_("Gossip"))
         self.window_title.set_title(_("Gossip"))
         self._update_header_and_tooltips()
+        if self.banner.get_revealed():
+            self.banner.set_title(self._get_error_text())
 
         self.refresh_btn.set_tooltip_text(_("Reload secrets"))
         self.theme_btn.set_tooltip_text(_("Toggle light/dark theme"))
+
         self.about_btn.set_tooltip_text(_("About Gossip"))
         self.lang_btn.set_tooltip_text(_("Switch language (ES / EN)"))
 

@@ -529,5 +529,313 @@ msgstr "Tipo / Longitud"
 msgid "Data Type"
 msgstr "Tipo de dato"
 
+msgid "AWS Profile & Region"
+msgstr "Perfil y Región de AWS"
 
+msgid "AWS Secrets Manager error"
+msgstr "Error en AWS Secrets Manager"
 
+msgid "Ansible Vault"
+msgstr "Ansible Vault"
+
+msgid "Ansible Vault file path is not configured."
+msgstr "No se ha configurado la ruta del archivo Ansible Vault."
+
+msgid "Azure Key Vault"
+msgstr "Azure Key Vault"
+
+msgid "Azure Key Vault error"
+msgstr "Error de Azure Key Vault"
+
+msgid ""
+"Azure authentication error.\n"
+"Log in with the Azure CLI by running:\n"
+"  az login\n"
+"or set AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, and AZURE_TENANT_ID environment variables."
+msgstr ""
+"Error de autenticación con Azure.\n"
+"Inicia sesión en Azure CLI ejecutando:\n"
+"  az login\n"
+"o configura las variables de entorno AZURE_CLIENT_ID, AZURE_CLIENT_SECRET y AZURE_TENANT_ID."
+
+msgid "Binary data"
+msgstr "Datos binarios"
+
+msgid "Could not query GCP projects"
+msgstr "No fue posible consultar los proyectos de GCP"
+
+msgid "Could not read backup version"
+msgstr "No se pudo leer la versión de copia de seguridad"
+
+msgid "Decrypted content of '{filename}' is not valid YAML: {detail}"
+msgstr "El contenido descifrado de '{filename}' no es un YAML válido: {detail}"
+
+msgid "Error accessing secret"
+msgstr "Error al acceder al secreto"
+
+msgid "Error adding version"
+msgstr "Error al añadir versión"
+
+msgid "Error adding version in AWS"
+msgstr "Error al añadir versión en AWS"
+
+msgid "Error adding version in Azure"
+msgstr "Error al añadir versión en Azure"
+
+msgid "Error creating secret"
+msgstr "Error al crear el secreto"
+
+msgid "Error creating secret in AWS"
+msgstr "Error al crear el secreto en AWS"
+
+msgid "Error creating secret in Azure"
+msgstr "Error al crear el secreto en Azure"
+
+msgid "Error decrypting Ansible Vault"
+msgstr "Error al descifrar Ansible Vault"
+
+msgid "Error deleting secret"
+msgstr "Error al eliminar el secreto"
+
+msgid "Error deleting secret in AWS"
+msgstr "Error al eliminar el secreto en AWS"
+
+msgid "Error deleting secret in Azure"
+msgstr "Error al eliminar secreto en Azure"
+
+msgid "Error destroying version"
+msgstr "Error al destruir la versión"
+
+msgid "Error disabling version"
+msgstr "Error al deshabilitar la versión"
+
+msgid "Error enabling version"
+msgstr "Error al habilitar la versión"
+
+msgid "Error fetching secret versions"
+msgstr "Error al obtener versiones del secreto"
+
+msgid "Error initializing AWS client"
+msgstr "Error al inicializar cliente de AWS"
+
+msgid "Error listing secret versions"
+msgstr "Error al listar versiones del secreto"
+
+msgid "Error listing versions"
+msgstr "Error al listar versiones"
+
+msgid "Error querying Azure Key Vault secrets"
+msgstr "Error al consultar secretos de Azure Key Vault"
+
+msgid "Error retrieving secret value"
+msgstr "Error al obtener el valor del secreto"
+
+msgid "Error while trying to {action} version in Azure: {message}"
+msgstr "Error al {action} versión en Azure: {message}"
+
+msgid "GCP Project"
+msgstr "Proyecto GCP"
+
+msgid "GCP Secret Manager API error"
+msgstr "Error en la API de GCP Secret Manager"
+
+msgid "GCP authentication error"
+msgstr "Error de autenticación con GCP"
+
+msgid ""
+"Incorrect password or failed to decrypt Ansible Vault '{filename}'.\n"
+"Detail: {detail}"
+msgstr ""
+"Contraseña incorrecta o fallo al descifrar Ansible Vault '{filename}'.\n"
+"Detalle: {detail}"
+
+msgid ""
+"No Ansible Vault file selected.\n"
+"Use the file switcher button to choose or create a vault.yml file."
+msgstr ""
+"No se ha seleccionado ningún archivo de Ansible Vault.\n"
+"Usa el botón de selección para elegir o crear un archivo vault.yml."
+
+msgid ""
+"No Azure Key Vault configured.\n"
+"Use the vault switcher button to enter your Key Vault name or set the AZURE_KEYVAULT_NAME environment variable."
+msgstr ""
+"No se ha configurado ningún Azure Key Vault.\n"
+"Usa el botón de selección de almacén para ingresar el nombre de tu Key Vault o define la variable AZURE_KEYVAULT_NAME."
+
+msgid "No GCP project ID specified."
+msgstr "No se ha especificado ningún Project ID de GCP."
+
+msgid ""
+"No active AWS credentials found.\n"
+"Run in your terminal:\n"
+"  aws configure\n"
+"or set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables."
+msgstr ""
+"No se encontraron credenciales de AWS activas.\n"
+"Ejecuta en tu terminal:\n"
+"  aws configure\n"
+"o define las variables de entorno AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY."
+
+msgid ""
+"No active GCP credentials found.\n"
+"Run in your terminal:\n"
+"  gcloud auth application-default login\n"
+"or set the GOOGLE_APPLICATION_CREDENTIALS environment variable."
+msgstr ""
+"No se encontraron credenciales de GCP activas.\n"
+"Ejecuta en tu terminal:\n"
+"  gcloud auth application-default login\n"
+"o configura la variable de entorno GOOGLE_APPLICATION_CREDENTIALS."
+
+msgid ""
+"No password provided to unlock Ansible Vault.\n"
+"Enter password or select your .vault_pass file."
+msgstr ""
+"No se ha proporcionado ninguna contraseña para desbloquear el Ansible Vault.\n"
+"Introduce la contraseña o selecciona tu archivo .vault_pass."
+
+msgid ""
+"No valid AWS credentials found.\n"
+"Run 'aws configure' or verify your environment variables."
+msgstr ""
+"No se encontraron credenciales de AWS válidas.\n"
+"Ejecuta 'aws configure' o verifica tus variables de entorno."
+
+msgid ""
+"Permission denied accessing Azure Key Vault '{vault}'.\n"
+"Verify that your account has the 'Key Vault Secrets User' / 'Key Vault Secrets Officer' RBAC role or an assigned Access Policy."
+msgstr ""
+"Permiso denegado para acceder a Azure Key Vault '{vault}'.\n"
+"Verifica que tu cuenta tenga el rol de RBAC 'Key Vault Secrets User' / 'Key Vault Secrets Officer' o una directiva de acceso (Access Policy) asignada."
+
+msgid ""
+"Permission denied for AWS Secrets Manager in region '{region}'.\n"
+"Detail: {detail}"
+msgstr ""
+"Permiso denegado para AWS Secrets Manager en la región '{region}'.\n"
+"Detalle: {detail}"
+
+msgid ""
+"Permission denied for GCP Secret Manager in project '{project}'.\n"
+"Verify that your account has the 'Secret Manager Secret Accessor' or 'Secret Manager Admin' role."
+msgstr ""
+"Permiso denegado para el proyecto '{project}'.\n"
+"Asegúrate de tener asignado el rol 'Secret Manager Viewer' o 'Secret Manager Secret Accessor'."
+
+msgid ""
+"Permission denied to add a new version to the secret.\n"
+"Requires 'roles/secretmanager.secretVersionManager' or 'roles/secretmanager.admin' role."
+msgstr ""
+"Permiso denegado para añadir una nueva versión al secreto.\n"
+"Se requiere el rol 'roles/secretmanager.secretVersionManager' o 'roles/secretmanager.admin'."
+
+msgid "Permission denied to add version"
+msgstr "Permiso denegado para añadir versión"
+
+msgid "Permission denied to create secret"
+msgstr "Permiso denegado para crear el secreto"
+
+msgid "Permission denied to create secrets in Azure Key Vault"
+msgstr "Permiso denegado para crear secretos en Azure Key Vault"
+
+msgid ""
+"Permission denied to create secrets in project.\n"
+"Requires 'roles/secretmanager.admin' role."
+msgstr ""
+"Permiso denegado para crear secretos en el proyecto.\n"
+"Se requiere el rol 'roles/secretmanager.admin'."
+
+msgid "Permission denied to delete secret"
+msgstr "Permiso denegado para eliminar el secreto"
+
+msgid "Permission denied to delete secret in Azure"
+msgstr "Permiso denegado para eliminar secreto en Azure"
+
+msgid ""
+"Permission denied to delete secret.\n"
+"Requires 'roles/secretmanager.admin' role."
+msgstr ""
+"Permiso denegado para eliminar el secreto.\n"
+"Se requiere el rol 'roles/secretmanager.admin'."
+
+msgid "Permission denied to destroy version."
+msgstr "Permiso denegado para destruir la versión."
+
+msgid "Permission denied to disable version."
+msgstr "Permiso denegado para deshabilitar la versión."
+
+msgid "Permission denied to enable version."
+msgstr "Permiso denegado para habilitar la versión."
+
+msgid ""
+"Permission denied to read secret value for '{secret}' in region '{region}'.\n"
+"Detail: {detail}"
+msgstr ""
+"Permiso denegado para acceder al valor del secreto '{secret}'.\n"
+"Detalle: {detail}"
+
+msgid ""
+"Permission denied to read secret value for '{secret}'.\n"
+"Requires 'secrets/get' permission or 'Key Vault Secrets User' role."
+msgstr ""
+"Permiso denegado para leer el valor del secreto '{secret}'.\n"
+"Se requiere permiso 'secrets/get' o rol 'Key Vault Secrets User'."
+
+msgid "Permission denied to update secret"
+msgstr "Permiso denegado para actualizar el secreto"
+
+msgid "Permission denied to {action} version in Azure: {message}"
+msgstr "Permiso denegado para {action} versión en Azure: {message}"
+
+msgid ""
+"Permission denied while accessing secret payload.\n"
+"Requires 'roles/secretmanager.secretAccessor' role."
+msgstr ""
+"Permiso denegado para acceder al valor del secreto.\n"
+"Se requiere el rol 'roles/secretmanager.secretAccessor'."
+
+msgid "Permission denied while listing secret versions."
+msgstr "Permiso denegado al listar las versiones del secreto."
+
+msgid "Permission denied while listing versions"
+msgstr "Permiso denegado al listar versiones"
+
+msgid "Permission denied while listing versions in Azure"
+msgstr "Permiso denegado al listar versiones en Azure"
+
+msgid "The AWS profile '{profile}' does not exist in your ~/.aws/credentials or ~/.aws/config file."
+msgstr "El perfil de AWS '{profile}' no existe en tu archivo ~/.aws/credentials o ~/.aws/config."
+
+msgid "The Ansible Vault file '{path}' does not exist."
+msgstr "El archivo de Ansible Vault '{path}' no existe."
+
+msgid "The Azure Key Vault '{vault}' does not exist or was not found."
+msgstr "El almacén Azure Key Vault '{vault}' no existe o no fue encontrado."
+
+msgid "The GCP project '{project}' was not found."
+msgstr "El proyecto '{project}' no fue encontrado en GCP."
+
+msgid "The secret '{secret}' does not exist in Azure Key Vault."
+msgstr "El secreto '{secret}' no existe en Azure Key Vault."
+
+msgid "The secret '{secret}' does not exist."
+msgstr "El secreto '{secret}' no existe."
+
+msgid "The secret or version '{secret}' was not found."
+msgstr "El secreto o versión '{secret}' no fue encontrado."
+
+msgid "The secret or version '{version}' does not exist."
+msgstr "La versión '{version}' no existe o fue destruida."
+
+msgid "The variable '{variable}' already exists in the vault. Use 'New Version' to modify it."
+msgstr "La variable '{variable}' ya existe en el vault. Usa 'Añadir versión' para modificarla."
+
+msgid "The variable '{variable}' does not exist in the Ansible Vault file."
+msgstr "La variable '{variable}' no existe en el archivo Ansible Vault."
+
+msgid "disable"
+msgstr "deshabilitar"
+
+msgid "enable"
+msgstr "habilitar"

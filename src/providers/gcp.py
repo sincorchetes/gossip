@@ -170,13 +170,15 @@ class GCPSecretClient(BaseSecretProvider):
                 self._project_id = detected_project
         except DefaultCredentialsError as exc:
             raise RuntimeError(
-                "No se encontraron credenciales de GCP activas.\n"
-                "Ejecuta en tu terminal:\n"
-                "  gcloud auth application-default login\n"
-                "o configura la variable de entorno GOOGLE_APPLICATION_CREDENTIALS."
+                _(
+                    "No active GCP credentials found.\n"
+                    "Run in your terminal:\n"
+                    "  gcloud auth application-default login\n"
+                    "or set the GOOGLE_APPLICATION_CREDENTIALS environment variable."
+                )
             ) from exc
         except GoogleAuthError as exc:
-            raise RuntimeError(f"Error de autenticación con GCP: {exc}") from exc
+            raise RuntimeError(f"{_('GCP authentication error')}: {exc}") from exc
 
         self._client = secretmanager_v1.SecretManagerServiceClient(credentials=self._credentials)
         return self._client
@@ -256,7 +258,7 @@ class GCPSecretClient(BaseSecretProvider):
         client = self.initialize_client()
         active_project = project_id or self.project_id
         if not active_project:
-            raise ValueError("No se ha especificado ningún Project ID de GCP.")
+            raise ValueError(_("No GCP project ID specified."))
 
         parent = f"projects/{active_project}"
         secrets: List[SecretItem] = []
@@ -294,19 +296,22 @@ class GCPSecretClient(BaseSecretProvider):
 
         except PermissionDenied as exc:
             raise PermissionDeniedError(
-                f"Permiso denegado para el proyecto '{active_project}'.\n"
-                "Asegúrate de tener asignado el rol 'Secret Manager Viewer' o 'Secret Manager Secret Accessor'.",
+                _(
+                    "Permission denied for GCP Secret Manager in project '{project}'.\n"
+                    "Verify that your account has the 'Secret Manager Secret Accessor' or 'Secret Manager Admin' role."
+                ).format(project=active_project),
                 provider="gcp",
                 original_error=exc,
             ) from exc
         except NotFound as exc:
             raise ResourceNotFoundError(
-                f"El proyecto '{active_project}' no fue encontrado en GCP.",
+                _("The GCP project '{project}' was not found.").format(project=active_project),
                 provider="gcp",
                 original_error=exc,
             ) from exc
         except GoogleAPICallError as exc:
-            raise ProviderError(f"Error en la API de GCP Secret Manager: {exc.message}", provider="gcp", original_error=exc) from exc
+            raise ProviderError(f"{_('GCP Secret Manager API error')}: {exc.message}", provider="gcp", original_error=exc) from exc
+
 
     def list_versions(self, secret_full_name: str) -> List[SecretVersionItem]:
         """List all versions of a specific secret.
@@ -355,11 +360,11 @@ class GCPSecretClient(BaseSecretProvider):
             return versions
 
         except PermissionDenied as exc:
-            raise PermissionDeniedError("Permiso denegado al listar las versiones del secreto.", provider="gcp", original_error=exc) from exc
+            raise PermissionDeniedError(_("Permission denied while listing secret versions."), provider="gcp", original_error=exc) from exc
         except NotFound as exc:
-            raise ResourceNotFoundError(f"El secreto '{secret_full_name}' no existe.", provider="gcp", original_error=exc) from exc
+            raise ResourceNotFoundError(_("The secret '{secret}' does not exist.").format(secret=secret_full_name), provider="gcp", original_error=exc) from exc
         except GoogleAPICallError as exc:
-            raise ProviderError(f"Error al obtener versiones del secreto: {exc.message}", provider="gcp", original_error=exc) from exc
+            raise ProviderError(f"{_('Error fetching secret versions')}: {exc.message}", provider="gcp", original_error=exc) from exc
 
     def access_secret_payload(self, version_full_name: str) -> Tuple[str, bool]:
         """Fetch the payload of a specific secret version.
@@ -388,23 +393,26 @@ class GCPSecretClient(BaseSecretProvider):
             except UnicodeDecodeError:
                 # If binary, return hex representation
                 hex_str = payload_bytes.hex(" ")
-                return f"[Datos binarios - {len(payload_bytes)} bytes]\n\n{hex_str}", True
+                return f"[{_('Binary data')} - {len(payload_bytes)} bytes]\n\n{hex_str}", True
 
         except PermissionDenied as exc:
             raise PermissionDeniedError(
-                "Permiso denegado para acceder al valor del secreto.\n"
-                "Se requiere el rol 'roles/secretmanager.secretAccessor'.",
+                _(
+                    "Permission denied while accessing secret payload.\n"
+                    "Requires 'roles/secretmanager.secretAccessor' role."
+                ),
                 provider="gcp",
                 original_error=exc,
             ) from exc
         except NotFound as exc:
             raise ResourceNotFoundError(
-                f"La versión '{version_full_name}' no existe o fue destruida.",
+                _("The secret or version '{version}' does not exist.").format(version=version_full_name),
                 provider="gcp",
                 original_error=exc,
             ) from exc
         except GoogleAPICallError as exc:
-            raise ProviderError(f"Error al acceder al secreto: {exc.message}", provider="gcp", original_error=exc) from exc
+            raise ProviderError(f"{_('Error accessing secret')}: {exc.message}", provider="gcp", original_error=exc) from exc
+
 
     def create_secret(
         self,
@@ -434,7 +442,7 @@ class GCPSecretClient(BaseSecretProvider):
         client = self.initialize_client()
         active_project = project_id or self.project_id
         if not active_project:
-            raise ValueError("No se ha especificado ningún Project ID de GCP.")
+            raise ValueError(_("No GCP project ID specified."))
 
         parent = f"projects/{active_project}"
         secret_payload = secretmanager_v1.Secret(
@@ -466,11 +474,14 @@ class GCPSecretClient(BaseSecretProvider):
             )
         except PermissionDenied as exc:
             raise PermissionError(
-                "Permiso denegado para crear secretos en el proyecto.\n"
-                "Se requiere el rol 'roles/secretmanager.admin'."
+                _(
+                    "Permission denied to create secrets in project.\n"
+                    "Requires 'roles/secretmanager.admin' role."
+                )
             ) from exc
         except GoogleAPICallError as exc:
-            raise RuntimeError(f"Error al crear el secreto: {exc.message}") from exc
+            raise RuntimeError(f"{_('Error creating secret')}: {exc.message}") from exc
+
 
     def add_secret_version(self, secret_full_name: str, payload_data: str) -> SecretVersionItem:
         """Add a new version to an existing secret.
@@ -508,11 +519,13 @@ class GCPSecretClient(BaseSecretProvider):
             )
         except PermissionDenied as exc:
             raise PermissionError(
-                "Permiso denegado para añadir una nueva versión al secreto.\n"
-                "Se requiere el rol 'roles/secretmanager.secretVersionManager' o 'roles/secretmanager.admin'."
+                _(
+                    "Permission denied to add a new version to the secret.\n"
+                    "Requires 'roles/secretmanager.secretVersionManager' or 'roles/secretmanager.admin' role."
+                )
             ) from exc
         except GoogleAPICallError as exc:
-            raise RuntimeError(f"Error al añadir versión: {exc.message}") from exc
+            raise RuntimeError(f"{_('Error adding version')}: {exc.message}") from exc
 
     def enable_secret_version(self, version_full_name: str) -> SecretVersionItem:
         """Enables a previously disabled secret version."""
@@ -529,9 +542,9 @@ class GCPSecretClient(BaseSecretProvider):
                 destroy_time=_parse_timestamp(version.destroy_time),
             )
         except PermissionDenied as exc:
-            raise PermissionError("Permiso denegado para habilitar la versión.") from exc
+            raise PermissionError(_("Permission denied to enable version.")) from exc
         except GoogleAPICallError as exc:
-            raise RuntimeError(f"Error al habilitar la versión: {exc.message}") from exc
+            raise RuntimeError(f"{_('Error enabling version')}: {exc.message}") from exc
 
     def disable_secret_version(self, version_full_name: str) -> SecretVersionItem:
         """Disables a secret version so its payload cannot be accessed."""
@@ -548,9 +561,9 @@ class GCPSecretClient(BaseSecretProvider):
                 destroy_time=_parse_timestamp(version.destroy_time),
             )
         except PermissionDenied as exc:
-            raise PermissionError("Permiso denegado para deshabilitar la versión.") from exc
+            raise PermissionError(_("Permission denied to disable version.")) from exc
         except GoogleAPICallError as exc:
-            raise RuntimeError(f"Error al deshabilitar la versión: {exc.message}") from exc
+            raise RuntimeError(f"{_('Error disabling version')}: {exc.message}") from exc
 
     def destroy_secret_version(self, version_full_name: str) -> SecretVersionItem:
         """Irreversibly destroys the payload of a secret version."""
@@ -567,9 +580,9 @@ class GCPSecretClient(BaseSecretProvider):
                 destroy_time=_parse_timestamp(version.destroy_time),
             )
         except PermissionDenied as exc:
-            raise PermissionError("Permiso denegado para destruir la versión.") from exc
+            raise PermissionError(_("Permission denied to destroy version.")) from exc
         except GoogleAPICallError as exc:
-            raise RuntimeError(f"Error al destruir la versión: {exc.message}") from exc
+            raise RuntimeError(f"{_('Error destroying version')}: {exc.message}") from exc
 
     def delete_secret(self, secret_name_or_id: str) -> None:
         """Permanently deletes a secret and all its versions."""
@@ -581,13 +594,15 @@ class GCPSecretClient(BaseSecretProvider):
             client.delete_secret(request={"name": full_name})
         except PermissionDenied as exc:
             raise PermissionDeniedError(
-                "Permiso denegado para eliminar el secreto.\n"
-                "Se requiere el rol 'roles/secretmanager.admin'.",
+                _(
+                    "Permission denied to delete secret.\n"
+                    "Requires 'roles/secretmanager.admin' role."
+                ),
                 provider="gcp",
                 original_error=exc,
             ) from exc
         except GoogleAPICallError as exc:
-            raise ProviderError(f"Error al eliminar el secreto: {exc.message}", provider="gcp", original_error=exc) from exc
+            raise ProviderError(f"{_('Error deleting secret')}: {exc.message}", provider="gcp", original_error=exc) from exc
 
     def list_available_projects(self) -> List[GCPProjectItem]:
         """Lists active GCP projects accessible to the authenticated credentials."""
@@ -627,6 +642,7 @@ class GCPSecretClient(BaseSecretProvider):
             projects.sort(key=lambda p: p.project_id.lower())
             return projects
         except Exception as exc:
-            raise RuntimeError(f"No fue posible consultar los proyectos de GCP: {exc}") from exc
+            raise RuntimeError(f"{_('Could not query GCP projects')}: {exc}") from exc
+
 
 
