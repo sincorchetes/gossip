@@ -93,6 +93,7 @@ jobs:
 
           pyinstaller --noconfirm --onedir --windowed --name "gossip" \
             --add-data "locales:locales" \
+            --add-data "${TYPELIB_DIR}:gi_typelibs" \
             --add-data "${TYPELIB_DIR}:girepository-1.0" \
             --add-data "/usr/share/glib-2.0/schemas:glib-2.0/schemas" \
             --collect-all "gi" \
@@ -108,6 +109,21 @@ jobs:
             --exclude-module "ansible.executor" \
             --exclude-module "ansible.playbook" \
             src/main.py
+
+          # Ensure all system typelibs are mirrored in both gi_typelibs and girepository-1.0
+          mkdir -p dist/gossip/_internal/gi_typelibs
+          mkdir -p dist/gossip/_internal/girepository-1.0
+          mkdir -p dist/gossip/gi_typelibs
+          mkdir -p dist/gossip/girepository-1.0
+          find /usr/lib -name "*.typelib" -exec cp -f {} dist/gossip/_internal/gi_typelibs/ \; 2>/dev/null || true
+          find /usr/lib -name "*.typelib" -exec cp -f {} dist/gossip/_internal/girepository-1.0/ \; 2>/dev/null || true
+          find /usr/lib -name "*.typelib" -exec cp -f {} dist/gossip/gi_typelibs/ \; 2>/dev/null || true
+          find /usr/lib -name "*.typelib" -exec cp -f {} dist/gossip/girepository-1.0/ \; 2>/dev/null || true
+
+          # Ensure GLib schemas are compiled
+          mkdir -p dist/gossip/_internal/glib-2.0/schemas
+          cp -r /usr/share/glib-2.0/schemas/* dist/gossip/_internal/glib-2.0/schemas/ 2>/dev/null || true
+          glib-compile-schemas dist/gossip/_internal/glib-2.0/schemas/ 2>/dev/null || true
 
           mkdir -p dist/packages
           PKG_VERSION="${VERSION#v}"

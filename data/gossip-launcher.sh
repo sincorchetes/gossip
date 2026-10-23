@@ -8,7 +8,9 @@ INTERNAL_DIR="/opt/gossip/_internal"
 # Locate and export Typelib search paths for GObject Introspection
 TYPELIB_DIRS=""
 for d in \
+  "${INTERNAL_DIR}/gi_typelibs" \
   "${INTERNAL_DIR}/girepository-1.0" \
+  "${BUNDLE_DIR}/gi_typelibs" \
   "${BUNDLE_DIR}/girepository-1.0" \
   /usr/lib64/girepository-1.0 \
   /usr/lib/x86_64-linux-gnu/girepository-1.0 \

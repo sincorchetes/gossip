@@ -63,9 +63,9 @@ def setup_frozen_environment() -> None:
         for b in base_dirs:
             typelib_candidates.extend(
                 [
+                    os.path.join(b, "gi_typelibs"),
                     os.path.join(b, "girepository-1.0"),
                     os.path.join(b, "lib", "girepository-1.0"),
-                    os.path.join(b, "gi_typelibs"),
                 ]
             )
         typelib_candidates.extend(
@@ -86,6 +86,7 @@ def setup_frozen_environment() -> None:
 
             # Dynamically register search paths directly into live C GObject Introspection repository
             try:
+                import gi  # noqa: F401
                 from gi._gi import Repository
 
                 repo = Repository.get_default()
