@@ -1,4 +1,4 @@
-"""Amazon Web Services (AWS) Secrets Manager provider implementation."""
+"""Amazon Web Services (AWS) Secrets Manager client class."""
 
 from __future__ import annotations
 
@@ -7,14 +7,13 @@ from typing import Any, Callable, List, Optional
 import boto3
 
 from src.i18n import _
-from src.providers.aws_discovery import (
-    COMMON_AWS_REGIONS,
+from src.providers.aws.discovery import (
     detect_profile,
     detect_region,
     list_available_profiles,
     list_available_regions,
 )
-from src.providers.aws_ops import AWSOperationsMixin
+from src.providers.aws.ops import AWSOperationsMixin
 from src.providers.base import BaseSecretProvider
 
 
@@ -160,6 +159,3 @@ class AWSSecretClient(AWSOperationsMixin, BaseSecretProvider):
     def list_available_regions(cls) -> List[str]:
         """List standard AWS regions supported by Secrets Manager."""
         return list_available_regions()
-
-
-__all__ = ["AWSSecretClient", "COMMON_AWS_REGIONS"]

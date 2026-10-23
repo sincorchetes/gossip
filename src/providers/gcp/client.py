@@ -1,4 +1,4 @@
-"""Google Cloud Platform Secret Manager provider implementation."""
+"""Google Cloud Platform Secret Manager client class."""
 
 from __future__ import annotations
 
@@ -11,13 +11,8 @@ from google.cloud import secretmanager_v1
 from src.i18n import _
 from src.models import SecretVersionItem
 from src.providers.base import BaseSecretProvider
-from src.providers.gcp_discovery import (
-    detect_project_id,
-)
-from src.providers.gcp_helpers import (
-    _parse_timestamp,
-)
-from src.providers.gcp_ops import GCPOperationsMixin
+from src.providers.gcp.discovery import detect_project_id
+from src.providers.gcp.ops import GCPOperationsMixin
 
 
 class GCPSecretClient(GCPOperationsMixin, BaseSecretProvider):
@@ -161,6 +156,3 @@ class GCPSecretClient(GCPOperationsMixin, BaseSecretProvider):
     def detect_project_id(cls) -> Optional[str]:
         """Detect the active GCP project from environment variables, gcloud config files, or ADC."""
         return detect_project_id()
-
-
-__all__ = ["GCPSecretClient", "_parse_timestamp", "detect_project_id"]

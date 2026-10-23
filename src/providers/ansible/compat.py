@@ -185,7 +185,7 @@ def install_posix_shims() -> None:
         locale.getlocale = _safe_getlocale
         locale._gossip_locale_patched = True
 
-    from src.providers.ansible_shims import install_fake_posix_modules, patch_ansible_core
+    from src.providers.ansible.shims import install_fake_posix_modules, patch_ansible_core
 
     install_fake_posix_modules()
     patch_ansible_core()

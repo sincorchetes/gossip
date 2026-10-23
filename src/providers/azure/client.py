@@ -1,22 +1,19 @@
-"""Microsoft Azure Key Vault secret provider implementation."""
+"""Microsoft Azure Key Vault client class."""
 
 from __future__ import annotations
 
 from typing import Any, Callable, List, Optional
 
-from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 
 from src.i18n import _
 from src.models import AzureVaultItem, SecretVersionItem
-from src.providers.azure_discovery import (
+from src.providers.azure.discovery import (
     detect_vault_name,
     list_available_vaults,
 )
-from src.providers.azure_ops import AzureOperationsMixin
+from src.providers.azure.ops import AzureOperationsMixin
 from src.providers.base import BaseSecretProvider
-
-__all__ = ["AzureSecretClient", "DefaultAzureCredential", "SecretClient"]
 
 
 class AzureSecretClient(AzureOperationsMixin, BaseSecretProvider):
@@ -145,6 +142,3 @@ class AzureSecretClient(AzureOperationsMixin, BaseSecretProvider):
     def list_available_vaults(self) -> List[AzureVaultItem]:
         """List accessible Azure Key Vaults discovered via Azure CLI."""
         return list_available_vaults(self.vault_name, self.vault_url)
-
-
-__all__ = ["AzureSecretClient"]

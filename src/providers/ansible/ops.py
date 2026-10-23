@@ -10,9 +10,12 @@ import yaml
 
 from src.i18n import _
 from src.models import SecretItem, SecretVersionItem
-from src.providers.ansible_vault import (
+from src.providers.ansible.vault import (
+    get_vault_lib,
+    load_vault_data,
     parse_vault_payload,
     read_backup_payload,
+    save_vault_data,
 )
 
 if TYPE_CHECKING:
@@ -46,8 +49,6 @@ class AnsibleOperationsMixin:
 
     def _get_vault_lib(self) -> VaultLib:
         """Construct and configure an Ansible VaultLib instance with active secret."""
-        from src.providers.ansible_vault import get_vault_lib
-
         pwd = self._get_active_password()
         if not pwd:
             raise PermissionError(
@@ -81,8 +82,6 @@ class AnsibleOperationsMixin:
 
     def _load_data(self) -> Dict[str, Any]:
         """Loads and decrypts the active vault file, returning a dictionary."""
-        from src.providers.ansible_vault import load_vault_data
-
         vf = self.vault_file
         if not vf:
             raise FileNotFoundError(
@@ -115,8 +114,6 @@ class AnsibleOperationsMixin:
 
     def _save_data(self, data: Dict[str, Any]) -> None:
         """Serializes dictionary to YAML, encrypts with VaultLib, and saves atomically."""
-        from src.providers.ansible_vault import save_vault_data
-
         vf = self.vault_file
         if not vf:
             raise ValueError(_("Ansible Vault file path is not configured."))

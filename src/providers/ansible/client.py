@@ -1,4 +1,4 @@
-"""Ansible Vault encrypted YAML file provider implementation."""
+"""Ansible Vault encrypted YAML file client class."""
 
 from __future__ import annotations
 
@@ -14,18 +14,16 @@ os.environ.setdefault("LC_ALL", "C.UTF-8")
 from ansible.parsing.vault import AnsibleVaultError, VaultLib, VaultSecret  # noqa: F401
 
 from src.i18n import _
-from src.providers.ansible_compat import (
-    _MockLibc,
-    _MockLibcFunc,
+from src.providers.ansible.compat import (
     install_posix_shims,
 )
-from src.providers.ansible_discovery import (
+from src.providers.ansible.discovery import (
     detect_password,
     detect_password_file,
     detect_vault_file,
     find_local_vault_files,
 )
-from src.providers.ansible_ops import AnsibleOperationsMixin
+from src.providers.ansible.ops import AnsibleOperationsMixin
 from src.providers.base import BaseSecretProvider
 
 install_posix_shims()
@@ -182,11 +180,11 @@ class AnsibleVaultClient(AnsibleOperationsMixin, BaseSecretProvider):
 
     @property
     def vault_id(self) -> str:
-        """Return the Ansible Vault identifier string (default: 'default')."""
+        """Return the active Ansible Vault identifier."""
         return self._vault_id
 
     @vault_id.setter
-    def vault_id(self, val: str) -> None:
+    def vault_id(self, val: Optional[str]) -> None:
         """Set the Ansible Vault identifier string."""
         self._vault_id = val.strip() if val else "default"
         self._invalidate_cache()
@@ -217,15 +215,3 @@ class AnsibleVaultClient(AnsibleOperationsMixin, BaseSecretProvider):
     @classmethod
     def find_local_vault_files(cls) -> List[str]:
         return find_local_vault_files()
-
-
-__all__ = [
-    "AnsibleVaultClient",
-    "_MockLibc",
-    "_MockLibcFunc",
-    "detect_password",
-    "detect_password_file",
-    "detect_vault_file",
-    "find_local_vault_files",
-    "install_posix_shims",
-]

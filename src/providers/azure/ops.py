@@ -15,7 +15,7 @@ from azure.keyvault.secrets import SecretClient
 
 from src.i18n import _
 from src.models import SecretItem, SecretVersionItem
-from src.providers.azure_helpers import (
+from src.providers.azure.helpers import (
     parse_azure_secret_item,
     parse_azure_version_item,
 )

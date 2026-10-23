@@ -15,7 +15,7 @@ from botocore.exceptions import (
 
 from src.i18n import _
 from src.models import SecretItem, SecretVersionItem
-from src.providers.aws_helpers import parse_aws_secret_item, parse_aws_version_item
+from src.providers.aws.helpers import parse_aws_secret_item, parse_aws_version_item
 
 
 class AWSOperationsMixin:

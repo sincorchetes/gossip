@@ -14,8 +14,8 @@ from src.exceptions import (
 )
 from src.i18n import _
 from src.models import GCPProjectItem, SecretItem, SecretVersionItem
-from src.providers.gcp_discovery import fetch_available_projects
-from src.providers.gcp_helpers import parse_secret_item, parse_version_item
+from src.providers.gcp.discovery import fetch_available_projects
+from src.providers.gcp.helpers import parse_secret_item, parse_version_item
 
 if TYPE_CHECKING:
     from google.auth.credentials import Credentials
