@@ -116,20 +116,18 @@ jobs:
           cp data/com.github.sincorchetes.gossip_gcp.desktop "${DEB_DIR}/usr/share/applications/"
           cp data/icons/hicolor/scalable/apps/com.github.sincorchetes.gossip_gcp.svg "${DEB_DIR}/usr/share/icons/hicolor/scalable/apps/"
 
-          cat <<EOF > "${DEB_DIR}/DEBIAN/control"
-Package: gossip
-Version: ${PKG_VERSION}
-Section: utils
-Priority: optional
-Architecture: amd64
-Maintainer: sincorchetes.tech <https://sincorchetes.tech>
-Depends: libc6, libglib2.0-0, libgtk-4-1, libadwaita-1-0
-Homepage: https://sincorchetes.github.io/gossip/
-Description: Multi-Cloud Secret Manager
- Gossip is a modern desktop application for managing secrets across
- Google Cloud Secret Manager, AWS Secrets Manager, Azure Key Vault,
- and Ansible Vault with GTK4 and Libadwaita.
-EOF
+          echo "Package: gossip" > "${DEB_DIR}/DEBIAN/control"
+          echo "Version: ${PKG_VERSION}" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Section: utils" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Priority: optional" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Architecture: amd64" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Maintainer: sincorchetes.tech <https://sincorchetes.tech>" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Depends: libc6, libglib2.0-0, libgtk-4-1, libadwaita-1-0" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Homepage: https://sincorchetes.github.io/gossip/" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Description: Multi-Cloud Secret Manager" >> "${DEB_DIR}/DEBIAN/control"
+          echo " Gossip is a modern desktop application for managing secrets across" >> "${DEB_DIR}/DEBIAN/control"
+          echo " Google Cloud Secret Manager, AWS Secrets Manager, Azure Key Vault," >> "${DEB_DIR}/DEBIAN/control"
+          echo " and Ansible Vault with GTK4 and Libadwaita." >> "${DEB_DIR}/DEBIAN/control"
 
           dpkg-deb --build --root-owner-group "${DEB_DIR}" "dist/packages/gossip_${PKG_VERSION}_amd64.deb"
 
