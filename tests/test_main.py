@@ -158,6 +158,14 @@ class TestMain(unittest.TestCase):
                 self.assertNotIn("XDG_DATA_DIRS", os.environ)
 
     @patch("os.path.isdir", return_value=True)
+    def test_setup_frozen_environment_repository_prepend_exception(self, mock_isdir):
+        from src.main import setup_frozen_environment
+
+        with patch.object(sys, "frozen", True, create=True):
+            with patch.dict(sys.modules, {"gi._gi": None}):
+                setup_frozen_environment()
+
+    @patch("os.path.isdir", return_value=True)
     def test_setup_frozen_environment_windows(self, mock_isdir):
         import os
 
