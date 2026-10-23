@@ -1,21 +1,22 @@
 from __future__ import annotations
 
-from datetime import datetime
 import unittest
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import gi
+
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gtk
+from gi.repository import Adw
 
+from src.models import SecretItem, SecretVersionItem
 from src.providers import (
     AnsibleVaultClient,
     AWSSecretClient,
     AzureSecretClient,
     GCPSecretClient,
 )
-from src.models import SecretItem, SecretVersionItem
 from src.ui.window import MainWindow
 
 
@@ -163,13 +164,24 @@ class TestMainWindow(unittest.TestCase):
         self.window._on_payload_loaded("my-secret-token", False, None, "gcp")
         self.assertEqual(self.window.current_payload, "my-secret-token")
         self.assertFalse(self.window.is_payload_revealed)
-        self.assertIn("•", self.window.text_buffer.get_text(self.window.text_buffer.get_start_iter(), self.window.text_buffer.get_end_iter(), True))
+        self.assertIn(
+            "•",
+            self.window.text_buffer.get_text(
+                self.window.text_buffer.get_start_iter(),
+                self.window.text_buffer.get_end_iter(),
+                True,
+            ),
+        )
 
         # Reveal
         self.window._on_toggle_reveal(None)
         self.assertTrue(self.window.is_payload_revealed)
         self.assertEqual(
-            self.window.text_buffer.get_text(self.window.text_buffer.get_start_iter(), self.window.text_buffer.get_end_iter(), True),
+            self.window.text_buffer.get_text(
+                self.window.text_buffer.get_start_iter(),
+                self.window.text_buffer.get_end_iter(),
+                True,
+            ),
             "my-secret-token",
         )
 
@@ -216,9 +228,11 @@ class TestMainWindow(unittest.TestCase):
         self.window._on_secret_deleted_success("old_sec")
 
     def test_create_secret_clicked_flow(self):
-        with patch("src.ui.window.show_create_secret_dialog") as mock_dlg, \
-             patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        with (
+            patch("src.ui.window.show_create_secret_dialog") as mock_dlg,
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             self.window._on_create_secret_clicked()
             mock_dlg.assert_called_once()
             on_confirm = mock_dlg.call_args[0][1]
@@ -231,17 +245,23 @@ class TestMainWindow(unittest.TestCase):
             )
 
     def test_add_version_clicked_flow(self):
-        self.window.selected_secret = SecretItem(name="projects/test/secrets/sec1", secret_id="sec1")
+        self.window.selected_secret = SecretItem(
+            name="projects/test/secrets/sec1", secret_id="sec1"
+        )
         self.window.current_payload = "cached_val"
-        with patch("src.ui.window.show_add_version_dialog") as mock_dlg, \
-             patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        with (
+            patch("src.ui.window.show_add_version_dialog") as mock_dlg,
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             self.window._on_add_version_clicked()
             mock_dlg.assert_called_once()
             self.assertEqual(mock_dlg.call_args[1].get("current_value"), "cached_val")
             on_confirm = mock_dlg.call_args[0][2]
             on_confirm("new_payload_v2")
-            self.mock_gcp.add_secret_version.assert_called_with("projects/test/secrets/sec1", "new_payload_v2")
+            self.mock_gcp.add_secret_version.assert_called_with(
+                "projects/test/secrets/sec1", "new_payload_v2"
+            )
 
         # Test fallback when current_payload is None but current_versions exists
         self.window.current_payload = None
@@ -261,31 +281,49 @@ class TestMainWindow(unittest.TestCase):
             self.assertIsNone(mock_dlg.call_args[1].get("current_value"))
 
     def test_toggle_version_state_flow(self):
-        v1 = SecretVersionItem(name="projects/test/secrets/sec1/versions/1", version_id="1", state="ENABLED")
-        with patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        v1 = SecretVersionItem(
+            name="projects/test/secrets/sec1/versions/1", version_id="1", state="ENABLED"
+        )
+        with (
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             self.window._on_toggle_version_state(v1, enable=False)
-            self.mock_gcp.toggle_version_state.assert_called_with("projects/test/secrets/sec1/versions/1", False)
+            self.mock_gcp.toggle_version_state.assert_called_with(
+                "projects/test/secrets/sec1/versions/1", False
+            )
 
             self.window._on_toggle_version_state(v1, enable=True)
-            self.mock_gcp.toggle_version_state.assert_called_with("projects/test/secrets/sec1/versions/1", True)
+            self.mock_gcp.toggle_version_state.assert_called_with(
+                "projects/test/secrets/sec1/versions/1", True
+            )
 
     def test_destroy_version_clicked_flow(self):
-        v1 = SecretVersionItem(name="projects/test/secrets/sec1/versions/1", version_id="1", state="DISABLED")
-        with patch("src.ui.window.show_confirm_destroy_version_dialog") as mock_dlg, \
-             patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        v1 = SecretVersionItem(
+            name="projects/test/secrets/sec1/versions/1", version_id="1", state="DISABLED"
+        )
+        with (
+            patch("src.ui.window.show_confirm_destroy_version_dialog") as mock_dlg,
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             self.window._on_destroy_version_clicked(v1)
             mock_dlg.assert_called_once()
             on_confirm = mock_dlg.call_args[0][2]
             on_confirm()
-            self.mock_gcp.destroy_version.assert_called_with("projects/test/secrets/sec1/versions/1")
+            self.mock_gcp.destroy_version.assert_called_with(
+                "projects/test/secrets/sec1/versions/1"
+            )
 
     def test_delete_secret_clicked_flow(self):
-        self.window.selected_secret = SecretItem(name="projects/test/secrets/sec1", secret_id="sec1")
-        with patch("src.ui.window.show_confirm_delete_secret_dialog") as mock_dlg, \
-             patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        self.window.selected_secret = SecretItem(
+            name="projects/test/secrets/sec1", secret_id="sec1"
+        )
+        with (
+            patch("src.ui.window.show_confirm_delete_secret_dialog") as mock_dlg,
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             self.window._on_delete_secret_clicked()
             mock_dlg.assert_called_once()
             on_confirm = mock_dlg.call_args[0][2]
@@ -301,7 +339,9 @@ class TestMainWindow(unittest.TestCase):
             self.window._on_copy_payload(None)
             mock_clipboard.set.assert_called_with("super-secret-token")
 
-            self.window.selected_secret = SecretItem(name="projects/test/secrets/s1", secret_id="s1")
+            self.window.selected_secret = SecretItem(
+                name="projects/test/secrets/s1", secret_id="s1"
+            )
             self.window._on_copy_resource_name(None)
             mock_clipboard.set.assert_called_with("projects/test/secrets/s1")
 
@@ -349,8 +389,10 @@ class TestMainWindow(unittest.TestCase):
         self.window._update_detail_labels()
 
     def test_async_data_loaders(self):
-        with patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        with (
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             self.window._load_secrets_async()
             self.window._load_versions_async("projects/test/secrets/sec1")
             self.window._load_payload_async("projects/test/secrets/sec1/versions/1")
@@ -360,8 +402,10 @@ class TestMainWindow(unittest.TestCase):
         self.mock_gcp.list_versions.side_effect = RuntimeError("List versions error")
         self.mock_gcp.access_secret_payload.side_effect = RuntimeError("Access payload error")
 
-        with patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        with (
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             self.window._load_secrets_async()
             self.window._load_versions_async("projects/test/secrets/sec1")
             self.window._load_payload_async("projects/test/secrets/sec1/versions/1")
@@ -377,16 +421,21 @@ class TestMainWindow(unittest.TestCase):
         self.mock_gcp.destroy_version.side_effect = RuntimeError("Failed destroy")
         self.mock_gcp.delete_secret.side_effect = RuntimeError("Failed delete")
 
-        self.window.selected_secret = SecretItem(name="projects/test/secrets/sec1", secret_id="sec1")
-        v1 = SecretVersionItem(name="projects/test/secrets/sec1/versions/1", version_id="1", state="ENABLED")
+        self.window.selected_secret = SecretItem(
+            name="projects/test/secrets/sec1", secret_id="sec1"
+        )
+        v1 = SecretVersionItem(
+            name="projects/test/secrets/sec1/versions/1", version_id="1", state="ENABLED"
+        )
 
-        with patch("src.ui.window.show_create_secret_dialog") as mock_create_dlg, \
-             patch("src.ui.window.show_add_version_dialog") as mock_add_dlg, \
-             patch("src.ui.window.show_confirm_destroy_version_dialog") as mock_destroy_dlg, \
-             patch("src.ui.window.show_confirm_delete_secret_dialog") as mock_del_dlg, \
-             patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
-
+        with (
+            patch("src.ui.window.show_create_secret_dialog") as mock_create_dlg,
+            patch("src.ui.window.show_add_version_dialog") as mock_add_dlg,
+            patch("src.ui.window.show_confirm_destroy_version_dialog") as mock_destroy_dlg,
+            patch("src.ui.window.show_confirm_delete_secret_dialog") as mock_del_dlg,
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             # Create secret error
             self.window._on_create_secret_clicked()
             mock_create_dlg.call_args[0][1]("id", "p", {})
@@ -444,7 +493,14 @@ class TestMainWindow(unittest.TestCase):
         # Version loaded callback with empty versions list
         self.window.selected_secret = sec
         self.window._on_versions_loaded([], None, "s1", self.window.active_provider.provider_id)
-        self.assertIn("[No", self.window.text_buffer.get_text(self.window.text_buffer.get_start_iter(), self.window.text_buffer.get_end_iter(), True))
+        self.assertIn(
+            "[No",
+            self.window.text_buffer.get_text(
+                self.window.text_buffer.get_start_iter(),
+                self.window.text_buffer.get_end_iter(),
+                True,
+            ),
+        )
 
         # Version loaded callback from stale provider
         self.window._on_versions_loaded([v_en], None, "s1", "stale_provider_id")
@@ -497,16 +553,22 @@ class TestMainWindow(unittest.TestCase):
 
         # 9. _update_detail_labels with current_versions present (711)
         self.window.selected_secret = SecretItem(name="s1", secret_id="s1")
-        self.window.current_versions = [SecretVersionItem(version_id="1", name="v1", state="ENABLED")]
+        self.window.current_versions = [
+            SecretVersionItem(version_id="1", name="v1", state="ENABLED")
+        ]
         self.window._update_detail_labels()
 
         # 10. _on_versions_loaded error toast (742-743)
-        self.window._on_versions_loaded([], "Failed fetching versions", "s1", self.window.active_provider.provider_id)
+        self.window._on_versions_loaded(
+            [], "Failed fetching versions", "s1", self.window.active_provider.provider_id
+        )
 
         # 11. _load_payload_async worker success path (859)
         self.mock_gcp.access_secret_payload.return_value = ("hello secret payload", False)
-        with patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        with (
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             self.window._load_payload_async("projects/p/secrets/s/versions/1")
             self.assertEqual(self.window.current_payload, "hello secret payload")
 
@@ -558,8 +620,11 @@ class TestMainWindow(unittest.TestCase):
 
     def test_resolve_icon_name_edge_cases(self):
         from src.ui.window import resolve_icon_name
+
         # 1. Nonexistent icons return candidates[0]
-        name = resolve_icon_name(["nonexistent-xyz-123", "nonexistent-abc-456"], fallback="custom-fallback")
+        name = resolve_icon_name(
+            ["nonexistent-xyz-123", "nonexistent-abc-456"], fallback="custom-fallback"
+        )
         self.assertEqual(name, "nonexistent-xyz-123")
 
         # 2. Empty candidates return fallback

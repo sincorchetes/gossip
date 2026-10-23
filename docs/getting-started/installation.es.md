@@ -10,30 +10,56 @@ Cada versión oficial se compila y publica automáticamente a través de GitHub 
 
 Descarga la última versión desde la [página de Releases en GitHub](https://github.com/sincorchetes/gossip/releases).
 
+=== "Debian / Ubuntu (.deb)"
+ 
+     1. Descarga el paquete `gossip_*_amd64.deb` de la última publicación.
+     2. Instala el paquete con `apt`:
+        ```bash
+        sudo apt install ./gossip_*_amd64.deb
+        ```
+     3. Abre **Gossip** directamente desde el menú de aplicaciones de tu escritorio o ejecuta `gossip` en la terminal.
+ 
+     > [!TIP]
+     > **Integración completa de escritorio:** El paquete `.deb` registra automáticamente el icono en alta resolución, el lanzador `.desktop` en el menú del sistema y permite desinstalar limpiamente con `sudo apt remove gossip`.
+ 
+=== "Fedora / openSUSE (.rpm)"
+ 
+     1. Descarga el archivo `gossip-*-1.x86_64.rpm` de la última publicación.
+     2. Instala el paquete con el gestor de software de tu distribución:
+        * **Fedora / RHEL**:
+          ```bash
+          sudo dnf install ./gossip-*-1.x86_64.rpm
+          ```
+        * **openSUSE (Tumbleweed / Leap)**:
+          ```bash
+          sudo zypper install ./gossip-*-1.x86_64.rpm
+          ```
+     3. Abre **Gossip** desde el menú de aplicaciones o escribe `gossip` en tu terminal.
+ 
+=== "Linux Portable (.tar.gz)"
+ 
+     1. Descarga el paquete `gossip-linux-x86_64-v*.tar.gz` de la última publicación.
+     2. Descomprime el tarball en tu terminal:
+        ```bash
+        tar -xvf gossip-linux-x86_64-v*.tar.gz
+        cd gossip/
+        ```
+     3. Ejecuta el binario:
+        ```bash
+        ./gossip
+        ```
+ 
+     > [!NOTE]
+     > Compatible con distribuciones modernas de Linux con glibc 2.35+ y servidor gráfico Wayland o X11.
+ 
 === "Windows (64-bit)"
-
-    1. Descarga el archivo `gossip-windows-x64-v*.zip` de la última publicación.
-    2. Descomprime el archivo ZIP en cualquier ubicación (ej. `C:\Program Files\Gossip` o en tu carpeta de usuario).
-    3. Haz doble clic en `gossip.exe` para iniciar la aplicación.
-
-    > [!TIP]
-    > **Sin instalación previa:** El paquete de Windows es totalmente autocontenido. No necesitas tener instalado Python, MSYS2 ni GTK en tu sistema.
-
-=== "Linux (x86_64)"
-
-    1. Descarga el paquete `gossip-linux-x86_64-v*.tar.gz` de la última publicación.
-    2. Descomprime el tarball en tu terminal:
-       ```bash
-       tar -xvf gossip-linux-x86_64-v*.tar.gz
-       cd gossip/
-       ```
-    3. Ejecuta el binario:
-       ```bash
-       ./gossip
-       ```
-
-    > [!NOTE]
-    > Compatible con distribuciones modernas de Linux con glibc 2.35+ y servidor gráfico Wayland o X11.
+ 
+     1. Descarga el archivo `gossip-windows-x64-v*.zip` de la última publicación.
+     2. Descomprime el archivo ZIP en cualquier ubicación (ej. `C:\Program Files\Gossip` o en tu carpeta de usuario).
+     3. Haz doble clic en `gossip.exe` para iniciar la aplicación.
+ 
+     > [!TIP]
+     > **Sin instalación previa:** El paquete de Windows es totalmente autocontenido. No necesitas tener instalado Python, MSYS2 ni GTK en tu sistema.
 
 ---
 

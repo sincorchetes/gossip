@@ -1,13 +1,12 @@
 from __future__ import annotations
 
+import unittest
 from datetime import datetime
 from unittest.mock import MagicMock, patch
-import unittest
 
 from botocore.exceptions import ClientError
 
 from src.providers.aws import AWSSecretClient
-from src.models import SecretItem, SecretVersionItem
 
 
 class TestAWSSecretClient(unittest.TestCase):
@@ -151,7 +150,6 @@ class TestAWSSecretClient(unittest.TestCase):
         with self.assertRaises(PermissionError):
             self.client.access_secret_payload("restricted-sec")
 
-
     def test_additional_properties_and_setters(self):
         self.assertEqual(self.client.provider, "aws")
         self.assertEqual(self.client.icon_name, "preferences-system-symbolic")
@@ -196,6 +194,7 @@ class TestAWSSecretClient(unittest.TestCase):
     @patch("boto3.Session")
     def test_get_client_profile_not_found(self, mock_sess_cls):
         from botocore.exceptions import ProfileNotFound
+
         mock_sess_cls.side_effect = ProfileNotFound(profile="missing-prof")
         c = AWSSecretClient(profile_name="missing-prof")
         with self.assertRaises(RuntimeError):
@@ -204,6 +203,7 @@ class TestAWSSecretClient(unittest.TestCase):
     @patch("boto3.Session")
     def test_get_client_no_credentials_error(self, mock_sess_cls):
         from botocore.exceptions import NoCredentialsError
+
         mock_sess_cls.side_effect = NoCredentialsError()
         c = AWSSecretClient(profile_name="no-creds")
         with self.assertRaises(RuntimeError):
@@ -233,17 +233,20 @@ class TestAWSSecretClient(unittest.TestCase):
             RecoveryWindowInDays=14,
         )
 
-
     def test_access_secret_payload_variants(self):
         # Format with @version
         self.mock_sm_client.get_secret_value.return_value = {"SecretString": "v123-val"}
         val, _ = self.client.access_secret_payload("my-secret@v123")
         self.assertEqual(val, "v123-val")
-        self.mock_sm_client.get_secret_value.assert_called_with(SecretId="my-secret", VersionId="v123")
+        self.mock_sm_client.get_secret_value.assert_called_with(
+            SecretId="my-secret", VersionId="v123"
+        )
 
         # Format with version_stage
         self.client.access_secret_payload("my-secret", version_stage="AWSPREVIOUS")
-        self.mock_sm_client.get_secret_value.assert_called_with(SecretId="my-secret", VersionStage="AWSPREVIOUS")
+        self.mock_sm_client.get_secret_value.assert_called_with(
+            SecretId="my-secret", VersionStage="AWSPREVIOUS"
+        )
 
         # Empty secret
         self.mock_sm_client.get_secret_value.return_value = {}
@@ -294,11 +297,15 @@ class TestAWSSecretClient(unittest.TestCase):
 
     def test_list_versions_pagination(self):
         resp1 = {
-            "Versions": [{"VersionId": "v1", "VersionStages": ["AWSCURRENT"], "CreatedDate": datetime.now()}],
+            "Versions": [
+                {"VersionId": "v1", "VersionStages": ["AWSCURRENT"], "CreatedDate": datetime.now()}
+            ],
             "NextToken": "page-2",
         }
         resp2 = {
-            "Versions": [{"VersionId": "v2", "VersionStages": ["AWSPREVIOUS"], "CreatedDate": datetime.now()}],
+            "Versions": [
+                {"VersionId": "v2", "VersionStages": ["AWSPREVIOUS"], "CreatedDate": datetime.now()}
+            ],
         }
         self.mock_sm_client.list_secret_version_ids.side_effect = [resp1, resp2]
         versions = self.client.list_versions("paginated-sec")
@@ -382,9 +389,13 @@ class TestAWSSecretClient(unittest.TestCase):
 
         # 5. detect_profile with default, non-default, and empty available profiles (146-150)
         with patch.dict("os.environ", {}, clear=True):
-            with patch.object(AWSSecretClient, "list_available_profiles", return_value=["default", "staging"]):
+            with patch.object(
+                AWSSecretClient, "list_available_profiles", return_value=["default", "staging"]
+            ):
                 self.assertEqual(AWSSecretClient.detect_profile(), "default")
-            with patch.object(AWSSecretClient, "list_available_profiles", return_value=["staging", "prod"]):
+            with patch.object(
+                AWSSecretClient, "list_available_profiles", return_value=["staging", "prod"]
+            ):
                 self.assertEqual(AWSSecretClient.detect_profile(), "staging")
             with patch.object(AWSSecretClient, "list_available_profiles", return_value=[]):
                 self.assertEqual(AWSSecretClient.detect_profile(), "default")
@@ -450,7 +461,9 @@ class TestAWSSecretClient(unittest.TestCase):
         self.mock_sm_client.get_secret_value.side_effect = None
         self.mock_sm_client.get_secret_value.return_value = {"SecretString": "val"}
         val, _ = self.client.access_secret_payload("mysec@v1", version_id="explicit_v2")
-        self.mock_sm_client.get_secret_value.assert_called_with(SecretId="mysec", VersionId="explicit_v2")
+        self.mock_sm_client.get_secret_value.assert_called_with(
+            SecretId="mysec", VersionId="explicit_v2"
+        )
 
         # 14. create_secret with payload_data=None (401->403)
         self.mock_sm_client.create_secret.side_effect = None
@@ -461,5 +474,3 @@ class TestAWSSecretClient(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-

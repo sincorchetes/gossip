@@ -72,13 +72,21 @@ def show_confirm_delete_secret_dialog(
 
     if provider == "ansible":
         heading = _("Delete Variable '%s'?") % secret_id
-        body = _("The variable '%s' will be removed from Ansible Vault.\n\nThis action cannot be undone.") % secret_id
+        body = (
+            _(
+                "The variable '%s' will be removed from Ansible Vault.\n\nThis action cannot be undone."
+            )
+            % secret_id
+        )
     else:
         heading = _("Delete Secret '%s'?") % secret_id
-        body = _(
-            "The complete secret and all its versions will be deleted from %s.\n\n"
-            "This action cannot be undone."
-        ) % provider_name
+        body = (
+            _(
+                "The complete secret and all its versions will be deleted from %s.\n\n"
+                "This action cannot be undone."
+            )
+            % provider_name
+        )
 
     dialog = Adw.MessageDialog(
         transient_for=parent_window,

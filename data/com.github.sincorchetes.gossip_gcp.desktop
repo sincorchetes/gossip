@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Gossip
+GenericName=Secret Manager
+Comment=Multi-Cloud Secret Manager (GCP, AWS, Azure, Ansible Vault)
+Exec=gossip %U
+Icon=com.github.sincorchetes.gossip_gcp
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Development;Security;System;Utility;GTK;
+Keywords=secret;manager;gcp;aws;azure;ansible;vault;security;
+StartupWMClass=com.github.sincorchetes.gossip_gcp
+MimeType=application/x-yaml;

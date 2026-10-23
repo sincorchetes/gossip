@@ -1,13 +1,12 @@
 from __future__ import annotations
 
+import unittest
 from datetime import datetime
 from unittest.mock import MagicMock, patch
-import unittest
 
 from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 
 from src.providers.azure import AzureSecretClient
-from src.models import SecretItem, SecretVersionItem
 
 
 class TestAzureSecretClient(unittest.TestCase):
@@ -106,7 +105,9 @@ class TestAzureSecretClient(unittest.TestCase):
         ver = self.client.add_secret_version("new-key", "updated-payload")
         self.assertEqual(ver.version_id, "v2-hex")
         self.assertEqual(ver.state, "ENABLED")
-        self.mock_kv_client.set_secret.assert_called_once_with(name="new-key", value="updated-payload")
+        self.mock_kv_client.set_secret.assert_called_once_with(
+            name="new-key", value="updated-payload"
+        )
 
     def test_toggle_version_state(self):
         mock_updated = MagicMock()
@@ -125,7 +126,6 @@ class TestAzureSecretClient(unittest.TestCase):
     def test_delete_secret(self):
         self.client.delete_secret("old-secret")
         self.mock_kv_client.begin_delete_secret.assert_called_once_with("old-secret")
-
 
     def test_additional_properties_and_context_dialog(self):
         self.assertEqual(self.client.provider, "azure")
@@ -186,10 +186,12 @@ class TestAzureSecretClient(unittest.TestCase):
                 c._get_client()
 
     def test_error_handlers(self):
-        from azure.core.exceptions import ClientAuthenticationError, HttpResponseError
+        from azure.core.exceptions import ClientAuthenticationError
 
         # Auth error
-        self.mock_kv_client.list_properties_of_secrets.side_effect = ClientAuthenticationError("Auth failed")
+        self.mock_kv_client.list_properties_of_secrets.side_effect = ClientAuthenticationError(
+            "Auth failed"
+        )
         with self.assertRaises(RuntimeError):
             self.client.list_secrets()
 
@@ -287,12 +289,11 @@ class TestAzureSecretClient(unittest.TestCase):
         c = AzureSecretClient(vault_name="new-test-vault")
         c._client = None
         c._credential = None
-        client_instance = c._get_client()
+        self.assertIsNotNone(c._get_client())
         mock_cred_cls.assert_called_once()
         mock_sc_cls.assert_called_once()
 
     def test_azure_client_final_branches(self):
-        from azure.core.exceptions import ResourceNotFoundError
 
         # list_secrets generic exception
         self.mock_kv_client.list_properties_of_secrets.side_effect = TypeError("Unexpected error")
@@ -315,7 +316,9 @@ class TestAzureSecretClient(unittest.TestCase):
         mock_prop = MagicMock(version="v1", enabled=True, created_on=datetime.now())
         self.mock_kv_client.update_secret_properties.return_value = mock_prop
         self.client.enable_secret_version("sec_without_at")
-        self.mock_kv_client.update_secret_properties.assert_called_with(name="sec_without_at", version=None, enabled=True)
+        self.mock_kv_client.update_secret_properties.assert_called_with(
+            name="sec_without_at", version=None, enabled=True
+        )
 
         # list_available_vaults with unnamed item and failed cli
         with patch("subprocess.run") as mock_sub:
@@ -323,7 +326,9 @@ class TestAzureSecretClient(unittest.TestCase):
             vaults = self.client.list_available_vaults()
             self.assertEqual(len(vaults), 1)
 
-            mock_sub.return_value = MagicMock(returncode=0, stdout='[{"vaultUri": "https://no-name"}]')
+            mock_sub.return_value = MagicMock(
+                returncode=0, stdout='[{"vaultUri": "https://no-name"}]'
+            )
             vaults = self.client.list_available_vaults()
             self.assertEqual(len(vaults), 1)
 
@@ -342,7 +347,7 @@ class TestAzureSecretClient(unittest.TestCase):
         with patch("subprocess.run") as mock_sub:
             mock_sub.return_value = MagicMock(
                 returncode=0,
-                stdout='[{"name": "test-kv", "vaultUri": "https://test-kv.vault.azure.net/", "location": "eastus"}]'
+                stdout='[{"name": "test-kv", "vaultUri": "https://test-kv.vault.azure.net/", "location": "eastus"}]',
             )
             vaults = self.client.list_available_vaults()
             self.assertEqual(len(vaults), 1)
@@ -359,4 +364,3 @@ class TestAzureSecretClient(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

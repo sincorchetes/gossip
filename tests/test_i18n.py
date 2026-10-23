@@ -7,8 +7,8 @@ import unittest
 from unittest.mock import patch
 
 from src.i18n import (
-    _,
     SUPPORTED_LANGUAGES,
+    _,
     _unescape_po_str,
     bind_domain,
     compile_po_to_mo,
@@ -51,7 +51,9 @@ class TestI18n(unittest.TestCase):
     def test_detect_system_language_from_lc_messages(self):
         self.assertEqual(detect_system_language(), "es")
 
-    @patch.dict("os.environ", {"LANG": "fr_FR.UTF-8", "LC_ALL": "", "LC_MESSAGES": "", "LANGUAGE": ""})
+    @patch.dict(
+        "os.environ", {"LANG": "fr_FR.UTF-8", "LC_ALL": "", "LC_MESSAGES": "", "LANGUAGE": ""}
+    )
     def test_detect_system_language_unsupported_fallback(self):
         self.assertEqual(detect_system_language(), "es")
 
@@ -60,7 +62,7 @@ class TestI18n(unittest.TestCase):
         self.assertEqual(get_current_language(), "es")
 
     def test_unescape_po_str(self):
-        raw = r'Hello\nWorld\t\"Escaped\"\r\\Done\x'
+        raw = r"Hello\nWorld\t\"Escaped\"\r\\Done\x"
         unescaped = _unescape_po_str(raw)
         self.assertEqual(unescaped, 'Hello\nWorld\t"Escaped"\r\\Donex')
 
@@ -139,6 +141,7 @@ msgstr "simple"
 
     def test_get_locale_search_dirs(self):
         import sys
+
         # 1. Standard execution
         dirs = get_locale_search_dirs()
         self.assertIsInstance(dirs, list)
@@ -150,15 +153,24 @@ msgstr "simple"
             xdg_locale = os.path.join(tmpdir, "xdg", "locale")
             girepo_dir = os.path.join(tmpdir, "opt", "lib", "girepository-1.0")
             girepo_share_locale = os.path.join(tmpdir, "opt", "share", "locale")
-            for d in (bundle_locales, bundle_share_locale, xdg_locale, girepo_dir, girepo_share_locale):
+            for d in (
+                bundle_locales,
+                bundle_share_locale,
+                xdg_locale,
+                girepo_dir,
+                girepo_share_locale,
+            ):
                 os.makedirs(d, exist_ok=True)
 
             with patch.object(sys, "frozen", True, create=True):
                 with patch.object(sys, "_MEIPASS", tmpdir, create=True):
-                    with patch.dict(os.environ, {
-                        "XDG_DATA_DIRS": os.path.join(tmpdir, "xdg"),
-                        "GI_TYPELIB_PATH": girepo_dir,
-                    }):
+                    with patch.dict(
+                        os.environ,
+                        {
+                            "XDG_DATA_DIRS": os.path.join(tmpdir, "xdg"),
+                            "GI_TYPELIB_PATH": girepo_dir,
+                        },
+                    ):
                         res = get_locale_search_dirs()
                         self.assertIn(bundle_locales, res)
                         self.assertIn(bundle_share_locale, res)
@@ -166,26 +178,34 @@ msgstr "simple"
                         self.assertIn(girepo_share_locale, res)
 
     def test_bind_domain(self):
-        from unittest.mock import MagicMock
         import locale
+        from unittest.mock import MagicMock
+
         with tempfile.TemporaryDirectory() as tmpdir:
             # 1. Standard execution
             bind_domain("gossip-gcp", tmpdir)
 
             # 2. When locale functions exist and succeed
-            with patch.object(locale, "bindtextdomain", create=True) as mock_btd, \
-                 patch.object(locale, "bind_textdomain_codeset", create=True) as mock_btc:
+            with (
+                patch.object(locale, "bindtextdomain", create=True) as mock_btd,
+                patch.object(locale, "bind_textdomain_codeset", create=True) as mock_btc,
+            ):
                 bind_domain("gossip-gcp", tmpdir)
                 mock_btd.assert_called_with("gossip-gcp", tmpdir)
                 mock_btc.assert_called_with("gossip-gcp", "UTF-8")
 
             # 3. When locale functions raise exceptions
-            with patch.object(locale, "bindtextdomain", side_effect=Exception("error"), create=True):
-                with patch.object(locale, "bind_textdomain_codeset", side_effect=Exception("error"), create=True):
+            with patch.object(
+                locale, "bindtextdomain", side_effect=Exception("error"), create=True
+            ):
+                with patch.object(
+                    locale, "bind_textdomain_codeset", side_effect=Exception("error"), create=True
+                ):
                     bind_domain("gossip-gcp", tmpdir)
 
             # 4. When locale does not have bindtextdomain or bind_textdomain_codeset
             real_hasattr = hasattr
+
             def mock_hasattr(obj, name):
                 if obj is locale and name in ("bindtextdomain", "bind_textdomain_codeset"):
                     return False
@@ -203,7 +223,9 @@ msgstr "simple"
             mock_clib = MagicMock()
             with patch("ctypes.cdll.LoadLibrary", return_value=mock_clib):
                 bind_domain("gossip-gcp", tmpdir)
-                self.assertTrue(mock_clib.bindtextdomain.called or mock_clib.bind_textdomain_codeset.called)
+                self.assertTrue(
+                    mock_clib.bindtextdomain.called or mock_clib.bind_textdomain_codeset.called
+                )
 
             # 7. ctypes c_lib without attributes
             dummy_clib = object()
@@ -216,6 +238,7 @@ msgstr "simple"
 
     def test_configure_system_locale(self):
         import locale
+
         # 1. es
         configure_system_locale("es")
         self.assertEqual(os.environ.get("LANGUAGE"), "es")
@@ -226,6 +249,7 @@ msgstr "simple"
 
         # 3. Mock setlocale raising exception on some candidates
         real_setlocale = locale.setlocale
+
         def mock_setlocale(cat, loc):
             if "UTF-8" in loc or "utf8" in loc:
                 raise Exception("unsupported locale")
@@ -241,4 +265,5 @@ msgstr "simple"
 
 if __name__ == "__main__":
     import time
+
     unittest.main()

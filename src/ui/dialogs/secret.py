@@ -103,16 +103,24 @@ def show_create_secret_dialog(
     """
     if provider == "aws":
         heading_text = _("Create New AWS Secret")
-        body_text = _("Define the unique identifier, initial payload, and optional tags for AWS Secrets Manager.")
+        body_text = _(
+            "Define the unique identifier, initial payload, and optional tags for AWS Secrets Manager."
+        )
     elif provider == "azure":
         heading_text = _("Create New Azure Secret")
-        body_text = _("Define the unique identifier, initial payload, and optional tags for Azure Key Vault.")
+        body_text = _(
+            "Define the unique identifier, initial payload, and optional tags for Azure Key Vault."
+        )
     elif provider == "ansible":
         heading_text = _("Create New Ansible Variable")
-        body_text = _("Define the variable name (key) and initial value to store in the Ansible Vault.")
+        body_text = _(
+            "Define the variable name (key) and initial value to store in the Ansible Vault."
+        )
     else:
         heading_text = _("Create New GCP Secret")
-        body_text = _("Define the unique identifier and initial payload for the new secret in GCP Secret Manager.")
+        body_text = _(
+            "Define the unique identifier and initial payload for the new secret in GCP Secret Manager."
+        )
 
     dialog = Adw.MessageDialog(
         transient_for=parent_window,
@@ -128,20 +136,28 @@ def show_create_secret_dialog(
     box.set_size_request(400, -1)
 
     # Secret ID / Variable Name Entry
-    name_label_text = _("Variable name (key):") if provider == "ansible" else _("Secret identifier (ID):")
+    name_label_text = (
+        _("Variable name (key):") if provider == "ansible" else _("Secret identifier (ID):")
+    )
     name_label = Gtk.Label(label=name_label_text, xalign=0)
     name_label.add_css_class("heading")
     box.append(name_label)
 
     name_entry = Gtk.Entry()
-    name_placeholder = _("e.g. database_password") if provider == "ansible" else _("e.g. my-production-api-key")
+    name_placeholder = (
+        _("e.g. database_password") if provider == "ansible" else _("e.g. my-production-api-key")
+    )
     name_entry.set_placeholder_text(name_placeholder)
     box.append(name_entry)
 
     # Description Entry (helpful in AWS and Azure content_type)
     desc_entry: Optional[Gtk.Entry] = None
     if provider in ("aws", "azure"):
-        label_text = _("Description (optional):") if provider == "aws" else _("Content Type / Description (optional):")
+        label_text = (
+            _("Description (optional):")
+            if provider == "aws"
+            else _("Content Type / Description (optional):")
+        )
         desc_label = Gtk.Label(label=label_text, xalign=0)
         desc_label.add_css_class("dim-label")
         box.append(desc_label)

@@ -20,7 +20,6 @@ from src.providers import (
 )
 from src.ui.window import MainWindow
 
-
 CUSTOM_CSS = """
 .pill {
     padding-left: 8px;
@@ -104,9 +103,13 @@ class GossipApplication(Adw.Application):
         self.maximized = maximized
 
         self.gcp_client = GCPSecretClient(project_id=self.project_id)
-        self.aws_client = AWSSecretClient(profile_name=self.aws_profile, region_name=self.aws_region)
+        self.aws_client = AWSSecretClient(
+            profile_name=self.aws_profile, region_name=self.aws_region
+        )
         self.azure_client = AzureSecretClient(vault_name=self.azure_vault)
-        self.ansible_client = AnsibleVaultClient(vault_file=self.ansible_vault, password_file=self.ansible_password_file)
+        self.ansible_client = AnsibleVaultClient(
+            vault_file=self.ansible_vault, password_file=self.ansible_password_file
+        )
         self.window: Optional[MainWindow] = None
 
     def do_startup(self):
@@ -121,8 +124,13 @@ class GossipApplication(Adw.Application):
         if display:
             theme = Gtk.IconTheme.get_for_display(display)
             if getattr(sys, "frozen", False):
-                bundle_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable)))
-                for cand in (os.path.join(bundle_dir, "share", "icons"), os.path.join(bundle_dir, "icons")):
+                bundle_dir = getattr(
+                    sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable))
+                )
+                for cand in (
+                    os.path.join(bundle_dir, "share", "icons"),
+                    os.path.join(bundle_dir, "icons"),
+                ):
                     if os.path.isdir(cand):
                         theme.add_search_path(cand)
 
@@ -137,7 +145,6 @@ class GossipApplication(Adw.Application):
                 css_provider,
                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
             )
-
 
     def do_activate(self):
         """Handle GTK application activation, creating and presenting MainWindow."""

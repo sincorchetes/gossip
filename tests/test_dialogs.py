@@ -4,18 +4,18 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import gi
+
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gtk
-from gi.repository import GLib
 
+from src.models import AzureVaultItem, GCPProjectItem
 from src.providers import (
     AnsibleVaultClient,
     AWSSecretClient,
     AzureSecretClient,
     GCPSecretClient,
 )
-from src.models import AzureVaultItem, GCPProjectItem
 from src.ui.dialogs import (
     show_about_dialog,
     show_add_version_dialog,
@@ -79,9 +79,11 @@ class TestDialogs(unittest.TestCase):
             original_init(dialog_self, *args, **kwargs)
             created_dialogs.append(dialog_self)
 
-        with patch.object(Adw.MessageDialog, "__init__", capture_init), \
-             patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        with (
+            patch.object(Adw.MessageDialog, "__init__", capture_init),
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             show_change_project_dialog(self.parent, mock_gcp, on_confirm)
 
             self.assertEqual(len(created_dialogs), 1)
@@ -133,8 +135,10 @@ class TestDialogs(unittest.TestCase):
         ]
         mock_gcp.list_available_projects.return_value = projects
         on_confirm = MagicMock()
-        with patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        with (
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             show_change_project_dialog(self.parent, mock_gcp, on_confirm)
 
     def test_show_change_project_dialog_error(self):
@@ -143,8 +147,10 @@ class TestDialogs(unittest.TestCase):
         mock_gcp.list_available_projects.side_effect = RuntimeError("Network error")
         on_confirm = MagicMock()
 
-        with patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        with (
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             show_change_project_dialog(self.parent, mock_gcp, on_confirm)
 
     def test_show_change_aws_context_dialog(self):
@@ -196,8 +202,12 @@ class TestDialogs(unittest.TestCase):
         mock_azure = MagicMock(spec=AzureSecretClient)
         mock_azure.vault_name = "my-kv"
         vaults = [
-            AzureVaultItem(name="my-kv", vault_uri="https://my-kv.vault.azure.net", location="westeurope"),
-            AzureVaultItem(name="secondary-kv", vault_uri="https://sec.vault.azure.net", location="eastus"),
+            AzureVaultItem(
+                name="my-kv", vault_uri="https://my-kv.vault.azure.net", location="westeurope"
+            ),
+            AzureVaultItem(
+                name="secondary-kv", vault_uri="https://sec.vault.azure.net", location="eastus"
+            ),
         ]
         mock_azure.list_available_vaults.return_value = vaults
         on_confirm = MagicMock()
@@ -209,9 +219,11 @@ class TestDialogs(unittest.TestCase):
             original_init(dialog_self, *args, **kwargs)
             created_dialogs.append(dialog_self)
 
-        with patch.object(Adw.MessageDialog, "__init__", capture_init), \
-             patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        with (
+            patch.object(Adw.MessageDialog, "__init__", capture_init),
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             show_change_azure_vault_dialog(self.parent, mock_azure, on_confirm)
 
             self.assertEqual(len(created_dialogs), 1)
@@ -242,9 +254,11 @@ class TestDialogs(unittest.TestCase):
             original_init(dialog_self, *args, **kwargs)
             created_dialogs.append(dialog_self)
 
-        with patch.object(Adw.MessageDialog, "__init__", capture_init), \
-             patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        with (
+            patch.object(Adw.MessageDialog, "__init__", capture_init),
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             show_change_azure_vault_dialog(self.parent, mock_azure, on_confirm)
 
             dialog = created_dialogs[0]
@@ -275,9 +289,11 @@ class TestDialogs(unittest.TestCase):
             original_init(dialog_self, *args, **kwargs)
             created_dialogs.append(dialog_self)
 
-        with patch.object(Adw.MessageDialog, "__init__", capture_init), \
-             patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)), \
-             patch("threading.Thread", side_effect=DummySyncThread):
+        with (
+            patch.object(Adw.MessageDialog, "__init__", capture_init),
+            patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
+            patch("threading.Thread", side_effect=DummySyncThread),
+        ):
             show_change_ansible_vault_dialog(self.parent, mock_ansible, on_confirm)
 
             dialog = created_dialogs[0]
@@ -294,8 +310,10 @@ class TestDialogs(unittest.TestCase):
             with patch("gi.repository.Gtk.FileDialog") as mock_fd_cls:
                 mock_fd_inst = MagicMock()
                 mock_fd_cls.return_value = mock_fd_inst
+
                 def fake_open(win, cancellable, cb):
                     cb(mock_file_dlg, MagicMock())
+
                 mock_fd_inst.open.side_effect = fake_open
                 for btn in buttons:
                     btn.emit("clicked")
@@ -307,8 +325,10 @@ class TestDialogs(unittest.TestCase):
             with patch("gi.repository.Gtk.FileDialog") as mock_fd_cls:
                 mock_fd_inst = MagicMock()
                 mock_fd_cls.return_value = mock_fd_inst
+
                 def fake_open(win, cancellable, cb):
                     cb(mock_file_dlg, MagicMock())
+
                 mock_fd_inst.open.side_effect = fake_open
                 for btn in buttons:
                     btn.emit("clicked")
@@ -318,8 +338,10 @@ class TestDialogs(unittest.TestCase):
             with patch("gi.repository.Gtk.FileDialog") as mock_fd_cls:
                 mock_fd_inst = MagicMock()
                 mock_fd_cls.return_value = mock_fd_inst
+
                 def fake_open(win, cancellable, cb):
                     cb(mock_file_dlg, MagicMock())
+
                 mock_fd_inst.open.side_effect = fake_open
                 for btn in buttons:
                     btn.emit("clicked")
@@ -445,7 +467,9 @@ class TestDialogs(unittest.TestCase):
             created_dialogs.append(dialog_self)
 
         with patch.object(Adw.MessageDialog, "__init__", capture_init):
-            show_add_version_dialog(self.parent, "secret_1", on_confirm, current_value="previous_secret_content")
+            show_add_version_dialog(
+                self.parent, "secret_1", on_confirm, current_value="previous_secret_content"
+            )
 
         dialog = created_dialogs[0]
         box = dialog.get_extra_child()
@@ -483,7 +507,9 @@ class TestDialogs(unittest.TestCase):
         check_button.set_active(False)
         start_iter = buffer.get_start_iter()
         end_iter = buffer.get_end_iter()
-        self.assertEqual(buffer.get_text(start_iter, end_iter, True), "previous_secret_content_appended_info")
+        self.assertEqual(
+            buffer.get_text(start_iter, end_iter, True), "previous_secret_content_appended_info"
+        )
 
         # Emit save -> on_confirm should receive the modified payload
         dialog.emit("response", "save")
@@ -519,7 +545,9 @@ class TestDialogs(unittest.TestCase):
                 created_dialogs.append(dialog_self)
 
             with patch.object(Adw.MessageDialog, "__init__", capture_init):
-                show_confirm_delete_secret_dialog(self.parent, "secret_x", on_confirm, provider=prov)
+                show_confirm_delete_secret_dialog(
+                    self.parent, "secret_x", on_confirm, provider=prov
+                )
 
             dialog = created_dialogs[0]
             dialog.emit("response", "cancel")

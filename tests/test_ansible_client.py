@@ -7,8 +7,6 @@ from unittest.mock import MagicMock, patch
 
 from src.providers.ansible import AnsibleVaultClient
 
-from src.models import SecretItem, SecretVersionItem
-
 
 class TestAnsibleVaultClient(unittest.TestCase):
     def setUp(self):
@@ -159,7 +157,9 @@ class TestAnsibleVaultClient(unittest.TestCase):
     def test_detection_methods(self):
         # Env vault file
         with patch.dict("os.environ", {"ANSIBLE_VAULT_FILE": self.vault_file}):
-            self.assertEqual(AnsibleVaultClient.detect_vault_file(), os.path.abspath(self.vault_file))
+            self.assertEqual(
+                AnsibleVaultClient.detect_vault_file(), os.path.abspath(self.vault_file)
+            )
 
         # Env password
         with patch.dict("os.environ", {"ANSIBLE_VAULT_PASSWORD": "env_password"}):
@@ -171,13 +171,14 @@ class TestAnsibleVaultClient(unittest.TestCase):
             f.write("file_secret_pass\n")
 
         with patch.dict("os.environ", {"ANSIBLE_VAULT_PASSWORD_FILE": pass_file_path}):
-            self.assertEqual(AnsibleVaultClient.detect_password_file(), os.path.abspath(pass_file_path))
+            self.assertEqual(
+                AnsibleVaultClient.detect_password_file(), os.path.abspath(pass_file_path)
+            )
 
         # Find local vault files
         with patch("os.getcwd", return_value=self.temp_dir.name):
             vaults = AnsibleVaultClient.find_local_vault_files()
             self.assertIn(os.path.abspath(self.vault_file), [os.path.abspath(v) for v in vaults])
-
 
     def test_unlock_helper(self):
         self.assertTrue(self.client.unlock(password=self.password))
@@ -197,7 +198,7 @@ class TestAnsibleVaultClient(unittest.TestCase):
         self.assertIn("a: 1", val)
 
         # List
-        self.client.create_secret(secret_id="list_var", payload_data='[1, 2, 3]')
+        self.client.create_secret(secret_id="list_var", payload_data="[1, 2, 3]")
         val, _ = self.client.access_secret_payload("list_var")
         self.assertIn("- 1", val)
 
@@ -240,6 +241,7 @@ class TestAnsibleVaultClient(unittest.TestCase):
         # Save a file with invalid YAML
         from ansible.constants import DEFAULT_VAULT_ID_MATCH
         from ansible.parsing.vault import VaultLib, VaultSecret
+
         vault_lib = VaultLib([(DEFAULT_VAULT_ID_MATCH, VaultSecret(self.password.encode("utf-8")))])
         encrypted = vault_lib.encrypt(b": this is : not : valid: yaml: [")
         with open(self.vault_file, "wb") as f:
@@ -264,6 +266,7 @@ class TestAnsibleVaultClient(unittest.TestCase):
         # Save vault containing a plain string scalar instead of a dict
         from ansible.constants import DEFAULT_VAULT_ID_MATCH
         from ansible.parsing.vault import VaultLib, VaultSecret
+
         vault_lib = VaultLib([(DEFAULT_VAULT_ID_MATCH, VaultSecret(self.password.encode("utf-8")))])
         encrypted = vault_lib.encrypt(b"just a plain scalar string")
         with open(self.vault_file, "wb") as f:
@@ -280,7 +283,9 @@ class TestAnsibleVaultClient(unittest.TestCase):
             f.write("fallback_pass\n")
 
         with patch.dict("os.environ", {}, clear=True):
-            with patch.object(AnsibleVaultClient, "detect_password_file", return_value=pass_file_path):
+            with patch.object(
+                AnsibleVaultClient, "detect_password_file", return_value=pass_file_path
+            ):
                 pwd = AnsibleVaultClient.detect_password()
                 self.assertEqual(pwd, "fallback_pass")
 
@@ -298,8 +303,10 @@ class TestAnsibleVaultClient(unittest.TestCase):
         c = AnsibleVaultClient()
         c._password = None
         c._password_file = None
-        with patch.object(c, "detect_password", return_value="detected_p"), \
-             patch.object(c, "detect_password_file", return_value="/detected/file"):
+        with (
+            patch.object(c, "detect_password", return_value="detected_p"),
+            patch.object(c, "detect_password_file", return_value="/detected/file"),
+        ):
             self.assertEqual(c.password, "detected_p")
             self.assertEqual(c.password_file, "/detected/file")
 
@@ -313,6 +320,7 @@ class TestAnsibleVaultClient(unittest.TestCase):
     def test_load_data_empty_yaml(self):
         from ansible.constants import DEFAULT_VAULT_ID_MATCH
         from ansible.parsing.vault import VaultLib, VaultSecret
+
         vault_lib = VaultLib([(DEFAULT_VAULT_ID_MATCH, VaultSecret(self.password.encode("utf-8")))])
         encrypted = vault_lib.encrypt(b"")
         with open(self.vault_file, "wb") as f:
@@ -340,7 +348,9 @@ class TestAnsibleVaultClient(unittest.TestCase):
         # 2. detect_password_file candidates and home (190, 194)
         home_pass = os.path.expanduser("~/.vault_pass")
         with patch.dict("os.environ", {}, clear=True):
-            with patch("os.path.exists", side_effect=lambda p: p.endswith(".vault_pass") and p != home_pass):
+            with patch(
+                "os.path.exists", side_effect=lambda p: p.endswith(".vault_pass") and p != home_pass
+            ):
                 self.assertTrue(AnsibleVaultClient.detect_password_file().endswith(".vault_pass"))
 
             with patch("os.path.exists", side_effect=lambda p: p == home_pass):
@@ -348,7 +358,9 @@ class TestAnsibleVaultClient(unittest.TestCase):
 
         # 3. detect_password exception (210-211)
         with patch.dict("os.environ", {}, clear=True):
-            with patch.object(AnsibleVaultClient, "detect_password_file", return_value="/some/pass"):
+            with patch.object(
+                AnsibleVaultClient, "detect_password_file", return_value="/some/pass"
+            ):
                 with patch("os.path.exists", return_value=True):
                     with patch("builtins.open", side_effect=PermissionError("Denied")):
                         self.assertIsNone(AnsibleVaultClient.detect_password())
@@ -358,6 +370,7 @@ class TestAnsibleVaultClient(unittest.TestCase):
             mock_walk.return_value = [
                 ("/project", ["subdir"], ["plain.yml", "corrupted.yml", "vault_secret.yml"]),
             ]
+
             def fake_open(path, mode="r", **kwargs):
                 if "corrupted.yml" in path:
                     raise IOError("Read error")
@@ -426,10 +439,12 @@ class TestAnsibleVaultClient(unittest.TestCase):
         # with backup file where getmtime fails (438-439)
         with open(bak_file, "w") as f:
             f.write("bak")
+
         def fake_getmtime(p):
             if str(p).endswith(".bak"):
                 raise OSError("Mtime fail")
             return 123456789.0
+
         with patch("os.path.getmtime", side_effect=fake_getmtime):
             vers2 = self.client.list_versions("sec_with_bak_err")
             self.assertEqual(len(vers2), 1)
@@ -456,6 +471,7 @@ class TestAnsibleVaultClient(unittest.TestCase):
     def test_install_posix_shims(self):
         """Test installation and behavior of mock POSIX modules on platforms lacking them."""
         import sys
+
         from src.providers.ansible import install_posix_shims
 
         shim_names = ("fcntl", "termios", "tty", "pwd", "grp")
@@ -509,6 +525,7 @@ class TestAnsibleVaultClient(unittest.TestCase):
         """Test patching multiprocessing.get_context when 'fork' is unavailable."""
         import multiprocessing
         from unittest.mock import patch
+
         from src.providers.ansible import install_posix_shims
 
         orig_get_context = multiprocessing.get_context
@@ -534,7 +551,8 @@ class TestAnsibleVaultClient(unittest.TestCase):
         """Test _MockLibcFunc, _MockLibc, and ctypes.cdll.LoadLibrary fallback on Windows."""
         import ctypes
         from unittest.mock import MagicMock, patch
-        from src.providers.ansible import _MockLibcFunc, _MockLibc, install_posix_shims
+
+        from src.providers.ansible import _MockLibc, _MockLibcFunc, install_posix_shims
 
         # Test _MockLibcFunc
         func = _MockLibcFunc(default_ret=42)
@@ -632,6 +650,7 @@ class TestAnsibleVaultClient(unittest.TestCase):
         """Test locale.getlocale patch ensuring UTF-8 encoding on platforms returning cp1252 or None."""
         import locale
         from unittest.mock import MagicMock
+
         from src.providers.ansible import install_posix_shims
 
         orig_getlocale = locale.getlocale
@@ -670,7 +689,9 @@ class TestAnsibleVaultClient(unittest.TestCase):
     def test_ansible_config_yaml_file_patch(self):
         """Test Ansible ConfigManager._read_config_yaml_file fallback in frozen bundles."""
         import sys
+
         import ansible.config.manager as acm
+
         from src.providers.ansible import install_posix_shims
 
         orig_read = acm.ConfigManager._read_config_yaml_file
@@ -692,17 +713,26 @@ class TestAnsibleVaultClient(unittest.TestCase):
 
             # Case 2: file does not exist, frozen mode active, candidate exists
             mock_orig.reset_mock()
-            with patch.object(sys, "frozen", True, create=True), \
-                 patch.object(sys, "_MEIPASS", "/bundle/dir", create=True), \
-                 patch("os.path.exists", side_effect=lambda p: p == "/bundle/dir/_internal/ansible/config/base.yml"):
+            with (
+                patch.object(sys, "frozen", True, create=True),
+                patch.object(sys, "_MEIPASS", "/bundle/dir", create=True),
+                patch(
+                    "os.path.exists",
+                    side_effect=lambda p: p == "/bundle/dir/_internal/ansible/config/base.yml",
+                ),
+            ):
                 res = acm.ConfigManager._read_config_yaml_file(manager_inst, b"/missing/base.yml")
                 self.assertEqual(res, {"ANSIBLE_TEST": "ok"})
-                mock_orig.assert_called_with(manager_inst, "/bundle/dir/_internal/ansible/config/base.yml")
+                mock_orig.assert_called_with(
+                    manager_inst, "/bundle/dir/_internal/ansible/config/base.yml"
+                )
 
             # Case 3: file does not exist and no candidate exists
             mock_orig.reset_mock()
-            with patch.object(sys, "frozen", False, create=True), \
-                 patch("os.path.exists", return_value=False):
+            with (
+                patch.object(sys, "frozen", False, create=True),
+                patch("os.path.exists", return_value=False),
+            ):
                 res = acm.ConfigManager._read_config_yaml_file(manager_inst, "/missing/base.yml")
                 self.assertEqual(res, {"ANSIBLE_TEST": "ok"})
                 mock_orig.assert_called_with(manager_inst, "/missing/base.yml")
@@ -716,7 +746,9 @@ class TestAnsibleVaultClient(unittest.TestCase):
     def test_display_and_stream_patch(self):
         """Test safe stdout/stderr null writers and Ansible Display.display patch."""
         import sys
+
         import ansible.utils.display as aud
+
         from src.providers.ansible import install_posix_shims
 
         orig_stdout = sys.stdout
@@ -736,7 +768,9 @@ class TestAnsibleVaultClient(unittest.TestCase):
 
             # Test Display.display patch
             aud.Display._gossip_display_patched = False
-            mock_orig_disp = MagicMock(side_effect=AttributeError("'NoneType' object has no attribute 'write'"))
+            mock_orig_disp = MagicMock(
+                side_effect=AttributeError("'NoneType' object has no attribute 'write'")
+            )
             aud.Display.display = mock_orig_disp
             install_posix_shims()
 
@@ -767,4 +801,3 @@ class TestAnsibleVaultClient(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

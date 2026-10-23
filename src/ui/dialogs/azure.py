@@ -65,7 +65,7 @@ def show_change_azure_vault_dialog(
     box.append(discovered_group)
 
     # Populate discovered vaults in background
-    def on_row_activated(_lb: Gtk.ListBox, row: Optional[Adw.ActionRow]) -> None:
+    def on_row_activated(_lb: Gtk.ListBox, row: Adw.ActionRow | None) -> None:
         """Fill entry and enable apply button on vault row activation."""
         if row and hasattr(row, "vault_name"):
             vault_entry.set_text(row.vault_name)

@@ -94,8 +94,12 @@ def show_change_aws_context_dialog(
         if response == "select":
             selected_prof_idx = prof_dropdown.get_selected()
             selected_reg_idx = reg_dropdown.get_selected()
-            sel_prof = profiles[selected_prof_idx] if 0 <= selected_prof_idx < len(profiles) else "default"
-            sel_reg = regions[selected_reg_idx] if 0 <= selected_reg_idx < len(regions) else "us-east-1"
+            sel_prof = (
+                profiles[selected_prof_idx] if 0 <= selected_prof_idx < len(profiles) else "default"
+            )
+            sel_reg = (
+                regions[selected_reg_idx] if 0 <= selected_reg_idx < len(regions) else "us-east-1"
+            )
             on_confirm(sel_prof, sel_reg)
 
     dialog.connect("response", on_response)

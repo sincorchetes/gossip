@@ -31,7 +31,9 @@ def show_change_ansible_vault_dialog(
     dialog = Adw.MessageDialog(
         transient_for=parent_window,
         heading=_("Select Ansible Vault"),
-        body=_("Choose your Ansible Vault YAML file and unlock it with your password or password file."),
+        body=_(
+            "Choose your Ansible Vault YAML file and unlock it with your password or password file."
+        ),
     )
 
     box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
@@ -172,7 +174,9 @@ def show_change_ansible_vault_dialog(
                 except Exception as exc:
                     GLib.idle_add(on_unlock_failed, str(exc))
 
-            def on_unlock_success(vf_val: str, pwd_val: Optional[str], pfile_val: Optional[str]) -> None:
+            def on_unlock_success(
+                vf_val: str, pwd_val: Optional[str], pfile_val: Optional[str]
+            ) -> None:
                 """Callback on GTK main thread when vault is unlocked successfully."""
                 dialog.close()
                 on_confirm(vf_val, pwd_val, pfile_val)

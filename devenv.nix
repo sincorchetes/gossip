@@ -18,6 +18,7 @@
     uv
     gettext
     xvfb-run
+    ruff
   ];
 
   env = {
@@ -47,12 +48,26 @@
 
   enterShell = ''
     export PYTHONPATH="${pkgs.python313Packages.pygobject3}/${pkgs.python313Packages.pygobject3.pythonModule.sitePackages}:$PYTHONPATH"
+    export PATH="${pkgs.ruff}/bin:$PATH"
+    if [ -d .devenv/state/venv/bin ]; then
+      ln -sf "${pkgs.ruff}/bin/ruff" .devenv/state/venv/bin/ruff
+    fi
     export NO_MKDOCS_2_WARNING=1
   '';
 
   # Scripts / shortcuts
   scripts.gossip.exec = ''
     python src/main.py "$@"
+  '';
+
+  scripts.fmt.exec = ''
+    ruff format src tests "$@"
+    ruff check --fix src tests "$@"
+  '';
+
+  scripts.lint.exec = ''
+    ruff check src tests "$@"
+    ruff format --check src tests "$@"
   '';
 
   scripts.test.exec = ''
@@ -70,6 +85,11 @@
   scripts.docs-build.exec = ''
     NO_MKDOCS_2_WARNING=1 python -m mkdocs build "$@"
   '';
+
+  git-hooks.hooks = {
+    ruff.enable = true;
+    ruff-format.enable = true;
+  };
 
   enterTest = ''
     if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]; then

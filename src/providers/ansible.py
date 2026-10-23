@@ -16,6 +16,7 @@ os.environ.setdefault("LC_ALL", "C.UTF-8")
 
 import ctypes
 import ctypes.util
+
 import yaml
 
 
@@ -113,7 +114,10 @@ def install_posix_shims() -> None:
             if (
                 name is None
                 or name in ("c", "libc")
-                or (sys.platform == "win32" and any(k in name_str for k in ("msvcrt", "ucrt", "crt", "libc")))
+                or (
+                    sys.platform == "win32"
+                    and any(k in name_str for k in ("msvcrt", "ucrt", "crt", "libc"))
+                )
             ):
                 return _MockLibc()
             try:
@@ -173,6 +177,7 @@ def install_posix_shims() -> None:
 
     # Patch locale.getlocale to guarantee UTF-8 encoding on Windows
     import locale
+
     if not getattr(locale, "_gossip_locale_patched", False):
         orig_getlocale = locale.getlocale
 
@@ -204,7 +209,9 @@ def install_posix_shims() -> None:
                 mod.fcntl = lambda *args, **kwargs: 0
                 mod.flock = lambda *args, **kwargs: 0
                 mod.lockf = lambda *args, **kwargs: 0
-                mod.ioctl = lambda fd, op, arg=0, mutate_flag=True: struct.pack("HHHH", 24, 80, 0, 0)
+                mod.ioctl = lambda fd, op, arg=0, mutate_flag=True: struct.pack(
+                    "HHHH", 24, 80, 0, 0
+                )
             elif name == "termios":
                 mod.TIOCGWINSZ = 0x5413
                 mod.TCSAFLUSH = 2
@@ -232,8 +239,24 @@ def install_posix_shims() -> None:
                 mod.setraw = lambda fd, when=0: None
                 mod.setcbreak = lambda fd, when=0: None
             elif name == "pwd":
-                mod.getpwuid = lambda uid: ("user", "x", 1000, 1000, "User", "/home/user", "/bin/bash")
-                mod.getpwnam = lambda name: ("user", "x", 1000, 1000, "User", "/home/user", "/bin/bash")
+                mod.getpwuid = lambda uid: (
+                    "user",
+                    "x",
+                    1000,
+                    1000,
+                    "User",
+                    "/home/user",
+                    "/bin/bash",
+                )
+                mod.getpwnam = lambda name: (
+                    "user",
+                    "x",
+                    1000,
+                    1000,
+                    "User",
+                    "/home/user",
+                    "/bin/bash",
+                )
             else:
                 mod.getgrgid = lambda gid: ("user", "x", 1000, ["user"])
                 mod.getgrnam = lambda name: ("user", "x", 1000, ["user"])
@@ -243,6 +266,7 @@ def install_posix_shims() -> None:
     # in frozen PyInstaller bundles across bundle layout variants
     try:
         import ansible.config.manager as acm
+
         if not getattr(acm.ConfigManager, "_gossip_yaml_patched", False):
             orig_read_yaml = acm.ConfigManager._read_config_yaml_file
 
@@ -255,17 +279,27 @@ def install_posix_shims() -> None:
                 Returns:
                     Parsed YAML dictionary configuration.
                 """
-                yml_str = os.fsdecode(yml_file) if isinstance(yml_file, (bytes, bytearray)) else str(yml_file)
+                yml_str = (
+                    os.fsdecode(yml_file)
+                    if isinstance(yml_file, (bytes, bytearray))
+                    else str(yml_file)
+                )
                 if not os.path.exists(yml_str):
                     basename = os.path.basename(yml_str)
                     candidates = []
                     if getattr(sys, "frozen", False):
-                        bundle_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable)))
-                        candidates.extend([
-                            os.path.join(bundle_dir, "ansible", "config", basename),
-                            os.path.join(bundle_dir, "_internal", "ansible", "config", basename),
-                            os.path.join(bundle_dir, "lib", "ansible", "config", basename),
-                        ])
+                        bundle_dir = getattr(
+                            sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable))
+                        )
+                        candidates.extend(
+                            [
+                                os.path.join(bundle_dir, "ansible", "config", basename),
+                                os.path.join(
+                                    bundle_dir, "_internal", "ansible", "config", basename
+                                ),
+                                os.path.join(bundle_dir, "lib", "ansible", "config", basename),
+                            ]
+                        )
                     for cand in candidates:
                         if os.path.exists(cand):
                             return orig_read_yaml(self, cand)
@@ -279,6 +313,7 @@ def install_posix_shims() -> None:
     # Patch ansible.utils.display.Display.display to suppress write errors when streams lack write()
     try:
         import ansible.utils.display as aud
+
         if not getattr(aud.Display, "_gossip_display_patched", False):
             orig_display = aud.Display.display
 
@@ -304,10 +339,9 @@ install_posix_shims()
 
 from ansible.parsing.vault import AnsibleVaultError, VaultLib, VaultSecret
 
-from src.providers.base import BaseSecretProvider
-from src.exceptions import AuthenticationError, PermissionDeniedError, ProviderError, ResourceNotFoundError
 from src.i18n import _
 from src.models import SecretItem, SecretVersionItem
+from src.providers.base import BaseSecretProvider
 
 
 class AnsibleVaultClient(BaseSecretProvider):
@@ -567,7 +601,11 @@ class AnsibleVaultClient(BaseSecretProvider):
         try:
             for root, dirs, files in os.walk(cwd):
                 # Ignore hidden dirs or common virtualenvs
-                dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ("venv", "node_modules", "__pycache__")]
+                dirs[:] = [
+                    d
+                    for d in dirs
+                    if not d.startswith(".") and d not in ("venv", "node_modules", "__pycache__")
+                ]
                 for f in files:
                     if f.endswith((".yml", ".yaml", ".vault")):
                         full_path = os.path.join(root, f)
@@ -659,7 +697,6 @@ class AnsibleVaultClient(BaseSecretProvider):
                 _("The Ansible Vault file '{path}' does not exist.").format(path=vf)
             )
 
-
         current_mtime = os.path.getmtime(vf)
         if self._cached_dict is not None and self._cached_mtime == current_mtime:
             return self._cached_dict
@@ -708,7 +745,6 @@ class AnsibleVaultClient(BaseSecretProvider):
                 )
             ) from exc
 
-
         self._cached_dict = parsed
         self._cached_mtime = current_mtime
         self._is_unlocked = True
@@ -719,7 +755,6 @@ class AnsibleVaultClient(BaseSecretProvider):
         vf = self.vault_file
         if not vf:
             raise ValueError(_("Ansible Vault file path is not configured."))
-
 
         # Create parent directory if needed
         os.makedirs(os.path.dirname(os.path.abspath(vf)), exist_ok=True)
@@ -832,7 +867,9 @@ class AnsibleVaultClient(BaseSecretProvider):
 
         return versions
 
-    def access_secret_payload(self, secret_name: str, version: Optional[str] = None) -> Tuple[str, bool]:
+    def access_secret_payload(
+        self, secret_name: str, version: Optional[str] = None
+    ) -> Tuple[str, bool]:
         """Fetch the decrypted value of an Ansible Vault variable.
 
         Args:
@@ -865,11 +902,13 @@ class AnsibleVaultClient(BaseSecretProvider):
                 except Exception as exc:
                     raise RuntimeError(f"{_('Could not read backup version')}: {exc}") from exc
 
-
         data = self._load_data()
         if key not in data:
-            raise KeyError(_("The variable '{variable}' does not exist in the Ansible Vault file.").format(variable=key))
-
+            raise KeyError(
+                _("The variable '{variable}' does not exist in the Ansible Vault file.").format(
+                    variable=key
+                )
+            )
 
         val = data[key]
         if isinstance(val, (dict, list)):
@@ -900,9 +939,10 @@ class AnsibleVaultClient(BaseSecretProvider):
         data = self._load_data()
         if secret_id in data:
             raise ValueError(
-                _("The variable '{variable}' already exists in the vault. Use 'New Version' to modify it.").format(variable=secret_id)
+                _(
+                    "The variable '{variable}' already exists in the vault. Use 'New Version' to modify it."
+                ).format(variable=secret_id)
             )
-
 
         # Attempt to parse as YAML/JSON scalar or structure if applicable
         parsed_val = self._parse_payload(payload_data)
@@ -976,7 +1016,9 @@ class AnsibleVaultClient(BaseSecretProvider):
                 pass
         return text
 
-    def create_new_vault_file(self, file_path: str, password: str, initial_data: Optional[Dict] = None) -> None:
+    def create_new_vault_file(
+        self, file_path: str, password: str, initial_data: Optional[Dict] = None
+    ) -> None:
         """Create a new encrypted Ansible Vault file with initial data.
 
         Args:

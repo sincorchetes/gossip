@@ -12,6 +12,8 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, GLib, Gtk
 
+from src.i18n import _, get_current_language, set_language
+from src.models import SecretItem, SecretVersionItem
 from src.providers import (
     AnsibleVaultClient,
     AWSSecretClient,
@@ -19,8 +21,6 @@ from src.providers import (
     BaseSecretProvider,
     GCPSecretClient,
 )
-from src.i18n import _, get_current_language, set_language
-from src.models import SecretItem, SecretVersionItem
 from src.ui.dialogs import (
     show_about_dialog,
     show_add_version_dialog,
@@ -50,7 +50,6 @@ def resolve_icon_name(candidates: Sequence[str], fallback: str = "image-missing"
 
 
 class MainWindow(Adw.ApplicationWindow):
-
     """Primary application window for Gossip multi-cloud secret manager.
 
     Implements the Strategy Pattern using BaseSecretProvider instances, delegating
@@ -157,8 +156,16 @@ class MainWindow(Adw.ApplicationWindow):
         """Retrieve icon name for the active provider, resolving fallback icons if missing."""
         icon = self.active_provider.icon_name
         fallback_map = {
-            "preferences-system-symbolic": ["preferences-system-symbolic", "network-server-symbolic", "system-run-symbolic"],
-            "security-high-symbolic": ["security-high-symbolic", "changes-prevent-symbolic", "dialog-password-symbolic"],
+            "preferences-system-symbolic": [
+                "preferences-system-symbolic",
+                "network-server-symbolic",
+                "system-run-symbolic",
+            ],
+            "security-high-symbolic": [
+                "security-high-symbolic",
+                "changes-prevent-symbolic",
+                "dialog-password-symbolic",
+            ],
         }
         if icon in fallback_map:
             return resolve_icon_name(fallback_map[icon], fallback=icon)
@@ -247,7 +254,6 @@ class MainWindow(Adw.ApplicationWindow):
         )
         self.about_btn.connect("clicked", lambda _: show_about_dialog(self))
         header.pack_end(self.about_btn)
-
 
         main_box.append(header)
 
@@ -354,7 +360,9 @@ class MainWindow(Adw.ApplicationWindow):
         # Detail: Placeholder when no secret is selected
         self.placeholder_page = Adw.StatusPage(
             title=_("No secret selected"),
-            description=_("Select a secret from the sidebar to inspect its configuration, versions, and payload."),
+            description=_(
+                "Select a secret from the sidebar to inspect its configuration, versions, and payload."
+            ),
             icon_name="dialog-password-symbolic",
         )
         self.detail_stack.add_named(self.placeholder_page, "placeholder")
@@ -544,7 +552,9 @@ class MainWindow(Adw.ApplicationWindow):
                 self.detail_stack.set_visible_child_name("placeholder")
                 self._update_header_and_tooltips()
                 self._load_secrets_async()
-                if target_key == "ansible" and not getattr(self.active_provider, "is_unlocked", True):
+                if target_key == "ansible" and not getattr(
+                    self.active_provider, "is_unlocked", True
+                ):
                     self._on_change_context_clicked(None)
 
     def _update_header_and_tooltips(self) -> None:
@@ -558,6 +568,7 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _on_change_context_clicked(self, _btn: Optional[Gtk.Button]) -> None:
         """Polymorphically opens the context dialog for the currently active provider."""
+
         def on_context_confirmed() -> None:
             """Callback executed when the provider context configuration is confirmed."""
             self._update_header_and_tooltips()
@@ -600,7 +611,9 @@ class MainWindow(Adw.ApplicationWindow):
         self.retry_btn.set_label(_("Retry"))
         self.placeholder_page.set_title(_("No secret selected"))
         self.placeholder_page.set_description(
-            _("Select a secret from the sidebar to inspect its configuration, versions, and payload.")
+            _(
+                "Select a secret from the sidebar to inspect its configuration, versions, and payload."
+            )
         )
 
         self.copy_name_btn.set_tooltip_text(_("Copy resource name"))
@@ -777,7 +790,11 @@ class MainWindow(Adw.ApplicationWindow):
             self.row_labels.set_visible(True)
         else:
             if secret.description:
-                desc_title = _("Content Type / Description") if secret.provider == "azure" else _("Description")
+                desc_title = (
+                    _("Content Type / Description")
+                    if secret.provider == "azure"
+                    else _("Description")
+                )
                 self.row_description.set_title(desc_title)
                 self.row_description.set_subtitle(secret.description)
                 self.row_description.set_visible(True)
@@ -796,7 +813,9 @@ class MainWindow(Adw.ApplicationWindow):
             else:
                 self.row_labels.set_subtitle(_("No labels"))
 
-        create_str = secret.create_time.strftime("%d/%m/%Y %H:%M:%S") if secret.create_time else _("Unknown")
+        create_str = (
+            secret.create_time.strftime("%d/%m/%Y %H:%M:%S") if secret.create_time else _("Unknown")
+        )
         self.row_created.set_subtitle(create_str)
 
         if self.current_versions:
@@ -893,7 +912,9 @@ class MainWindow(Adw.ApplicationWindow):
                         tooltip_text=_("Disable version %s") % v.version_id,
                     )
                     pause_btn.add_css_class("flat")
-                    pause_btn.connect("clicked", lambda _, ver=v: self._on_toggle_version_state(ver, enable=False))
+                    pause_btn.connect(
+                        "clicked", lambda _, ver=v: self._on_toggle_version_state(ver, enable=False)
+                    )
                     action_box.append(pause_btn)
 
                     if provider.supports_version_destroy:
@@ -903,7 +924,9 @@ class MainWindow(Adw.ApplicationWindow):
                         )
                         destroy_btn.add_css_class("flat")
                         destroy_btn.add_css_class("destructive-action")
-                        destroy_btn.connect("clicked", lambda _, ver=v: self._on_destroy_version_clicked(ver))
+                        destroy_btn.connect(
+                            "clicked", lambda _, ver=v: self._on_destroy_version_clicked(ver)
+                        )
                         action_box.append(destroy_btn)
 
                 elif v.state == "DISABLED":
@@ -914,7 +937,9 @@ class MainWindow(Adw.ApplicationWindow):
                         tooltip_text=_("Enable version %s") % v.version_id,
                     )
                     play_btn.add_css_class("flat")
-                    play_btn.connect("clicked", lambda _, ver=v: self._on_toggle_version_state(ver, enable=True))
+                    play_btn.connect(
+                        "clicked", lambda _, ver=v: self._on_toggle_version_state(ver, enable=True)
+                    )
                     action_box.append(play_btn)
 
                     if provider.supports_version_destroy:
@@ -924,7 +949,9 @@ class MainWindow(Adw.ApplicationWindow):
                         )
                         destroy_btn.add_css_class("flat")
                         destroy_btn.add_css_class("destructive-action")
-                        destroy_btn.connect("clicked", lambda _, ver=v: self._on_destroy_version_clicked(ver))
+                        destroy_btn.connect(
+                            "clicked", lambda _, ver=v: self._on_destroy_version_clicked(ver)
+                        )
                         action_box.append(destroy_btn)
 
                 else:
@@ -1043,6 +1070,7 @@ class MainWindow(Adw.ApplicationWindow):
     # -------------------------------------------------------------
     def _on_create_secret_clicked(self) -> None:
         """Opens dialog to create a new secret via the active provider."""
+
         def on_confirm(secret_id: str, payload: str, labels: dict, desc: Optional[str] = None):
             """Process confirmed secret creation parameters from dialog."""
             self._show_toast(_("Creating secret '%s'...") % secret_id)
@@ -1155,6 +1183,7 @@ class MainWindow(Adw.ApplicationWindow):
         Args:
             version: SecretVersionItem instance to destroy.
         """
+
         def on_confirm():
             """Process confirmed destruction of secret version."""
             self._show_toast(_("Destroying version %s...") % version.version_id)
@@ -1206,7 +1235,9 @@ class MainWindow(Adw.ApplicationWindow):
 
             threading.Thread(target=worker, daemon=True).start()
 
-        show_confirm_delete_secret_dialog(self, secret_id, on_confirm, provider=self.current_provider)
+        show_confirm_delete_secret_dialog(
+            self, secret_id, on_confirm, provider=self.current_provider
+        )
 
     def _on_secret_deleted_success(self, secret_id: str) -> None:
         """Callback executed on GTK main thread after secret deletion succeeds.

@@ -1,18 +1,17 @@
 from __future__ import annotations
 
+import os
+import unittest
 from datetime import datetime
 from unittest.mock import MagicMock, patch
-import unittest
 
-import os
-from google.api_core.exceptions import NotFound, PermissionDenied
 import google.auth.exceptions
+from google.api_core.exceptions import NotFound, PermissionDenied
 from google.cloud import secretmanager_v1
 
-
 from src.exceptions import PermissionDeniedError, ResourceNotFoundError
-from src.providers.gcp import GCPSecretClient
 from src.models import SecretItem, SecretVersionItem
+from src.providers.gcp import GCPSecretClient
 
 
 class TestGCPSecretClient(unittest.TestCase):
@@ -77,7 +76,6 @@ class TestGCPSecretClient(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.client.create_secret(secret_id="s", payload_data="p", project_id="")
 
-
     def test_list_versions(self):
         mock_v1 = MagicMock()
         mock_v1.name = "projects/test-project/secrets/my-secret/versions/1"
@@ -105,7 +103,9 @@ class TestGCPSecretClient(unittest.TestCase):
         mock_response.payload.data = b"super-secret-password-123"
         self.mock_sm_client.access_secret_version.return_value = mock_response
 
-        payload, is_binary = self.client.access_secret_payload("projects/test-project/secrets/s/versions/1")
+        payload, is_binary = self.client.access_secret_payload(
+            "projects/test-project/secrets/s/versions/1"
+        )
         self.assertEqual(payload, "super-secret-password-123")
         self.assertFalse(is_binary)
 
@@ -115,7 +115,9 @@ class TestGCPSecretClient(unittest.TestCase):
         mock_response.payload.data = b"\x80\x81\x82\x83\xff"
         self.mock_sm_client.access_secret_version.return_value = mock_response
 
-        payload, is_binary = self.client.access_secret_payload("projects/test-project/secrets/s/versions/1")
+        payload, is_binary = self.client.access_secret_payload(
+            "projects/test-project/secrets/s/versions/1"
+        )
         self.assertTrue(is_binary)
         self.assertIn("Datos binarios", payload)
 
@@ -204,7 +206,6 @@ class TestGCPSecretClient(unittest.TestCase):
         with self.assertRaises(PermissionDeniedError):
             self.client.list_secrets()
 
-
     def test_property_getters_and_context_dialog(self):
         self.assertEqual(self.client.provider, "gcp")
         self.assertEqual(self.client.icon_name, "network-workgroup-symbolic")
@@ -227,6 +228,7 @@ class TestGCPSecretClient(unittest.TestCase):
 
     def test_parse_timestamp_variants(self):
         from src.providers.gcp import _parse_timestamp
+
         now = datetime.now()
         self.assertIsNone(_parse_timestamp(None))
         self.assertEqual(_parse_timestamp(now), now)
@@ -251,6 +253,7 @@ class TestGCPSecretClient(unittest.TestCase):
 
     def test_detect_project_id_from_gcloud_config_file(self):
         import tempfile
+
         with tempfile.TemporaryDirectory() as tmpdir:
             config_dir = os.path.join(tmpdir, ".config", "gcloud")
             os.makedirs(os.path.join(config_dir, "configurations"), exist_ok=True)
@@ -264,7 +267,10 @@ class TestGCPSecretClient(unittest.TestCase):
                     proj = GCPSecretClient.detect_project_id()
                     self.assertEqual(proj, "ini-file-project")
 
-    @patch("google.auth.default", side_effect=google.auth.exceptions.DefaultCredentialsError("No creds"))
+    @patch(
+        "google.auth.default",
+        side_effect=google.auth.exceptions.DefaultCredentialsError("No creds"),
+    )
     def test_initialize_client_default_creds_error(self, mock_auth):
         client = GCPSecretClient(project_id="test-p")
         with self.assertRaises(RuntimeError) as ctx:
@@ -294,7 +300,11 @@ class TestGCPSecretClient(unittest.TestCase):
         resp1.json.return_value = {
             "projects": [
                 {"projectId": "alpha-proj", "name": "Alpha", "lifecycleState": "ACTIVE"},
-                {"projectId": "deleted-proj", "name": "Deleted", "lifecycleState": "DELETE_REQUESTED"},
+                {
+                    "projectId": "deleted-proj",
+                    "name": "Deleted",
+                    "lifecycleState": "DELETE_REQUESTED",
+                },
             ],
             "nextPageToken": "token-123",
         }
@@ -376,7 +386,9 @@ class TestGCPSecretClient(unittest.TestCase):
         with self.assertRaises(PermissionError):
             self.client.toggle_version_state("projects/p/secrets/s/versions/1", False)
 
-        self.mock_sm_client.disable_secret_version.side_effect = GoogleAPICallError("Disable failed")
+        self.mock_sm_client.disable_secret_version.side_effect = GoogleAPICallError(
+            "Disable failed"
+        )
         with self.assertRaises(RuntimeError):
             self.client.toggle_version_state("projects/p/secrets/s/versions/1", False)
 
@@ -397,6 +409,7 @@ class TestGCPSecretClient(unittest.TestCase):
 
     def test_gcp_client_100_percent_coverage(self):
         from google.api_core.exceptions import GoogleAPICallError
+
         from src.providers.gcp import _parse_timestamp
 
         # 1. _parse_timestamp with object having no timestamp methods (line 30)
@@ -406,8 +419,10 @@ class TestGCPSecretClient(unittest.TestCase):
         c = GCPSecretClient(project_id=None)
         mock_creds = MagicMock()
         with patch("google.auth.default", return_value=(mock_creds, "auto-detected-proj")):
-            with patch("src.providers.gcp.secretmanager_v1.SecretManagerServiceClient") as mock_sm_cls:
-                cli = c.initialize_client()
+            with patch(
+                "src.providers.gcp.secretmanager_v1.SecretManagerServiceClient"
+            ) as mock_sm_cls:
+                self.assertIsNotNone(c.initialize_client())
                 self.assertEqual(c.project_id, "auto-detected-proj")
                 mock_sm_cls.assert_called_once_with(credentials=mock_creds)
 
@@ -426,7 +441,10 @@ class TestGCPSecretClient(unittest.TestCase):
                     self.assertIsNone(GCPSecretClient.detect_project_id())
 
             # Empty active_config and parser without core/project
-            with patch("os.path.exists", side_effect=lambda p: "active_config" in p or "config_default" in p):
+            with patch(
+                "os.path.exists",
+                side_effect=lambda p: "active_config" in p or "config_default" in p,
+            ):
                 with patch("builtins.open", unittest.mock.mock_open(read_data="   ")):
                     with patch("configparser.ConfigParser") as mock_cp:
                         mock_cp.return_value.has_option.return_value = False
@@ -491,7 +509,9 @@ class TestGCPSecretClient(unittest.TestCase):
         with self.assertRaises(PermissionError):
             self.client.enable_secret_version("projects/test-project/secrets/s/versions/1")
 
-        self.mock_sm_client.enable_secret_version.side_effect = GoogleAPICallError("Enable API error")
+        self.mock_sm_client.enable_secret_version.side_effect = GoogleAPICallError(
+            "Enable API error"
+        )
         with self.assertRaises(RuntimeError):
             self.client.enable_secret_version("projects/test-project/secrets/s/versions/1")
 
@@ -515,4 +535,3 @@ class TestGCPSecretClient(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

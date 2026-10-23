@@ -8,13 +8,16 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import boto3
 import botocore.session
-from botocore.exceptions import ClientError, NoCredentialsError, PartialCredentialsError, ProfileNotFound
+from botocore.exceptions import (
+    ClientError,
+    NoCredentialsError,
+    PartialCredentialsError,
+    ProfileNotFound,
+)
 
-from src.providers.base import BaseSecretProvider
-from src.exceptions import AuthenticationError, PermissionDeniedError, ProviderError, ResourceNotFoundError
 from src.i18n import _
 from src.models import SecretItem, SecretVersionItem
-
+from src.providers.base import BaseSecretProvider
 
 COMMON_AWS_REGIONS = [
     "us-east-1",
@@ -258,7 +261,9 @@ class AWSSecretClient(BaseSecretProvider):
             return self._client
         except ProfileNotFound as exc:
             raise RuntimeError(
-                _("The AWS profile '{profile}' does not exist in your ~/.aws/credentials or ~/.aws/config file.").format(profile=self.profile_name)
+                _(
+                    "The AWS profile '{profile}' does not exist in your ~/.aws/credentials or ~/.aws/config file."
+                ).format(profile=self.profile_name)
             ) from exc
         except (NoCredentialsError, PartialCredentialsError) as exc:
             raise RuntimeError(
@@ -271,7 +276,6 @@ class AWSSecretClient(BaseSecretProvider):
             ) from exc
         except Exception as exc:
             raise RuntimeError(f"{_('Error initializing AWS client')}: {exc}") from exc
-
 
     def list_secrets(self) -> List[SecretItem]:
         """List all secrets in the current AWS region and profile.
@@ -347,7 +351,6 @@ class AWSSecretClient(BaseSecretProvider):
                 ) from exc
             raise RuntimeError(f"{_('AWS Secrets Manager error')}: {error_msg}") from exc
 
-
     def list_versions(self, secret_id_or_arn: str) -> List[SecretVersionItem]:
         """List all versions and staging labels of an AWS secret.
 
@@ -412,9 +415,10 @@ class AWSSecretClient(BaseSecretProvider):
             error_code = exc.response.get("Error", {}).get("Code", "")
             error_msg = exc.response.get("Error", {}).get("Message", str(exc))
             if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(f"{_('Permission denied while listing versions')}: {error_msg}") from exc
+                raise PermissionError(
+                    f"{_('Permission denied while listing versions')}: {error_msg}"
+                ) from exc
             raise RuntimeError(f"{_('Error listing secret versions')}: {error_msg}") from exc
-
 
     def access_secret_payload(
         self,
@@ -475,10 +479,11 @@ class AWSSecretClient(BaseSecretProvider):
                 ) from exc
             elif error_code == "ResourceNotFoundException":
                 raise FileNotFoundError(
-                    _("The secret or version '{secret}' was not found.").format(secret=actual_secret_id)
+                    _("The secret or version '{secret}' was not found.").format(
+                        secret=actual_secret_id
+                    )
                 ) from exc
             raise RuntimeError(f"{_('Error retrieving secret value')}: {error_msg}") from exc
-
 
     def create_secret(
         self,
@@ -539,9 +544,10 @@ class AWSSecretClient(BaseSecretProvider):
             error_code = exc.response.get("Error", {}).get("Code", "")
             error_msg = exc.response.get("Error", {}).get("Message", str(exc))
             if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(f"{_('Permission denied to create secret')}: {error_msg}") from exc
+                raise PermissionError(
+                    f"{_('Permission denied to create secret')}: {error_msg}"
+                ) from exc
             raise RuntimeError(f"{_('Error creating secret in AWS')}: {error_msg}") from exc
-
 
     def add_secret_version(self, secret_id_or_arn: str, payload_data: str) -> SecretVersionItem:
         """Add a new version payload to an existing AWS secret.
@@ -580,9 +586,10 @@ class AWSSecretClient(BaseSecretProvider):
             error_code = exc.response.get("Error", {}).get("Code", "")
             error_msg = exc.response.get("Error", {}).get("Message", str(exc))
             if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(f"{_('Permission denied to update secret')}: {error_msg}") from exc
+                raise PermissionError(
+                    f"{_('Permission denied to update secret')}: {error_msg}"
+                ) from exc
             raise RuntimeError(f"{_('Error adding version in AWS')}: {error_msg}") from exc
-
 
     def delete_secret(
         self,
@@ -616,6 +623,7 @@ class AWSSecretClient(BaseSecretProvider):
             error_code = exc.response.get("Error", {}).get("Code", "")
             error_msg = exc.response.get("Error", {}).get("Message", str(exc))
             if error_code in ("AccessDeniedException", "UnauthorizedException"):
-                raise PermissionError(f"{_('Permission denied to delete secret')}: {error_msg}") from exc
+                raise PermissionError(
+                    f"{_('Permission denied to delete secret')}: {error_msg}"
+                ) from exc
             raise RuntimeError(f"{_('Error deleting secret in AWS')}: {error_msg}") from exc
-

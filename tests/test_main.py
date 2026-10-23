@@ -33,16 +33,25 @@ class TestMain(unittest.TestCase):
     def test_main_custom_flags(self, mock_run_app):
         test_args = [
             "gossip",
-            "--provider", "aws",
-            "--aws-profile", "prod",
-            "--aws-region", "eu-west-1",
-            "--azure-vault", "my-vault",
-            "--ansible-vault", "my-ansible.yml",
-            "--ansible-password-file", ".pass",
-            "--lang", "en",
+            "--provider",
+            "aws",
+            "--aws-profile",
+            "prod",
+            "--aws-region",
+            "eu-west-1",
+            "--azure-vault",
+            "my-vault",
+            "--ansible-vault",
+            "my-ansible.yml",
+            "--ansible-password-file",
+            ".pass",
+            "--lang",
+            "en",
             "--maximized",
-            "--width", "1600",
-            "--height", "1000",
+            "--width",
+            "1600",
+            "--height",
+            "1000",
         ]
         with patch.object(sys, "argv", test_args):
             exit_code = main()
@@ -64,6 +73,7 @@ class TestMain(unittest.TestCase):
     @patch.dict("os.environ", {"DISPLAY": ":0"}, clear=True)
     def test_main_renderer_flags(self, mock_run_app):
         import os
+
         # Test --software-rendering
         test_args_sw = ["gossip", "--software-rendering"]
         with patch.object(sys, "argv", test_args_sw):
@@ -98,26 +108,36 @@ class TestMain(unittest.TestCase):
 
     def test_setup_frozen_environment_not_frozen(self):
         from src.main import setup_frozen_environment
+
         with patch.object(sys, "frozen", False, create=True):
             setup_frozen_environment()
 
     @patch("os.path.isdir", return_value=True)
     def test_setup_frozen_environment_frozen_with_existing_env(self, mock_isdir):
         import os
+
         from src.main import setup_frozen_environment
+
         with patch.object(sys, "frozen", True, create=True):
             with patch.object(sys, "_MEIPASS", "/custom/bundle", create=True):
-                with patch.dict("os.environ", {"GI_TYPELIB_PATH": "/orig/typelib", "GSETTINGS_SCHEMA_DIR": "/orig/schema"}):
+                with patch.dict(
+                    "os.environ",
+                    {"GI_TYPELIB_PATH": "/orig/typelib", "GSETTINGS_SCHEMA_DIR": "/orig/schema"},
+                ):
                     setup_frozen_environment()
                     self.assertIn("/custom/bundle/girepository-1.0", os.environ["GI_TYPELIB_PATH"])
                     self.assertIn("/orig/typelib", os.environ["GI_TYPELIB_PATH"])
-                    self.assertIn("/custom/bundle/glib-2.0/schemas", os.environ["GSETTINGS_SCHEMA_DIR"])
+                    self.assertIn(
+                        "/custom/bundle/glib-2.0/schemas", os.environ["GSETTINGS_SCHEMA_DIR"]
+                    )
                     self.assertIn("/orig/schema", os.environ["GSETTINGS_SCHEMA_DIR"])
 
     @patch("os.path.isdir", return_value=True)
     def test_setup_frozen_environment_frozen_empty_env(self, mock_isdir):
         import os
+
         from src.main import setup_frozen_environment
+
         with patch.object(sys, "frozen", True, create=True):
             with patch.dict("os.environ", {}, clear=True):
                 setup_frozen_environment()
@@ -127,7 +147,9 @@ class TestMain(unittest.TestCase):
     @patch("os.path.isdir", return_value=False)
     def test_setup_frozen_environment_frozen_no_dirs_found(self, mock_isdir):
         import os
+
         from src.main import setup_frozen_environment
+
         with patch.object(sys, "frozen", True, create=True):
             with patch.dict("os.environ", {}, clear=True):
                 setup_frozen_environment()
@@ -138,12 +160,16 @@ class TestMain(unittest.TestCase):
     @patch("os.path.isdir", return_value=True)
     def test_setup_frozen_environment_windows(self, mock_isdir):
         import os
+
         from src.main import setup_frozen_environment
-        with patch.object(sys, "frozen", True, create=True), \
-             patch.object(sys, "platform", "win32"), \
-             patch.object(sys, "_MEIPASS", "C:\\bundle", create=True), \
-             patch("os.add_dll_directory", create=True) as mock_add_dll, \
-             patch.dict("os.environ", {"PATH": "C:\\Windows", "XDG_DATA_DIRS": "C:\\orig\\share"}):
+
+        with (
+            patch.object(sys, "frozen", True, create=True),
+            patch.object(sys, "platform", "win32"),
+            patch.object(sys, "_MEIPASS", "C:\\bundle", create=True),
+            patch("os.add_dll_directory", create=True) as mock_add_dll,
+            patch.dict("os.environ", {"PATH": "C:\\Windows", "XDG_DATA_DIRS": "C:\\orig\\share"}),
+        ):
             setup_frozen_environment()
             mock_add_dll.assert_called_once_with("C:\\bundle")
             self.assertTrue(os.environ["PATH"].startswith("C:\\bundle" + os.pathsep))
@@ -153,12 +179,16 @@ class TestMain(unittest.TestCase):
     @patch("os.path.isdir", return_value=True)
     def test_setup_frozen_environment_windows_dll_exception_and_empty_path(self, mock_isdir):
         import os
+
         from src.main import setup_frozen_environment
-        with patch.object(sys, "frozen", True, create=True), \
-             patch.object(sys, "platform", "win32"), \
-             patch.object(sys, "_MEIPASS", "C:\\bundle", create=True), \
-             patch("os.add_dll_directory", side_effect=OSError("Failed"), create=True), \
-             patch.dict("os.environ", {}, clear=True):
+
+        with (
+            patch.object(sys, "frozen", True, create=True),
+            patch.object(sys, "platform", "win32"),
+            patch.object(sys, "_MEIPASS", "C:\\bundle", create=True),
+            patch("os.add_dll_directory", side_effect=OSError("Failed"), create=True),
+            patch.dict("os.environ", {}, clear=True),
+        ):
             setup_frozen_environment()
             self.assertEqual(os.environ.get("PATH"), "C:\\bundle")
             self.assertIn("C:\\bundle", os.environ.get("XDG_DATA_DIRS", ""))
@@ -166,11 +196,15 @@ class TestMain(unittest.TestCase):
     @patch("os.path.isdir", return_value=True)
     def test_setup_frozen_environment_windows_no_add_dll(self, mock_isdir):
         import os
+
         from src.main import setup_frozen_environment
-        with patch.object(sys, "frozen", True, create=True), \
-             patch.object(sys, "platform", "win32"), \
-             patch.object(sys, "_MEIPASS", "C:\\bundle", create=True), \
-             patch.dict("os.environ", {}, clear=True):
+
+        with (
+            patch.object(sys, "frozen", True, create=True),
+            patch.object(sys, "platform", "win32"),
+            patch.object(sys, "_MEIPASS", "C:\\bundle", create=True),
+            patch.dict("os.environ", {}, clear=True),
+        ):
             if hasattr(os, "add_dll_directory"):
                 delattr(os, "add_dll_directory")
             setup_frozen_environment()

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
 import unittest
 
 from src.models import (
@@ -42,7 +41,6 @@ class TestModels(unittest.TestCase):
             state="UNKNOWN_STATE",
         )
         self.assertEqual(v_custom.display_state, "UNKNOWN_STATE")
-
 
     def test_secret_version_display_state_aws(self):
         v_current = SecretVersionItem(
@@ -100,7 +98,10 @@ class TestModels(unittest.TestCase):
             secret_id="s4",
             replication_type="USER_MANAGED",
         )
-        self.assertIn(s_user_managed.replication_summary, ("User managed", "Definida por el usuario", "Gestionado por usuario"))
+        self.assertIn(
+            s_user_managed.replication_summary,
+            ("User managed", "Definida por el usuario", "Gestionado por usuario"),
+        )
 
     def test_context_and_vault_items(self):
         gcp_proj = GCPProjectItem(project_id="my-proj", name="My Project", lifecycle_state="ACTIVE")
@@ -111,11 +112,15 @@ class TestModels(unittest.TestCase):
         self.assertEqual(aws_ctx.profile, "production")
         self.assertEqual(aws_ctx.region, "eu-west-1")
 
-        azure_vault = AzureVaultItem(name="my-kv", vault_uri="https://my-kv.vault.azure.net", location="westeurope")
+        azure_vault = AzureVaultItem(
+            name="my-kv", vault_uri="https://my-kv.vault.azure.net", location="westeurope"
+        )
         self.assertEqual(azure_vault.name, "my-kv")
         self.assertEqual(azure_vault.location, "westeurope")
 
-        ansible_vault = AnsibleVaultItem(file_path="/tmp/vault.yml", has_password=True, is_encrypted=True)
+        ansible_vault = AnsibleVaultItem(
+            file_path="/tmp/vault.yml", has_password=True, is_encrypted=True
+        )
         self.assertEqual(ansible_vault.file_path, "/tmp/vault.yml")
         self.assertTrue(ansible_vault.has_password)
 

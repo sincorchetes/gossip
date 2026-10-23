@@ -7,7 +7,7 @@ import os
 import subprocess
 import sys
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 from azure.core.exceptions import (
     ClientAuthenticationError,
@@ -17,10 +17,9 @@ from azure.core.exceptions import (
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 
-from src.providers.base import BaseSecretProvider
-from src.exceptions import AuthenticationError, PermissionDeniedError, ProviderError, ResourceNotFoundError as DomainNotFoundError
 from src.i18n import _
 from src.models import AzureVaultItem, SecretItem, SecretVersionItem
+from src.providers.base import BaseSecretProvider
 
 
 class AzureSecretClient(BaseSecretProvider):
@@ -173,7 +172,15 @@ class AzureSecretClient(BaseSecretProvider):
         try:
             cmd = "az.cmd" if sys.platform == "win32" else "az"
             res = subprocess.run(
-                [cmd, "keyvault", "list", "--query", "[].{name: name, vaultUri: properties.vaultUri, location: location}", "-o", "json"],
+                [
+                    cmd,
+                    "keyvault",
+                    "list",
+                    "--query",
+                    "[].{name: name, vaultUri: properties.vaultUri, location: location}",
+                    "-o",
+                    "json",
+                ],
                 capture_output=True,
                 text=True,
                 timeout=6,
@@ -194,7 +201,12 @@ class AzureSecretClient(BaseSecretProvider):
         # If current vault is not in list, add it
         current = self.vault_name
         if current and not any(v.name.lower() == current.lower() for v in vaults):
-            vaults.insert(0, AzureVaultItem(name=current, vault_uri=self.vault_url or f"https://{current}.vault.azure.net/"))
+            vaults.insert(
+                0,
+                AzureVaultItem(
+                    name=current, vault_uri=self.vault_url or f"https://{current}.vault.azure.net/"
+                ),
+            )
 
         vaults.sort(key=lambda v: v.name.lower())
         return vaults
@@ -212,7 +224,6 @@ class AzureSecretClient(BaseSecretProvider):
                     "Use the vault switcher button to enter your Key Vault name or set the AZURE_KEYVAULT_NAME environment variable."
                 )
             )
-
 
         if self._credential is None:
             self._credential = DefaultAzureCredential()
@@ -277,12 +288,13 @@ class AzureSecretClient(BaseSecretProvider):
                 ) from exc
             elif exc.status_code == 404:
                 raise FileNotFoundError(
-                    _("The Azure Key Vault '{vault}' does not exist or was not found.").format(vault=self.vault_name)
+                    _("The Azure Key Vault '{vault}' does not exist or was not found.").format(
+                        vault=self.vault_name
+                    )
                 ) from exc
             raise RuntimeError(f"{_('Azure Key Vault error')}: {exc.message}") from exc
         except Exception as exc:
             raise RuntimeError(f"{_('Error querying Azure Key Vault secrets')}: {exc}") from exc
-
 
     def list_versions(self, secret_name: str) -> List[SecretVersionItem]:
         """List all versions of an Azure Key Vault secret.
@@ -327,11 +339,14 @@ class AzureSecretClient(BaseSecretProvider):
 
         except HttpResponseError as exc:
             if exc.status_code == 403:
-                raise PermissionError(f"{_('Permission denied while listing versions in Azure')}: {exc.message}") from exc
+                raise PermissionError(
+                    f"{_('Permission denied while listing versions in Azure')}: {exc.message}"
+                ) from exc
             raise RuntimeError(f"{_('Error listing versions')}: {exc.message}") from exc
 
-
-    def access_secret_payload(self, secret_name: str, version: Optional[str] = None) -> Tuple[str, bool]:
+    def access_secret_payload(
+        self, secret_name: str, version: Optional[str] = None
+    ) -> Tuple[str, bool]:
         """Fetch the value of an Azure Key Vault secret.
 
         Args:
@@ -362,7 +377,9 @@ class AzureSecretClient(BaseSecretProvider):
 
         except ResourceNotFoundError as exc:
             raise FileNotFoundError(
-                _("The secret '{secret}' does not exist in Azure Key Vault.").format(secret=actual_name)
+                _("The secret '{secret}' does not exist in Azure Key Vault.").format(
+                    secret=actual_name
+                )
             ) from exc
         except HttpResponseError as exc:
             if exc.status_code == 403:
@@ -373,7 +390,6 @@ class AzureSecretClient(BaseSecretProvider):
                     ).format(secret=actual_name)
                 ) from exc
             raise RuntimeError(f"{_('Error accessing secret')}: {exc.message}") from exc
-
 
     def create_secret(
         self,
@@ -421,9 +437,10 @@ class AzureSecretClient(BaseSecretProvider):
             )
         except HttpResponseError as exc:
             if exc.status_code == 403:
-                raise PermissionError(f"{_('Permission denied to create secrets in Azure Key Vault')}: {exc.message}") from exc
+                raise PermissionError(
+                    f"{_('Permission denied to create secrets in Azure Key Vault')}: {exc.message}"
+                ) from exc
             raise RuntimeError(f"{_('Error creating secret in Azure')}: {exc.message}") from exc
-
 
     def add_secret_version(self, secret_name: str, payload_data: str) -> SecretVersionItem:
         """Add a new version to an existing Azure secret.
@@ -456,9 +473,10 @@ class AzureSecretClient(BaseSecretProvider):
             )
         except HttpResponseError as exc:
             if exc.status_code == 403:
-                raise PermissionError(f"{_('Permission denied to add version')}: {exc.message}") from exc
+                raise PermissionError(
+                    f"{_('Permission denied to add version')}: {exc.message}"
+                ) from exc
             raise RuntimeError(f"{_('Error adding version in Azure')}: {exc.message}") from exc
-
 
     def enable_secret_version(self, version_full_name: str) -> SecretVersionItem:
         """Enables a specific version in Azure Key Vault."""
@@ -489,7 +507,9 @@ class AzureSecretClient(BaseSecretProvider):
             actual_name, ver_id = actual_name.split("@", 1)
 
         try:
-            prop = client.update_secret_properties(name=actual_name, version=ver_id, enabled=enabled)
+            prop = client.update_secret_properties(
+                name=actual_name, version=ver_id, enabled=enabled
+            )
             vid = prop.version or ver_id or ""
             return SecretVersionItem(
                 version_id=vid,
@@ -503,12 +523,15 @@ class AzureSecretClient(BaseSecretProvider):
             action_str = _("enable") if enabled else _("disable")
             if exc.status_code == 403:
                 raise PermissionError(
-                    _("Permission denied to {action} version in Azure: {message}").format(action=action_str, message=exc.message)
+                    _("Permission denied to {action} version in Azure: {message}").format(
+                        action=action_str, message=exc.message
+                    )
                 ) from exc
             raise RuntimeError(
-                _("Error while trying to {action} version in Azure: {message}").format(action=action_str, message=exc.message)
+                _("Error while trying to {action} version in Azure: {message}").format(
+                    action=action_str, message=exc.message
+                )
             ) from exc
-
 
     def delete_secret(self, secret_name: str) -> None:
         """Delete a secret in Azure Key Vault.
@@ -527,6 +550,7 @@ class AzureSecretClient(BaseSecretProvider):
             client.begin_delete_secret(actual_name)
         except HttpResponseError as exc:
             if exc.status_code == 403:
-                raise PermissionError(f"{_('Permission denied to delete secret in Azure')}: {exc.message}") from exc
+                raise PermissionError(
+                    f"{_('Permission denied to delete secret in Azure')}: {exc.message}"
+                ) from exc
             raise RuntimeError(f"{_('Error deleting secret in Azure')}: {exc.message}") from exc
-

@@ -91,7 +91,9 @@ class BaseSecretProvider(ABC):
         """
 
     @abstractmethod
-    def access_secret_payload(self, secret_name: str, version: Optional[str] = None) -> Tuple[str, bool]:
+    def access_secret_payload(
+        self, secret_name: str, version: Optional[str] = None
+    ) -> Tuple[str, bool]:
         """Retrieve the secret payload content.
 
         Args:

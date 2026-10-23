@@ -3,4 +3,3 @@ Gossip - Multi-Cloud Secret Manager (GCP, AWS, Azure, Ansible Vault) in GTK4 / L
 """
 
 __version__ = "0.3.0"
-

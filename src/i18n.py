@@ -7,7 +7,7 @@ import locale
 import os
 import struct
 import sys
-from typing import Dict, List, Optional, Set
+from typing import Dict, Optional
 
 DOMAIN = "gossip-gcp"
 LOCALE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "locales")
@@ -172,7 +172,11 @@ def get_locale_search_dirs() -> list[str]:
     for var in ("XDG_DATA_DIRS", "GI_TYPELIB_PATH"):
         for entry in os.environ.get(var, "").split(os.pathsep):
             if entry:
-                cand = os.path.join(entry, "locale") if not entry.endswith("girepository-1.0") else os.path.join(os.path.dirname(os.path.dirname(entry)), "share", "locale")
+                cand = (
+                    os.path.join(entry, "locale")
+                    if not entry.endswith("girepository-1.0")
+                    else os.path.join(os.path.dirname(os.path.dirname(entry)), "share", "locale")
+                )
                 candidates.append(cand)
 
     seen = set()
@@ -205,6 +209,7 @@ def bind_domain(domain: str, localedir: str) -> None:
 
     try:
         import ctypes
+
         for libname in ("libintl-8.dll", "libintl.dll", "libc.so.6", None):
             try:
                 c_lib = ctypes.cdll.LoadLibrary(libname) if libname else ctypes.CDLL(None)
@@ -244,6 +249,7 @@ def configure_system_locale(lang: str) -> None:
 
     try:
         from gi.repository import GLib
+
         GLib.setenv("LANGUAGE", lang, True)
     except Exception:
         pass
@@ -345,4 +351,3 @@ def _(message: str) -> str:
 
 # Initialize default Spanish localization on module import
 init_i18n("es")
-

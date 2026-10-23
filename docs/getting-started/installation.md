@@ -10,16 +10,33 @@ Official binary bundles are automatically built and published for each release v
 
 Download the latest version from the [GitHub Releases page](https://github.com/sincorchetes/gossip/releases).
 
-=== "Windows (64-bit)"
+=== "Debian / Ubuntu (.deb)"
 
-    1. Download `gossip-windows-x64-v*.zip` from the latest release.
-    2. Extract the ZIP archive to any folder (e.g., `C:\Program Files\Gossip` or your user directory).
-    3. Double-click `gossip.exe` to launch the application.
+    1. Download `gossip_*_amd64.deb` from the latest release.
+    2. Install the package using `apt`:
+       ```bash
+       sudo apt install ./gossip_*_amd64.deb
+       ```
+    3. Launch **Gossip** from your application menu or run `gossip` in your terminal.
 
     > [!TIP]
-    > **Zero installation required:** The Windows package is fully self-contained. You do not need to install Python, MSYS2, or GTK separately.
+    > **Desktop Integration:** The `.deb` package automatically registers the application icon, desktop launcher (`.desktop`), and provides seamless uninstallation via `sudo apt remove gossip`.
 
-=== "Linux (x86_64)"
+=== "Fedora / openSUSE (.rpm)"
+
+    1. Download `gossip-*-1.x86_64.rpm` from the latest release.
+    2. Install the package using your system package manager:
+       * **Fedora / RHEL**:
+         ```bash
+         sudo dnf install ./gossip-*-1.x86_64.rpm
+         ```
+       * **openSUSE (Tumbleweed / Leap)**:
+         ```bash
+         sudo zypper install ./gossip-*-1.x86_64.rpm
+         ```
+    3. Launch **Gossip** from your application menu or run `gossip` in your terminal.
+
+=== "Linux Portable (.tar.gz)"
 
     1. Download `gossip-linux-x86_64-v*.tar.gz` from the latest release.
     2. Extract the tarball:
@@ -34,6 +51,15 @@ Download the latest version from the [GitHub Releases page](https://github.com/s
 
     > [!NOTE]
     > Compatible with all modern Linux distributions running glibc 2.35+ and an active Wayland or X11 compositor.
+
+=== "Windows (64-bit)"
+
+    1. Download `gossip-windows-x64-v*.zip` from the latest release.
+    2. Extract the ZIP archive to any folder (e.g., `C:\Program Files\Gossip` or your user directory).
+    3. Double-click `gossip.exe` to launch the application.
+
+    > [!TIP]
+    > **Zero installation required:** The Windows package is fully self-contained. You do not need to install Python, MSYS2, or GTK separately.
 
 ---
 

@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import os
-import subprocess
-import sys
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -13,10 +11,14 @@ from google.api_core.exceptions import GoogleAPICallError, NotFound, PermissionD
 from google.auth.exceptions import DefaultCredentialsError, GoogleAuthError
 from google.cloud import secretmanager_v1
 
-from src.providers.base import BaseSecretProvider
-from src.exceptions import AuthenticationError, PermissionDeniedError, ProviderError, ResourceNotFoundError
+from src.exceptions import (
+    PermissionDeniedError,
+    ProviderError,
+    ResourceNotFoundError,
+)
 from src.i18n import _
 from src.models import GCPProjectItem, SecretItem, SecretVersionItem
+from src.providers.base import BaseSecretProvider
 
 
 def _parse_timestamp(ts: Any) -> Optional[datetime]:
@@ -150,7 +152,6 @@ class GCPSecretClient(BaseSecretProvider):
         name = version.name if isinstance(version, SecretVersionItem) else version
         self.destroy_secret_version(name)
 
-
     def initialize_client(self) -> secretmanager_v1.SecretManagerServiceClient:
         """Initialize or return existing SecretManagerServiceClient.
 
@@ -162,7 +163,6 @@ class GCPSecretClient(BaseSecretProvider):
         """
         if self._client is not None:
             return self._client
-
 
         try:
             self._credentials, detected_project = google.auth.default()
@@ -222,6 +222,7 @@ class GCPSecretClient(BaseSecretProvider):
             config_file = os.path.join(config_dir, "configurations", f"config_{config_name}")
             if os.path.exists(config_file):
                 import configparser
+
                 parser = configparser.ConfigParser()
                 parser.read(config_file)
                 if parser.has_option("core", "project"):
@@ -278,7 +279,9 @@ class GCPSecretClient(BaseSecretProvider):
                     repl_type = "AUTOMATIC"
                 elif secret.replication.user_managed:
                     repl_type = "USER_MANAGED"
-                    locations = [replica.location for replica in secret.replication.user_managed.replicas]
+                    locations = [
+                        replica.location for replica in secret.replication.user_managed.replicas
+                    ]
 
                 secrets.append(
                     SecretItem(
@@ -310,8 +313,11 @@ class GCPSecretClient(BaseSecretProvider):
                 original_error=exc,
             ) from exc
         except GoogleAPICallError as exc:
-            raise ProviderError(f"{_('GCP Secret Manager API error')}: {exc.message}", provider="gcp", original_error=exc) from exc
-
+            raise ProviderError(
+                f"{_('GCP Secret Manager API error')}: {exc.message}",
+                provider="gcp",
+                original_error=exc,
+            ) from exc
 
     def list_versions(self, secret_full_name: str) -> List[SecretVersionItem]:
         """List all versions of a specific secret.
@@ -360,11 +366,23 @@ class GCPSecretClient(BaseSecretProvider):
             return versions
 
         except PermissionDenied as exc:
-            raise PermissionDeniedError(_("Permission denied while listing secret versions."), provider="gcp", original_error=exc) from exc
+            raise PermissionDeniedError(
+                _("Permission denied while listing secret versions."),
+                provider="gcp",
+                original_error=exc,
+            ) from exc
         except NotFound as exc:
-            raise ResourceNotFoundError(_("The secret '{secret}' does not exist.").format(secret=secret_full_name), provider="gcp", original_error=exc) from exc
+            raise ResourceNotFoundError(
+                _("The secret '{secret}' does not exist.").format(secret=secret_full_name),
+                provider="gcp",
+                original_error=exc,
+            ) from exc
         except GoogleAPICallError as exc:
-            raise ProviderError(f"{_('Error fetching secret versions')}: {exc.message}", provider="gcp", original_error=exc) from exc
+            raise ProviderError(
+                f"{_('Error fetching secret versions')}: {exc.message}",
+                provider="gcp",
+                original_error=exc,
+            ) from exc
 
     def access_secret_payload(self, version_full_name: str) -> Tuple[str, bool]:
         """Fetch the payload of a specific secret version.
@@ -406,13 +424,16 @@ class GCPSecretClient(BaseSecretProvider):
             ) from exc
         except NotFound as exc:
             raise ResourceNotFoundError(
-                _("The secret or version '{version}' does not exist.").format(version=version_full_name),
+                _("The secret or version '{version}' does not exist.").format(
+                    version=version_full_name
+                ),
                 provider="gcp",
                 original_error=exc,
             ) from exc
         except GoogleAPICallError as exc:
-            raise ProviderError(f"{_('Error accessing secret')}: {exc.message}", provider="gcp", original_error=exc) from exc
-
+            raise ProviderError(
+                f"{_('Error accessing secret')}: {exc.message}", provider="gcp", original_error=exc
+            ) from exc
 
     def create_secret(
         self,
@@ -481,7 +502,6 @@ class GCPSecretClient(BaseSecretProvider):
             ) from exc
         except GoogleAPICallError as exc:
             raise RuntimeError(f"{_('Error creating secret')}: {exc.message}") from exc
-
 
     def add_secret_version(self, secret_full_name: str, payload_data: str) -> SecretVersionItem:
         """Add a new version to an existing secret.
@@ -602,7 +622,9 @@ class GCPSecretClient(BaseSecretProvider):
                 original_error=exc,
             ) from exc
         except GoogleAPICallError as exc:
-            raise ProviderError(f"{_('Error deleting secret')}: {exc.message}", provider="gcp", original_error=exc) from exc
+            raise ProviderError(
+                f"{_('Error deleting secret')}: {exc.message}", provider="gcp", original_error=exc
+            ) from exc
 
     def list_available_projects(self) -> List[GCPProjectItem]:
         """Lists active GCP projects accessible to the authenticated credentials."""
@@ -617,7 +639,9 @@ class GCPSecretClient(BaseSecretProvider):
             while url:
                 resp = session.get(url, timeout=12)
                 if resp.status_code != 200:
-                    raise RuntimeError(f"Error {resp.status_code} al consultar proyectos: {resp.text}")
+                    raise RuntimeError(
+                        f"Error {resp.status_code} al consultar proyectos: {resp.text}"
+                    )
 
                 data = resp.json()
                 for p in data.get("projects", []):
@@ -643,6 +667,3 @@ class GCPSecretClient(BaseSecretProvider):
             return projects
         except Exception as exc:
             raise RuntimeError(f"{_('Could not query GCP projects')}: {exc}") from exc
-
-
-

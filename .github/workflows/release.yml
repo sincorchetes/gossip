@@ -52,7 +52,11 @@ jobs:
             python3-gi-cairo \
             gettext \
             build-essential \
-            binutils
+            binutils \
+            rpm \
+            ruby \
+            ruby-dev
+          sudo gem install --no-document fpm
 
       - name: Install Python Dependencies & PyInstaller
         run: |
@@ -92,14 +96,63 @@ jobs:
             --exclude-module "ansible.executor" \
             --exclude-module "ansible.playbook" \
             src/main.py
+
           mkdir -p dist/packages
+          PKG_VERSION="${VERSION#v}"
+
+          # 1. Portable tarball
           tar -czvf "dist/packages/gossip-linux-x86_64-${VERSION}.tar.gz" -C dist gossip
 
-      - name: Upload Linux Artifact
+          # 2. Debian / Ubuntu (.deb) package
+          DEB_DIR="dist/pkg-deb"
+          mkdir -p "${DEB_DIR}/DEBIAN"
+          mkdir -p "${DEB_DIR}/opt/gossip"
+          mkdir -p "${DEB_DIR}/usr/bin"
+          mkdir -p "${DEB_DIR}/usr/share/applications"
+          mkdir -p "${DEB_DIR}/usr/share/icons/hicolor/scalable/apps"
+
+          cp -r dist/gossip/* "${DEB_DIR}/opt/gossip/"
+          ln -sf /opt/gossip/gossip "${DEB_DIR}/usr/bin/gossip"
+          cp data/com.github.sincorchetes.gossip_gcp.desktop "${DEB_DIR}/usr/share/applications/"
+          cp data/icons/hicolor/scalable/apps/com.github.sincorchetes.gossip_gcp.svg "${DEB_DIR}/usr/share/icons/hicolor/scalable/apps/"
+
+          cat <<EOF > "${DEB_DIR}/DEBIAN/control"
+Package: gossip
+Version: ${PKG_VERSION}
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: sincorchetes.tech <https://sincorchetes.tech>
+Depends: libc6, libglib2.0-0, libgtk-4-1, libadwaita-1-0
+Homepage: https://sincorchetes.github.io/gossip/
+Description: Multi-Cloud Secret Manager
+ Gossip is a modern desktop application for managing secrets across
+ Google Cloud Secret Manager, AWS Secrets Manager, Azure Key Vault,
+ and Ansible Vault with GTK4 and Libadwaita.
+EOF
+
+          dpkg-deb --build --root-owner-group "${DEB_DIR}" "dist/packages/gossip_${PKG_VERSION}_amd64.deb"
+
+          # 3. Fedora / openSUSE (.rpm) package via fpm
+          fpm -s dir -t rpm \
+            -n gossip \
+            -v "${PKG_VERSION}" \
+            --iteration 1 \
+            -a x86_64 \
+            --license "GPL-2.0-only" \
+            --vendor "sincorchetes.tech" \
+            --maintainer "sincorchetes.tech <https://sincorchetes.tech>" \
+            --url "https://sincorchetes.github.io/gossip/" \
+            --description "Multi-Cloud Secret Manager for GCP, AWS, Azure, and Ansible Vault" \
+            -p "dist/packages/gossip-${PKG_VERSION}-1.x86_64.rpm" \
+            -C "${DEB_DIR}" \
+            opt usr
+
+      - name: Upload Linux Artifacts (.tar.gz, .deb, .rpm)
         uses: actions/upload-artifact@v4
         with:
           name: gossip-linux
-          path: dist/packages/*.tar.gz
+          path: dist/packages/*
 
   # ============================================================================
   # 2. WINDOWS BUILD (Windows x64 Zip via MSYS2 UCRT64)
@@ -371,8 +424,10 @@ jobs:
             - 100% automated test suite statement and branch coverage.
 
             ### Available Downloads
-            - **Linux (x86_64)**: Portable tarball (`tar.gz`)
-            - **Windows (x64)**: Standalone executable archive (`zip`)
+            - **Debian / Ubuntu (.deb)**: Native `amd64` package for Ubuntu 22.04, 24.04+ & Debian 11/12 (`.deb`)
+            - **Fedora / openSUSE (.rpm)**: Native `x86_64` package for Fedora 39/40/41 & openSUSE (`.rpm`)
+            - **Linux Portable**: Standalone portable archive (`.tar.gz`)
+            - **Windows (x64)**: Standalone executable archive (`.zip`)
 
             ### Documentation
             Consult the complete architecture, guides, and API specification at [https://sincorchetes.github.io/gossip/](https://sincorchetes.github.io/gossip/).

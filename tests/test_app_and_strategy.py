@@ -115,16 +115,16 @@ class TestAppAndStrategy(unittest.TestCase):
         self.assertFalse(active_strategy.supports_version_toggling)
         self.assertFalse(active_strategy.supports_version_destroy)
 
-
     @patch.object(GossipApplication, "run", return_value=0)
     def test_run_app_function(self, mock_run):
         from src.ui.app import run_app
+
         exit_code = run_app(provider="aws", aws_profile="prod")
         self.assertEqual(exit_code, 0)
         mock_run.assert_called_once()
 
     def test_load_css_with_display(self):
-        from gi.repository import Gdk
+
         app = GossipApplication()
         app._load_css()
 
@@ -135,6 +135,7 @@ class TestAppAndStrategy(unittest.TestCase):
 
     def test_do_startup(self):
         from gi.repository import Adw
+
         app = GossipApplication()
         with patch.object(Adw.Application, "do_startup") as mock_super_startup:
             with patch.object(app, "_load_css") as mock_load_css:
@@ -145,6 +146,7 @@ class TestAppAndStrategy(unittest.TestCase):
     @patch("src.ui.app.MainWindow")
     def test_do_activate(self, mock_main_window_cls):
         from gi.repository import Adw
+
         mock_win = MagicMock()
         mock_main_window_cls.return_value = mock_win
         app = GossipApplication()
@@ -164,7 +166,7 @@ class TestAppAndStrategy(unittest.TestCase):
         import os
         import sys
         import tempfile
-        from gi.repository import Gdk, Gtk
+
         app = GossipApplication()
 
         # 1. Without display
@@ -172,7 +174,7 @@ class TestAppAndStrategy(unittest.TestCase):
             app._register_icon_theme()
 
         # 2. With display, not frozen
-        with patch("gi.repository.Gdk.Display.get_default") as mock_disp:
+        with patch("gi.repository.Gdk.Display.get_default"):
             mock_theme = MagicMock()
             with patch("gi.repository.Gtk.IconTheme.get_for_display", return_value=mock_theme):
                 with patch.object(sys, "frozen", False, create=True):
@@ -183,7 +185,7 @@ class TestAppAndStrategy(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             share_icons = os.path.join(tmpdir, "share", "icons")
             os.makedirs(share_icons)
-            with patch("gi.repository.Gdk.Display.get_default") as mock_disp:
+            with patch("gi.repository.Gdk.Display.get_default"):
                 mock_theme = MagicMock()
                 with patch("gi.repository.Gtk.IconTheme.get_for_display", return_value=mock_theme):
                     with patch.object(sys, "frozen", True, create=True):
@@ -194,4 +196,3 @@ class TestAppAndStrategy(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

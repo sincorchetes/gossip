@@ -23,7 +23,7 @@ if sys.stderr is None:  # pragma: no cover
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src import __version__
-from src.i18n import init_i18n, _
+from src.i18n import _, init_i18n
 
 
 def setup_frozen_environment() -> None:
@@ -47,6 +47,7 @@ def setup_frozen_environment() -> None:
 
             # Ensure POSIX shims are active on Windows for Ansible Core
             from src.providers.ansible import install_posix_shims
+
             install_posix_shims()
 
         typelib_candidates = [
@@ -99,13 +100,15 @@ def main() -> int:
         description="Gossip: Explorador y gestor de secretos en Google Cloud Platform, AWS Secrets Manager, Azure Key Vault y Ansible Vault",
     )
     parser.add_argument(
-        "-P", "--provider",
+        "-P",
+        "--provider",
         choices=["gcp", "aws", "azure", "ansible"],
         default="gcp",
         help="Proveedor inicial de secretos (gcp, aws, azure o ansible, por defecto: gcp)",
     )
     parser.add_argument(
-        "-p", "--project",
+        "-p",
+        "--project",
         help="ID del proyecto de GCP a consultar (omite la autodetección)",
         default=None,
     )
@@ -135,13 +138,15 @@ def main() -> int:
         default=None,
     )
     parser.add_argument(
-        "-l", "--lang",
+        "-l",
+        "--lang",
         choices=["es", "en"],
         default=None,
         help="Idioma de la interfaz / UI language (es, en)",
     )
     parser.add_argument(
-        "-m", "--maximized",
+        "-m",
+        "--maximized",
         action="store_true",
         help="Inicia la ventana gráfica maximizada",
     )
@@ -169,7 +174,8 @@ def main() -> int:
         help="Fuerza renderizado por software Cairo (útil en VMs o drivers sin aceleración 3D)",
     )
     parser.add_argument(
-        "-v", "--version",
+        "-v",
+        "--version",
         action="version",
         version=f"Gossip {__version__}",
     )
@@ -197,6 +203,7 @@ def main() -> int:
 
     # Launch GTK4/Libadwaita GUI
     from src.ui.app import run_app
+
     return run_app(
         provider=args.provider,
         project_id=args.project,
