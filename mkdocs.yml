@@ -1,6 +1,6 @@
 site_name: Gossip Documentation
 site_description: Complete Architecture, API Reference, and Business Logic for Gossip Multi-Cloud Secret Manager
-site_author: Antigravity & sincorchetes
+site_author: Antigravity & sincorchetes.tech
 site_url: https://sincorchetes.github.io/gossip/
 repo_name: sincorchetes/gossip
 repo_url: https://github.com/sincorchetes/gossip
@@ -48,6 +48,10 @@ plugins:
           build: true
           nav_translations:
             Home: Inicio
+            Getting Started: Primeros Pasos
+            Installation: Instalación
+            Quickstart: Guía Rápida
+            Graphical UI Guide: Guía de la Interfaz Gráfica
             Architecture: Arquitectura
             Providers (Strategy Pattern): Proveedores (Patrón Estrategia)
             Overview: Visión General
@@ -99,6 +103,10 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+      - Graphical UI Guide: getting-started/gui-guide.md
   - Architecture: architecture.md
   - Providers (Strategy Pattern):
       - Overview: providers/index.md

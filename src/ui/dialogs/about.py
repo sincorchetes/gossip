@@ -25,7 +25,7 @@ def show_about_dialog(parent_window: Gtk.Window) -> None:
         developer_name="Antigravity (Google DeepMind)",
         developers=[
             "Antigravity (Google DeepMind)",
-            "sincorchetes",
+            "sincorchetes.tech",
         ],
         version=__version__,
         comments=_(
@@ -33,9 +33,9 @@ def show_about_dialog(parent_window: Gtk.Window) -> None:
             "Amazon Web Services (AWS), Microsoft Azure (Key Vault), and Ansible Vault "
             "with GTK4 and Libadwaita."
         ),
-        website="https://github.com/sincorchetes/gossip",
+        website="https://sincorchetes.github.io/gossip/",
         issue_url="https://github.com/sincorchetes/gossip/issues",
-        copyright="© 2026 Antigravity &amp; sincorchetes",
+        copyright="© 2026 Antigravity &amp; sincorchetes.tech",
         license_type=Gtk.License.GPL_2_0,
     )
     about.present()

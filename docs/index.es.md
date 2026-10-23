@@ -30,12 +30,15 @@ Gossip se ha construido siguiendo directrices de **Clean Code** y **Clean Archit
 3. **Concurrencia Asíncrona No Bloqueante**:
    - Cada operación de red y criptografía se ejecuta en hilos secundarios en segundo plano mediante `threading.Thread(daemon=True)`, comunicando los resultados al hilo principal de GTK a través de `GLib.idle_add()`. La interfaz gráfica se mantiene fluida a 60 FPS.
 4. **Puerta de Cobertura de Tests al 100%**:
-   - La base de código cuenta con 167 tests automatizados manteniendo el **100.00% de cobertura de declaraciones y ramas**.
+   - La base de código cuenta con 187 tests automatizados manteniendo el **100.00% de cobertura de declaraciones y ramas**.
 
 ---
 
 ## Navegación Rápida
 
+- [Guía de Instalación](getting-started/installation.md)
+- [Guía Rápida y Configuración](getting-started/quickstart.md)
+- [Guía de la Interfaz Gráfica](getting-started/gui-guide.md)
 - [Arquitectura y Patrones de Diseño](architecture.md)
 - [Referencia de Proveedores](providers/index.md)
 - [Modelos de Datos](api/models.md)

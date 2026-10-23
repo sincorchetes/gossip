@@ -202,7 +202,7 @@ gossip-gcp/
 This software was developed in a collaborative pair-programming model:
 
 - **Code Authorship & Technical Implementation**: [Antigravity](https://deepmind.google) (Google DeepMind - Advanced Agentic Coding).
-- **Project Direction, Product Architecture & Validation**: **sincorchetes**.
+- **Project Direction, Product Architecture & Validation**: [sincorchetes.tech](https://sincorchetes.tech).
 
 Please see [AUTHORS.md](file:///home/sincorchetes/Documents/gossip-gcp/AUTHORS.md) for full details.
 

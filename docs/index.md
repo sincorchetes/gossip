@@ -30,12 +30,15 @@ Gossip is built following senior **Clean Code** and **Clean Architecture** guide
 3. **Non-Blocking Asynchronous Concurrency**:
    - Every network and encryption operation is executed in background worker threads, reporting results to the GTK main loop via `GLib.idle_add()`. The UI maintains 60 FPS under all circumstances.
 4. **100% Test Coverage Gate**:
-   - The entire codebase is verified by 167 automated tests maintaining **100.00% statement and branch coverage**.
+   - The entire codebase is verified by 187 automated tests maintaining **100.00% statement and branch coverage**.
 
 ---
 
 ## Quick Navigation
 
+- [Installation Guide](getting-started/installation.md)
+- [Quickstart & Configuration](getting-started/quickstart.md)
+- [Graphical UI Guide](getting-started/gui-guide.md)
 - [Architecture & Design Patterns](architecture.md)
 - [Providers Reference](providers/index.md)
 - [Data Models](api/models.md)
