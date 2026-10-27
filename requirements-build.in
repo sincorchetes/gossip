@@ -1,0 +1,14 @@
+# Direct runtime + packaging dependencies for release builds.
+# Regenerate the pinned, hashed lock with:
+#   uv pip compile requirements-build.in --universal --python-version 3.14 --generate-hashes -o requirements-build.txt
+google-cloud-secret-manager
+google-auth
+boto3
+botocore[crt]
+awscrt
+azure-keyvault-secrets
+azure-identity
+pyyaml
+ansible-vault
+cryptography
+pyinstaller

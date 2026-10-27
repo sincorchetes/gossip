@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=Gossip
+GenericName=Secret Manager
+Comment=Explore and manage secrets in the cloud, Vault and Kubernetes
+Comment[es]=Explora y gestiona secretos en la nube, Vault y Kubernetes
+Exec=gossip %U
+Icon=com.github.sincorchetes.gossip_gcp
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=System;Security;GTK;
+Keywords=secret;manager;gcp;aws;azure;ansible;vault;openbao;kubernetes;security;
+StartupWMClass=com.github.sincorchetes.gossip_gcp
+MimeType=application/x-yaml;

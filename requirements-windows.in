@@ -1,0 +1,8 @@
+# Pure-Python packages the Windows build installs with pip on top of the MSYS2 (pacman) ones.
+# Regenerate the pinned, hashed lock with:
+#   uv pip compile requirements-windows.in --universal --python-version 3.14 --generate-hashes -o requirements-windows.txt
+google-cloud-secret-manager
+grpc-google-iam-v1
+azure-keyvault-secrets
+azure-identity
+ansible-vault

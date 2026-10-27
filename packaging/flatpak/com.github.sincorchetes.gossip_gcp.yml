@@ -1,0 +1,60 @@
+# Flatpak manifest for Gossip.
+#
+# Build and install locally:
+#   flatpak-builder --user --install --force-clean build-dir packaging/flatpak/com.github.sincorchetes.gossip_gcp.yml
+# Regenerate the Python dependency sources after changing requirements-build.txt:
+#   python3 scripts/generate_flatpak_sources.py
+app-id: com.github.sincorchetes.gossip_gcp
+runtime: org.gnome.Platform
+runtime-version: "51"
+sdk: org.gnome.Sdk
+command: gossip
+
+finish-args:
+  # Reach the cloud APIs, Vault / OpenBao servers and Kubernetes clusters
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Read-only access to the credential files the providers use. They are skipped when absent.
+  - --filesystem=~/.aws:ro
+  - --filesystem=~/.azure:ro
+  - --filesystem=~/.config/gcloud:ro
+  - --filesystem=~/.kube:ro
+  - --filesystem=~/.vault-token:ro
+  # Lock the secrets when the screen locks or the computer suspends
+  - --system-talk-name=org.freedesktop.login1
+  - --talk-name=org.gnome.ScreenSaver
+  - --talk-name=org.freedesktop.ScreenSaver
+
+modules:
+  - python3-deps.json
+
+  - name: gossip
+    buildsystem: simple
+    build-commands:
+      - install -d /app/lib/gossip
+      - cp -r src locales /app/lib/gossip/
+      - install -Dm755 packaging/flatpak/gossip.sh /app/bin/gossip
+      - install -Dm644 data/com.github.sincorchetes.gossip_gcp.desktop -t /app/share/applications
+      - install -Dm644 data/com.github.sincorchetes.gossip_gcp.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 data/icons/hicolor/scalable/apps/com.github.sincorchetes.gossip_gcp.svg -t /app/share/icons/hicolor/scalable/apps
+      - install -Dm644 LICENSE -t /app/share/licenses/gossip
+      - install -Dm644 THIRD_PARTY_NOTICES.md -t /app/share/licenses/gossip
+    sources:
+      - type: dir
+        path: ../..
+        skip:
+          - .git
+          - .devenv
+          - .venv
+          - .claude
+          - .github
+          - htmlcov
+          - site
+          - dist
+          - build
+          - tests
+          - docs
+          - __pycache__

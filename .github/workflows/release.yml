@@ -1,0 +1,774 @@
+name: Build Multi-Platform & Publish Release
+
+on:
+  push:
+    branches:
+      - pre
+      - release
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: "utf-8"
+  LANG: "C.UTF-8"
+  LC_ALL: "C.UTF-8"
+
+jobs:
+  # ============================================================================
+  # 1. LINUX BUILD (Ubuntu x86_64 & ARM64)
+  # ============================================================================
+  build-linux:
+    name: Build Linux Packages (${{ matrix.arch_tag }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch_deb: amd64
+            arch_rpm: x86_64
+            arch_tag: x86_64
+          - os: ubuntu-24.04-arm
+            arch_deb: arm64
+            arch_rpm: aarch64
+            arch_tag: aarch64
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Stamp release version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: bash scripts/set_version.sh "${{ github.ref_name }}"
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.14"
+
+      - name: Install System Dependencies (GTK4 & Libadwaita)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            gobject-introspection \
+            libgirepository1.0-dev \
+            gir1.2-gtk-4.0 \
+            gir1.2-adw-1 \
+            gir1.2-rsvg-2.0 \
+            librsvg2-common \
+            librsvg2-dev \
+            librsvg2-bin \
+            adwaita-icon-theme \
+            libcairo2-dev \
+            pkg-config \
+            python3-dev \
+            python3-gi \
+            python3-gi-cairo \
+            gettext \
+            build-essential \
+            binutils \
+            rpm \
+            ruby \
+            ruby-dev
+          sudo gem install --no-document fpm
+
+      - name: Install Python Dependencies & PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install wheel
+          pip install pycairo "PyGObject<3.51.0"
+          pip install --require-hashes -r requirements-build.txt
+
+      - name: Build Standalone Linux Executable with PyInstaller
+        run: |
+          VERSION="${{ github.ref_name }}"
+          # .deb/.rpm versions must start with a digit, so manual or branch runs get a placeholder
+          if [[ ! "$VERSION" =~ ^v[0-9] ]]; then
+            SHA="${{ github.sha }}"
+            VERSION="v0.0.0+${SHA:0:8}"
+          fi
+          echo "Building Linux package for version ${VERSION} on architecture ${{ matrix.arch_tag }}..."
+
+          TYPELIB_DIR="/usr/lib/$(uname -m)-linux-gnu/girepository-1.0"
+          if [ ! -d "$TYPELIB_DIR" ]; then
+            TYPELIB_DIR="$(find /usr/lib -name "girepository-1.0" -type d 2>/dev/null | head -n 1)"
+          fi
+
+          source packaging/pyinstaller-common.sh
+          pyinstaller "${PYI_COMMON_ARGS[@]}" \
+            --add-data "locales:locales" \
+            --add-data "${TYPELIB_DIR}:gi_typelibs" \
+            --add-data "${TYPELIB_DIR}:girepository-1.0" \
+            --add-data "/usr/share/glib-2.0/schemas:glib-2.0/schemas" \
+            --collect-all "gi.repository.GdkPixbuf" \
+            --collect-all "gi.repository.Rsvg" \
+            --hidden-import "gi.repository.GdkPixbuf" \
+            --hidden-import "gi.repository.Rsvg" \
+            src/main.py
+
+          # Ensure all system typelibs are mirrored in both gi_typelibs and girepository-1.0
+          mkdir -p dist/gossip/_internal/gi_typelibs
+          mkdir -p dist/gossip/_internal/girepository-1.0
+          mkdir -p dist/gossip/gi_typelibs
+          mkdir -p dist/gossip/girepository-1.0
+          find /usr/lib -name "*.typelib" -exec cp -f {} dist/gossip/_internal/gi_typelibs/ \; 2>/dev/null || true
+          find /usr/lib -name "*.typelib" -exec cp -f {} dist/gossip/_internal/girepository-1.0/ \; 2>/dev/null || true
+          find /usr/lib -name "*.typelib" -exec cp -f {} dist/gossip/gi_typelibs/ \; 2>/dev/null || true
+          find /usr/lib -name "*.typelib" -exec cp -f {} dist/gossip/girepository-1.0/ \; 2>/dev/null || true
+
+          # Ensure GLib schemas are compiled
+          mkdir -p dist/gossip/_internal/glib-2.0/schemas
+          cp -r /usr/share/glib-2.0/schemas/* dist/gossip/_internal/glib-2.0/schemas/ 2>/dev/null || true
+          glib-compile-schemas dist/gossip/_internal/glib-2.0/schemas/ 2>/dev/null || true
+
+          # Ensure libpixbufloader-svg.so and librsvg-2.so are bundled and registered for vector icons
+          SVG_LOADER="$(find /usr/lib -name "libpixbufloader-svg.so" 2>/dev/null | head -n 1)"
+          if [ -n "$SVG_LOADER" ] && [ -f "$SVG_LOADER" ]; then
+            mkdir -p dist/gossip/_internal/lib/gdk-pixbuf/loaders
+            cp -f "$SVG_LOADER" dist/gossip/_internal/lib/gdk-pixbuf/loaders/
+            find /usr/lib -name "librsvg-2.so*" -exec cp -f {} dist/gossip/_internal/ \; 2>/dev/null || true
+            if [ -f dist/gossip/_internal/lib/gdk-pixbuf/loaders.cache ] && ! grep -q "svg" dist/gossip/_internal/lib/gdk-pixbuf/loaders.cache; then
+              printf '\n"@executable_path/lib/gdk-pixbuf/loaders/libpixbufloader-svg.so"\n"svg" 6 "gdk-pixbuf" "Scalable Vector Graphics" "LGPL"\n"image/svg+xml" "image/svg" "image/svg-xml" "image/vnd.adobe.svg+xml" "text/xml-svg" "image/svg+xml-compressed" ""\n"svg" "svgz" "svg.gz" ""\n" <svg" "*    " 100\n" <!DOCTYPE svg" "*             " 100\n\n' >> dist/gossip/_internal/lib/gdk-pixbuf/loaders.cache
+            fi
+          fi
+
+          # Licenses: the project license, the third-party notices and the real license files of
+          # the system libraries bundled into this build
+          cp LICENSE THIRD_PARTY_NOTICES.md dist/gossip/
+          bash scripts/collect_linux_licenses.sh dist/gossip dist/gossip/licenses/system
+
+          mkdir -p dist/packages
+          PKG_VERSION="${VERSION#v}"
+
+          # Smoke test: every native dependency must load from the frozen build
+          ./dist/gossip/gossip --self-test
+
+          # 1. Portable tarball
+          tar -czvf "dist/packages/gossip-linux-${{ matrix.arch_tag }}-${VERSION}.tar.gz" -C dist gossip
+
+          # 2. Debian / Ubuntu (.deb) package
+          DEB_DIR="dist/pkg-deb"
+          mkdir -p "${DEB_DIR}/DEBIAN"
+          mkdir -p "${DEB_DIR}/opt/gossip"
+          mkdir -p "${DEB_DIR}/usr/bin"
+          mkdir -p "${DEB_DIR}/usr/share/applications"
+          mkdir -p "${DEB_DIR}/usr/share/icons/hicolor/scalable/apps"
+
+          cp -r dist/gossip/* "${DEB_DIR}/opt/gossip/"
+          mkdir -p "${DEB_DIR}/usr/share/doc/gossip" "${DEB_DIR}/usr/share/licenses/gossip"
+          cp packaging/linux/copyright "${DEB_DIR}/usr/share/doc/gossip/copyright"
+          cp LICENSE THIRD_PARTY_NOTICES.md "${DEB_DIR}/usr/share/licenses/gossip/"
+          cp data/gossip-launcher.sh "${DEB_DIR}/usr/bin/gossip"
+          chmod 755 "${DEB_DIR}/usr/bin/gossip"
+
+          cp data/com.github.sincorchetes.gossip_gcp.desktop "${DEB_DIR}/usr/share/applications/"
+          cp data/icons/hicolor/scalable/apps/com.github.sincorchetes.gossip_gcp.svg "${DEB_DIR}/usr/share/icons/hicolor/scalable/apps/"
+
+          echo "Package: gossip" > "${DEB_DIR}/DEBIAN/control"
+          echo "Version: ${PKG_VERSION}" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Section: utils" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Priority: optional" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Architecture: ${{ matrix.arch_deb }}" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Maintainer: Álvaro Castillo <https://sincorchetes.tech>" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Depends: libc6, libglib2.0-0, libgtk-4-1, libadwaita-1-0, librsvg2-common" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Homepage: https://sincorchetes.github.io/gossip/" >> "${DEB_DIR}/DEBIAN/control"
+          echo "Description: Multi-Cloud Secret Manager" >> "${DEB_DIR}/DEBIAN/control"
+          echo " Gossip is a modern desktop application for managing secrets across" >> "${DEB_DIR}/DEBIAN/control"
+          echo " Google Cloud Secret Manager, AWS Secrets Manager, Azure Key Vault," >> "${DEB_DIR}/DEBIAN/control"
+          echo " and Ansible Vault with GTK4 and Libadwaita." >> "${DEB_DIR}/DEBIAN/control"
+
+          dpkg-deb --build --root-owner-group "${DEB_DIR}" "dist/packages/gossip_${PKG_VERSION}_${{ matrix.arch_deb }}.deb"
+
+          # 3. Fedora / openSUSE (.rpm) package via fpm
+          fpm -s dir -t rpm \
+            -n gossip \
+            -v "${PKG_VERSION}" \
+            --iteration 1 \
+            -a "${{ matrix.arch_rpm }}" \
+            --license "GPL-3.0-or-later" \
+            --vendor "Álvaro Castillo" \
+            --maintainer "Álvaro Castillo <https://sincorchetes.tech>" \
+            --url "https://sincorchetes.github.io/gossip/" \
+            --description "Multi-Cloud Secret Manager for GCP, AWS, Azure, and Ansible Vault" \
+            -d "gtk4" \
+            -d "libadwaita" \
+            -d "glib2" \
+            -d "librsvg2" \
+            -p "dist/packages/gossip-${PKG_VERSION}-1.${{ matrix.arch_rpm }}.rpm" \
+            -C "${DEB_DIR}" \
+            opt usr
+
+      - name: Upload Linux Artifacts (.tar.gz, .deb, .rpm)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: gossip-linux-${{ matrix.arch_deb }}
+          path: dist/packages/*
+
+  # ============================================================================
+  # 1b. FLATPAK BUNDLES (x86_64 & aarch64)
+  # ============================================================================
+  build-flatpak:
+    name: Build Flatpak (${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch: x86_64
+          - os: ubuntu-24.04-arm
+            arch: aarch64
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Stamp release version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          bash scripts/set_version.sh "${{ github.ref_name }}"
+          V="${{ github.ref_name }}"; V="${V#v}"
+          sed -i "s|<release version=\"[^\"]*\" date=\"[^\"]*\"/>|<release version=\"${V}\" date=\"$(date -u +%F)\"/>|" \
+            data/com.github.sincorchetes.gossip_gcp.metainfo.xml
+
+      - name: Install Flatpak tooling and the GNOME runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends flatpak flatpak-builder appstream elfutils librsvg2-common
+          flatpak --user remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak --user install -y --noninteractive flathub org.gnome.Platform//51 org.gnome.Sdk//51
+
+      - name: Validate the desktop entry and the AppStream metadata
+        run: |
+          desktop-file-validate data/com.github.sincorchetes.gossip_gcp.desktop || true
+          appstreamcli validate --no-net data/com.github.sincorchetes.gossip_gcp.metainfo.xml
+
+      - name: Build the Flatpak
+        run: |
+          flatpak-builder --user --disable-rofiles-fuse --force-clean --repo=repo build-dir \
+            packaging/flatpak/com.github.sincorchetes.gossip_gcp.yml
+
+      - name: Self-test inside the sandbox
+        run: |
+          GOSSIP_SELFTEST_HEADLESS=1 flatpak-builder --run build-dir \
+            packaging/flatpak/com.github.sincorchetes.gossip_gcp.yml gossip --self-test
+
+      - name: Create the bundle
+        shell: bash
+        run: |
+          VERSION="${{ github.ref_name }}"
+          if [[ "${GITHUB_REF}" != refs/tags/v* ]]; then
+            VERSION="${{ github.sha }}"; VERSION="${VERSION:0:8}"
+          fi
+          mkdir -p dist/packages
+          flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo \
+            repo "dist/packages/gossip-${{ matrix.arch }}-${VERSION}.flatpak" \
+            com.github.sincorchetes.gossip_gcp
+
+      - name: Upload the bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: gossip-flatpak-${{ matrix.arch }}
+          path: dist/packages/*
+
+  # ============================================================================
+  # 2. WINDOWS BUILD (Windows x64 Zip + MSI via MSYS2 UCRT64)
+  # ============================================================================
+  build-windows:
+    name: Build Windows (x64 Zip + MSI)
+    runs-on: windows-latest
+    continue-on-error: true
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+      LANG: "C.UTF-8"
+      LC_ALL: "C.UTF-8"
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Stamp release version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: bash scripts/set_version.sh "${{ github.ref_name }}"
+
+      - name: Setup MSYS2 with GTK4 & PyGObject
+        uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-python
+            mingw-w64-ucrt-x86_64-python-pip
+            mingw-w64-ucrt-x86_64-python-setuptools
+            mingw-w64-ucrt-x86_64-python-wheel
+            mingw-w64-ucrt-x86_64-python-cffi
+            mingw-w64-ucrt-x86_64-python-cryptography
+            mingw-w64-ucrt-x86_64-python-yaml
+            mingw-w64-ucrt-x86_64-python-grpcio
+            mingw-w64-ucrt-x86_64-python-protobuf
+            mingw-w64-ucrt-x86_64-python-markupsafe
+            mingw-w64-ucrt-x86_64-python-google-auth
+            mingw-w64-ucrt-x86_64-python-google-api-core
+            mingw-w64-ucrt-x86_64-python-googleapis-common-protos
+            mingw-w64-ucrt-x86_64-python-proto-plus
+            mingw-w64-ucrt-x86_64-python-boto3
+            mingw-w64-ucrt-x86_64-python-botocore
+            mingw-w64-ucrt-x86_64-python-requests
+            mingw-w64-ucrt-x86_64-gtk4
+            mingw-w64-ucrt-x86_64-libadwaita
+            mingw-w64-ucrt-x86_64-python-gobject
+            mingw-w64-ucrt-x86_64-pyinstaller
+            mingw-w64-ucrt-x86_64-librsvg
+            mingw-w64-ucrt-x86_64-adwaita-icon-theme
+            mingw-w64-ucrt-x86_64-hicolor-icon-theme
+
+      - name: Install Python Dependencies & PyInstaller
+        shell: msys2 {0}
+        run: |
+          # pip and wheel come from pacman, so they are not upgraded or installed separately.
+          # MSYS2 signs and provides the native packages (pacman verifies them). Everything else
+          # comes from PyPI, pinned by version and hash in requirements-windows.txt.
+          python -m pip list --format=freeze > /tmp/installed.txt
+          # grpcio-status in the lock needs a newer grpcio than the one MSYS2 ships; the app never imports it
+          python scripts/pip_lock_subset.py requirements-windows.txt /tmp/installed.txt --skip grpcio-status > /tmp/pip-only.txt
+          echo "Installing from the hashed lock:"; grep -E "^[A-Za-z0-9_.-]+==" /tmp/pip-only.txt | sed "s/ .*//"
+          pip install --break-system-packages --no-deps --require-hashes -r /tmp/pip-only.txt
+          python -c "import gi; import boto3; import azure.identity; import ansible_vault; from google.cloud import secretmanager; import src.main; import src.ui.app; print('ALL WINDOWS IMPORTS SUCCESSFUL!')"
+
+      - name: Check the grpcio floor required by Google Cloud (from April 2027)
+        shell: msys2 {0}
+        run: python scripts/check_grpcio_floor.py
+
+      - name: Generate Windows icon from SVG
+        shell: msys2 {0}
+        run: bash scripts/generate_icons.sh ico build-assets/gossip.ico
+
+      - name: Build Windows Executable with PyInstaller
+        shell: msys2 {0}
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
+          LANG: "C.UTF-8"
+          LC_ALL: "C.UTF-8"
+        run: |
+          source packaging/pyinstaller-common.sh
+          pyinstaller "${PYI_COMMON_ARGS[@]}" \
+            --icon "build-assets/gossip.ico" \
+            --add-data "data/icons;share/icons" \
+            --add-data "locales;locales" \
+            --hidden-import "src.providers.ansible.compat" \
+            --hidden-import "src.providers.ansible.shims" \
+            src/main.py
+
+          # Bundle GObject Introspection typelibs (.typelib)
+          mkdir -p dist/gossip/girepository-1.0 dist/gossip/lib/girepository-1.0
+          cp -rf /ucrt64/lib/girepository-1.0/* dist/gossip/girepository-1.0/ 2>/dev/null || true
+          cp -rf /ucrt64/lib/girepository-1.0/* dist/gossip/lib/girepository-1.0/ 2>/dev/null || true
+
+          # Bundle GSettings schemas (including gschemas.compiled)
+          mkdir -p dist/gossip/glib-2.0/schemas dist/gossip/share/glib-2.0/schemas
+          cp -rf /ucrt64/share/glib-2.0/schemas/* dist/gossip/glib-2.0/schemas/ 2>/dev/null || true
+          cp -rf /ucrt64/share/glib-2.0/schemas/* dist/gossip/share/glib-2.0/schemas/ 2>/dev/null || true
+
+          # Bundle standard icons (Adwaita & hicolor)
+          mkdir -p dist/gossip/share/icons dist/gossip/icons dist/gossip/_internal/share/icons dist/gossip/_internal/icons
+          cp -rf /ucrt64/share/icons/* dist/gossip/share/icons/ 2>/dev/null || true
+          cp -rf /ucrt64/share/icons/* dist/gossip/icons/ 2>/dev/null || true
+          cp -rf /ucrt64/share/icons/* dist/gossip/_internal/share/icons/ 2>/dev/null || true
+          cp -rf /ucrt64/share/icons/* dist/gossip/_internal/icons/ 2>/dev/null || true
+
+          # Bundle system locales (Libadwaita & GTK4 native gettext catalogs)
+          mkdir -p dist/gossip/share/locale dist/gossip/_internal/share/locale
+          cp -rf /ucrt64/share/locale/* dist/gossip/share/locale/ 2>/dev/null || true
+          cp -rf /ucrt64/share/locale/* dist/gossip/_internal/share/locale/ 2>/dev/null || true
+
+          # Bundle GTK4 and Libadwaita native dynamic libraries into the application directory
+          cp /ucrt64/bin/libgtk-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libadwaita-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libgirepository-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libgio-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libglib-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libgobject-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libgmodule-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libcairo-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libpango-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libgdk_pixbuf-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libepoxy-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libgraphene-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libharfbuzz-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libintl-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libintl-*.dll dist/gossip/_internal/ 2>/dev/null || true
+          cp /ucrt64/bin/libiconv-*.dll dist/gossip/ 2>/dev/null || true
+          cp /ucrt64/bin/libiconv-*.dll dist/gossip/_internal/ 2>/dev/null || true
+
+          # Bundle Ansible configuration data (base.yml)
+          ANSIBLE_CONFIG_DIR=$(python -c "import ansible.config, os; print(os.path.dirname(ansible.config.__file__))" 2>/dev/null || true)
+          if [ -n "$ANSIBLE_CONFIG_DIR" ] && [ -d "$ANSIBLE_CONFIG_DIR" ]; then
+            echo "Copying Ansible base config from $ANSIBLE_CONFIG_DIR..."
+            mkdir -p dist/gossip/_internal/ansible/config dist/gossip/ansible/config
+            cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip/_internal/ansible/config/ 2>/dev/null || true
+            cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip/ansible/config/ 2>/dev/null || true
+          fi
+
+          # Licenses: project license, third-party notices and the license files of the MSYS2
+          # packages whose DLLs are bundled
+          cp LICENSE THIRD_PARTY_NOTICES.md dist/gossip/
+          bash scripts/collect_msys2_licenses.sh dist/gossip dist/gossip/licenses/msys2 /ucrt64
+
+          # Verify bundled standalone executable executes and prints version
+          ./dist/gossip/gossip.exe --version
+
+          # Smoke test: every native dependency (GTK, cryptography, gRPC, ...) must import cleanly
+          ./dist/gossip/gossip.exe --self-test
+
+      - name: Record the packages bundled into the Windows build
+        shell: msys2 {0}
+        run: |
+          mkdir -p dist/packages
+          {
+            echo "# MSYS2 (pacman) packages"
+            pacman -Q | sort
+            echo
+            echo "# Python packages (pip)"
+            python -m pip freeze --all | sort
+          } > "dist/packages/gossip-windows-x64-${{ github.ref_name }}-packages.txt"
+
+      - name: Archive Windows Package
+        shell: pwsh
+        run: |
+          $VERSION = "${{ github.ref_name }}"
+          if (-not $VERSION -or $VERSION.Contains("/")) {
+            $VERSION = "${{ github.sha }}".Substring(0, 8)
+          }
+          if (-not (Test-Path "dist/gossip")) {
+            throw "dist/gossip directory was not generated by PyInstaller"
+          }
+          New-Item -ItemType Directory -Force -Path "dist/packages"
+          Compress-Archive -Path "dist/gossip/*" -DestinationPath "dist/packages/gossip-windows-x64-${VERSION}.zip"
+
+      - name: Generate license for the installer
+        shell: msys2 {0}
+        run: python scripts/make_license_rtf.py LICENSE.md build-assets/LICENSE.rtf
+
+      - name: Build Windows MSI Installer
+        shell: pwsh
+        run: |
+          $VERSION = "${{ github.ref_name }}"
+          if (-not $VERSION -or $VERSION.Contains("/")) {
+            $VERSION = "${{ github.sha }}".Substring(0, 8)
+          }
+          # MSI ProductVersion must be numeric (a.b.c); untagged builds fall back to 0.0.0
+          $MSI_VERSION = $VERSION -replace '^v', ''
+          if ($MSI_VERSION -notmatch '^\d+\.\d+\.\d+$') { $MSI_VERSION = "0.0.0" }
+
+          dotnet tool install --global wix --version 5.0.2
+          $wix = Join-Path $env:USERPROFILE ".dotnet\tools\wix.exe"
+          & $wix extension add --global WixToolset.UI.wixext/5.0.2
+          if ($LASTEXITCODE -ne 0) { throw "wix extension add failed" }
+          # Absolute paths: WiX resolves relative <Files Include> paths from inside the install
+          # folder name and silently harvests nothing (warning WIX8601), producing an empty MSI.
+          $source = (Resolve-Path "dist/gossip").Path
+          $icon = (Resolve-Path "build-assets/gossip.ico").Path
+          $license = (Resolve-Path "build-assets/LICENSE.rtf").Path
+          $msi = "dist/packages/gossip-windows-x64-${VERSION}.msi"
+          & $wix build -arch x64 -ext WixToolset.UI.wixext `
+            -d Version=$MSI_VERSION `
+            -d SourceDir=$source `
+            -d IconFile=$icon `
+            -d LicenseRtf=$license `
+            -o $msi `
+            packaging/windows/gossip.wxs
+          if ($LASTEXITCODE -ne 0) { throw "wix build failed" }
+
+          # The portable zip is about 160 MB; an MSI far below that did not include the application
+          $size = (Get-Item $msi).Length
+          Write-Host "MSI size: $size bytes"
+          if ($size -lt 20MB) { throw "MSI is only $size bytes: the application files were not harvested" }
+
+      - name: Upload Windows Artifact
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: gossip-windows
+          path: |
+            dist/packages/*.zip
+            dist/packages/*.msi
+            dist/packages/*-packages.txt
+
+  # ============================================================================
+  # 3. MACOS BUILD (one native bundle per architecture: arm64 and x86_64)
+  # ============================================================================
+  build-macos:
+    name: Build macOS (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    continue-on-error: true
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-latest
+          - arch: x86_64
+            runner: macos-15-intel
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Stamp release version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: bash scripts/set_version.sh "${{ github.ref_name }}"
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.14"
+
+      - name: Install System Dependencies via Homebrew
+        run: |
+          brew install glib gtk4 libadwaita gobject-introspection adwaita-icon-theme librsvg pkg-config || true
+          # Link Homebrew dylibs to /usr/local/lib so ctypes.util.find_library locates libgio and libgtk
+          BREW_PREFIX="$(brew --prefix)"
+          if [ "$BREW_PREFIX" != "/usr/local" ]; then
+            sudo mkdir -p /usr/local/lib
+            sudo ln -sf "$BREW_PREFIX"/lib/* /usr/local/lib/ 2>/dev/null || true
+          fi
+
+      - name: Install Python Dependencies & PyInstaller
+        env:
+          PKG_CONFIG_PATH: "/opt/homebrew/lib/pkgconfig:/usr/local/lib/pkgconfig"
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install wheel
+          pip install pycairo "PyGObject<3.51.0" || true
+          pip install --require-hashes -r requirements-build.txt
+
+      - name: Build macOS Application Bundle with PyInstaller
+        env:
+          DYLD_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
+          DYLD_FALLBACK_LIBRARY_PATH: "/opt/homebrew/lib:/usr/local/lib"
+          GI_TYPELIB_PATH: "/opt/homebrew/lib/girepository-1.0:/usr/local/lib/girepository-1.0"
+          PKG_CONFIG_PATH: "/opt/homebrew/lib/pkgconfig:/usr/local/lib/pkgconfig"
+        run: |
+          VERSION="${{ github.ref_name }}"
+          if [ -z "$VERSION" ] || [[ "$VERSION" == *"/"* ]]; then
+            VERSION="${{ github.sha }}"
+            VERSION="${VERSION:0:8}"
+          fi
+          echo "Building macOS package for version ${VERSION}..."
+
+          HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || echo '/opt/homebrew')"
+          TYPELIB_DIR="${HOMEBREW_PREFIX}/lib/girepository-1.0"
+          SCHEMA_DIR="${HOMEBREW_PREFIX}/share/glib-2.0/schemas"
+
+          ADD_DATA_ARGS="--add-data locales:locales"
+          if [ -d "$TYPELIB_DIR" ]; then
+            ADD_DATA_ARGS="$ADD_DATA_ARGS --add-data ${TYPELIB_DIR}:gi_typelibs --add-data ${TYPELIB_DIR}:girepository-1.0"
+          fi
+          if [ -d "$SCHEMA_DIR" ]; then
+            ADD_DATA_ARGS="$ADD_DATA_ARGS --add-data ${SCHEMA_DIR}:glib-2.0/schemas"
+          fi
+
+          bash scripts/generate_icons.sh icns build-assets/gossip.icns
+
+          source packaging/pyinstaller-common.sh
+          pyinstaller "${PYI_COMMON_ARGS[@]}" \
+            --icon "build-assets/gossip.icns" \
+            --osx-bundle-identifier "com.github.sincorchetes.gossip_gcp" \
+            --add-data "data/icons:share/icons" \
+            $ADD_DATA_ARGS \
+            --collect-all "gi.repository.GdkPixbuf" \
+            --collect-all "gi.repository.Rsvg" \
+            --hidden-import "gi.repository.GdkPixbuf" \
+            --hidden-import "gi.repository.Rsvg" \
+            --hidden-import "src.providers.ansible.compat" \
+            --hidden-import "src.providers.ansible.shims" \
+            src/main.py
+
+          # Bundle Ansible configuration data (base.yml)
+          ANSIBLE_CONFIG_DIR=$(python -c "import ansible.config, os; print(os.path.dirname(ansible.config.__file__))" 2>/dev/null || true)
+          if [ -n "$ANSIBLE_CONFIG_DIR" ] && [ -d "$ANSIBLE_CONFIG_DIR" ]; then
+            echo "Copying Ansible base config from $ANSIBLE_CONFIG_DIR..."
+            if [ -d "dist/gossip.app" ]; then
+              mkdir -p dist/gossip.app/Contents/Resources/ansible/config dist/gossip.app/Contents/MacOS/ansible/config dist/gossip.app/Contents/_internal/ansible/config 2>/dev/null || true
+              cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip.app/Contents/Resources/ansible/config/ 2>/dev/null || true
+              cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip.app/Contents/MacOS/ansible/config/ 2>/dev/null || true
+              cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip.app/Contents/_internal/ansible/config/ 2>/dev/null || true
+            fi
+            if [ -d "dist/gossip" ]; then
+              mkdir -p dist/gossip/_internal/ansible/config dist/gossip/ansible/config 2>/dev/null || true
+              cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip/_internal/ansible/config/ 2>/dev/null || true
+              cp -rf "$ANSIBLE_CONFIG_DIR"/*.yml dist/gossip/ansible/config/ 2>/dev/null || true
+            fi
+          fi
+
+          # Bundle GTK4, Libadwaita, transitive dylibs, fix install names, and re-sign bundle
+          if [ -d "dist/gossip.app" ]; then
+            python3 scripts/bundle_macos.py dist/gossip.app --brew-prefix "${HOMEBREW_PREFIX}"
+          fi
+
+          mkdir -p dist/packages
+          if [ -d "dist/gossip.app" ]; then
+            # hdiutil can hang on hosted runners (busy volume / Spotlight indexing): cap each attempt and retry
+            sudo mdutil -a -i off >/dev/null 2>&1 || true
+            # The disk image holds the app and a shortcut to /Applications, so installing is a drag
+            DMG_STAGE="$(mktemp -d)"
+            ditto "dist/gossip.app" "${DMG_STAGE}/gossip.app"
+            ln -s /Applications "${DMG_STAGE}/Applications"
+            for attempt in 1 2 3; do
+              if perl -e 'alarm shift; exec @ARGV' 300 hdiutil create -volname "gossip" -srcfolder "${DMG_STAGE}" -fs HFS+ -ov -format UDZO "dist/packages/gossip-macos-${{ matrix.arch }}-${VERSION}.dmg"; then
+                break
+              fi
+              echo "hdiutil attempt ${attempt} failed or timed out"
+              rm -f "dist/packages/gossip-macos-${{ matrix.arch }}-${VERSION}.dmg"
+              sleep 5
+            done
+            tar -czvf "dist/packages/gossip-macos-${{ matrix.arch }}-${VERSION}.tar.gz" -C dist gossip.app
+          elif [ -d "dist/gossip" ]; then
+            tar -czvf "dist/packages/gossip-macos-${{ matrix.arch }}-${VERSION}.tar.gz" -C dist gossip
+          fi
+
+      - name: Verify bundle architecture
+        run: |
+          BIN="dist/gossip.app/Contents/MacOS/gossip"
+          [ -f "$BIN" ] || BIN="dist/gossip/gossip"
+          file "$BIN"
+          lipo -archs "$BIN" | grep -qw "${{ matrix.arch }}"
+          # cryptography's Rust bindings need OpenSSL >= 3.2 symbols in the bundled libssl
+          nm -gU dist/gossip.app/Contents/Frameworks/libssl.3.dylib > "$RUNNER_TEMP/libssl-symbols.txt"
+          grep -q SSL_get0_group_name "$RUNNER_TEMP/libssl-symbols.txt"
+
+          # Smoke test: every native dependency must import cleanly from inside the bundle
+          GOSSIP_SELFTEST_HEADLESS=1 "$BIN" --self-test
+
+      - name: Upload macOS Artifact (.dmg & .tar.gz)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: gossip-macos-${{ matrix.arch }}
+          path: dist/packages/*
+
+  # ============================================================================
+  # 4. PUBLISH GITHUB RELEASE (Only on Git Tags v*)
+  # ============================================================================
+  publish-release:
+    name: Publish Official GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-linux, build-flatpak, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Download Linux Artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: gossip-linux-*
+          path: release-assets/
+          merge-multiple: true
+
+      - name: Download Flatpak Artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: gossip-flatpak-*
+          path: release-assets/
+          merge-multiple: true
+
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: gossip-windows
+          path: release-assets/
+        continue-on-error: true
+
+      - name: Download macOS Artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: gossip-macos-*
+          path: release-assets/
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Set up Python for the SBOM
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.14"
+
+      - name: Generate the Python dependency SBOMs (CycloneDX)
+        run: |
+          python -m pip install --require-hashes -r requirements-audit.txt
+          cyclonedx-py requirements requirements-build.txt --of JSON --sv 1.6 \
+            -o "release-assets/gossip-python-sbom-${{ github.ref_name }}.cdx.json"
+          cyclonedx-py requirements requirements-windows.txt --of JSON --sv 1.6 \
+            -o "release-assets/gossip-windows-python-sbom-${{ github.ref_name }}.cdx.json"
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd release-assets
+          find . -type f ! -name SHA256SUMS.txt -print0 | sort -z | xargs -0 sha256sum | sed 's|  \./|  |' > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
+        with:
+          subject-path: release-assets/**/*
+
+      - name: Create Official GitHub Release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Gossip Release ${{ github.ref_name }}"
+          body: |
+            ## Gossip Multi-Cloud Secret Manager - Version ${{ github.ref_name }}
+
+            ### Highlights & Enhancements
+            - Cross-platform graphical manager for Google Cloud Platform, AWS Secrets Manager and Parameter Store, Azure Key Vault, Ansible Vault, HashiCorp Vault / OpenBao and Kubernetes Secrets.
+            - Modern GTK4 and Libadwaita interface with light and dark theme switching.
+            - Full bilingual localization (English / Spanish) with dynamic runtime switching.
+            - Automated test suite with a 95% coverage gate.
+
+            ### Available Downloads
+            - **Debian / Ubuntu (.deb)**:
+              - `amd64` (Intel/AMD 64-bit): [`gossip_${{ github.ref_name }}_amd64.deb`](https://github.com/sincorchetes/gossip/releases)
+              - `arm64` (ARM 64-bit / Raspberry Pi): [`gossip_${{ github.ref_name }}_arm64.deb`](https://github.com/sincorchetes/gossip/releases)
+            - **Fedora / openSUSE (.rpm)**:
+              - `x86_64` (Intel/AMD 64-bit): [`gossip-${{ github.ref_name }}-1.x86_64.rpm`](https://github.com/sincorchetes/gossip/releases)
+              - `aarch64` (ARM 64-bit): [`gossip-${{ github.ref_name }}-1.aarch64.rpm`](https://github.com/sincorchetes/gossip/releases)
+            - **Linux Portable (.tar.gz)**:
+              - `x86_64` (Intel/AMD): [`gossip-linux-x86_64-${{ github.ref_name }}.tar.gz`](https://github.com/sincorchetes/gossip/releases)
+              - `aarch64` (ARM 64-bit): [`gossip-linux-aarch64-${{ github.ref_name }}.tar.gz`](https://github.com/sincorchetes/gossip/releases)
+            - **Flatpak**:
+              - `x86_64`: [`gossip-x86_64-${{ github.ref_name }}.flatpak`](https://github.com/sincorchetes/gossip/releases)
+              - `aarch64`: [`gossip-aarch64-${{ github.ref_name }}.flatpak`](https://github.com/sincorchetes/gossip/releases) (install with `flatpak install --user <file>`; needs the GNOME 51 runtime from Flathub: `flatpak install flathub org.gnome.Platform//51`)
+            - **Windows (x64)**:
+              - Installer (`.msi`): [`gossip-windows-x64-${{ github.ref_name }}.msi`](https://github.com/sincorchetes/gossip/releases)
+              - Portable (`.zip`): [`gossip-windows-x64-${{ github.ref_name }}.zip`](https://github.com/sincorchetes/gossip/releases)
+            - **macOS**:
+              - `arm64` (Apple Silicon) Disk Image (`.dmg`): [`gossip-macos-arm64-${{ github.ref_name }}.dmg`](https://github.com/sincorchetes/gossip/releases)
+              - `arm64` (Apple Silicon) Portable Bundle (`.tar.gz`): [`gossip-macos-arm64-${{ github.ref_name }}.tar.gz`](https://github.com/sincorchetes/gossip/releases)
+              - `x86_64` (Intel) Disk Image (`.dmg`): [`gossip-macos-x86_64-${{ github.ref_name }}.dmg`](https://github.com/sincorchetes/gossip/releases)
+              - `x86_64` (Intel) Portable Bundle (`.tar.gz`): [`gossip-macos-x86_64-${{ github.ref_name }}.tar.gz`](https://github.com/sincorchetes/gossip/releases)
+
+            ### Verify your download
+            - Checksums: compare with `SHA256SUMS.txt` (`sha256sum -c SHA256SUMS.txt --ignore-missing`).
+            - Provenance: `gh attestation verify <file> --repo sincorchetes/gossip`.
+            - SBOM: `gossip-python-sbom-*.cdx.json` (and the Windows variant) list every pinned Python dependency in CycloneDX format. The weekly "Dependency audit" workflow scans the same pins for known vulnerabilities.
+
+            ### Documentation
+            Consult the complete architecture, guides, and API specification at [https://sincorchetes.github.io/gossip/](https://sincorchetes.github.io/gossip/).
+          files: release-assets/**/*
+          draft: false
+          prerelease: false

@@ -1,0 +1,70 @@
+name: CI & Code Quality
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - pre
+      - release
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  test:
+    name: Run Pytest & Coverage Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31
+
+      - name: Setup Cachix
+        uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
+        with:
+          name: devenv
+
+      - name: Install devenv
+        run: nix profile add nixpkgs#devenv
+
+      - name: Start a throwaway OpenBao server for the Vault integration tests
+        run: |
+          set -euo pipefail
+          # Pinned release and checksum (from the release's checksums.txt); dev mode keeps everything in memory
+          VERSION=2.7.1
+          SHA256=0e2f1ce10d124e03112b50dd2fbec6b78003783253bc3a91587938f39d1e2243
+          curl -fsSL -o "$RUNNER_TEMP/bao.tar.gz" \
+            "https://github.com/openbao/openbao/releases/download/v${VERSION}/openbao_${VERSION}_linux_amd64.tar.gz"
+          echo "${SHA256}  $RUNNER_TEMP/bao.tar.gz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/bao"
+          tar -xzf "$RUNNER_TEMP/bao.tar.gz" -C "$RUNNER_TEMP/bao" bao
+          TOKEN="$(openssl rand -hex 16)"
+          echo "::add-mask::${TOKEN}"
+          "$RUNNER_TEMP/bao/bao" server -dev -dev-root-token-id="${TOKEN}" \
+            -dev-listen-address=127.0.0.1:8200 > "$RUNNER_TEMP/bao.log" 2>&1 &
+          for _ in $(seq 1 30); do
+            curl -fs http://127.0.0.1:8200/v1/sys/health > /dev/null && break
+            sleep 1
+          done
+          curl -fs http://127.0.0.1:8200/v1/sys/health > /dev/null || { cat "$RUNNER_TEMP/bao.log"; exit 1; }
+          {
+            echo "GOSSIP_TEST_VAULT_ADDR=http://127.0.0.1:8200"
+            echo "GOSSIP_TEST_VAULT_TOKEN=${TOKEN}"
+            echo "GOSSIP_REQUIRE_VAULT_TESTS=1"
+          } >> "$GITHUB_ENV"
+
+      - name: Run Tests with Coverage Gate via devenv
+        run: xvfb-run -a devenv test
+
+      - name: Upload Test Coverage Artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pytest-coverage-report
+          path: |
+            coverage.xml
+            htmlcov/

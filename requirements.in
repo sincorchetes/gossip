@@ -1,0 +1,24 @@
+# Direct runtime, test and docs dependencies for development (devenv).
+# Regenerate the pinned, hashed lock (requirements.txt) with:
+#   uv pip compile requirements.in --universal --python-version 3.14 --generate-hashes -o requirements.txt
+google-cloud-secret-manager
+google-auth
+boto3
+botocore[crt]
+awscrt
+azure-keyvault-secrets
+azure-identity
+pyyaml
+ansible-vault
+cryptography
+pytest
+pytest-cov
+coverage
+mkdocs
+mkdocs-material
+mkdocstrings[python]
+mkdocs-static-i18n
+ruff
+mypy
+types-PyYAML
+hypothesis

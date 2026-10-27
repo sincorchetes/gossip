@@ -1,0 +1,202 @@
+{
+  "components": [
+    {
+      "name": "GTK 4",
+      "license": "LGPL-2.1-or-later",
+      "url": "https://www.gtk.org"
+    },
+    {
+      "name": "libadwaita",
+      "license": "LGPL-2.1-or-later",
+      "url": "https://gnome.pages.gitlab.gnome.org/libadwaita/"
+    },
+    {
+      "name": "GLib, GObject, GIO",
+      "license": "LGPL-2.1-or-later",
+      "url": "https://gitlab.gnome.org/GNOME/glib"
+    },
+    {
+      "name": "GObject Introspection (libgirepository)",
+      "license": "LGPL-2.0-or-later",
+      "url": "https://gitlab.gnome.org/GNOME/gobject-introspection"
+    },
+    {
+      "name": "PyGObject",
+      "license": "LGPL-2.1-or-later",
+      "url": "https://pygobject.gnome.org"
+    },
+    {
+      "name": "Pango",
+      "license": "LGPL-2.0-or-later",
+      "url": "https://pango.gnome.org"
+    },
+    {
+      "name": "GdkPixbuf",
+      "license": "LGPL-2.0-or-later",
+      "url": "https://gitlab.gnome.org/GNOME/gdk-pixbuf"
+    },
+    {
+      "name": "librsvg",
+      "license": "LGPL-2.0-or-later (its Rust crates are MIT, Apache-2.0, MPL-2.0 and similar)",
+      "url": "https://gitlab.gnome.org/GNOME/librsvg"
+    },
+    {
+      "name": "Cairo and pycairo",
+      "license": "LGPL-2.1-only OR MPL-1.1",
+      "url": "https://www.cairographics.org"
+    },
+    {
+      "name": "Pixman",
+      "license": "MIT",
+      "url": "https://www.pixman.org"
+    },
+    {
+      "name": "Graphene",
+      "license": "MIT",
+      "url": "https://github.com/ebassi/graphene"
+    },
+    {
+      "name": "libepoxy",
+      "license": "MIT",
+      "url": "https://github.com/anholt/libepoxy"
+    },
+    {
+      "name": "HarfBuzz",
+      "license": "MIT",
+      "url": "https://harfbuzz.github.io"
+    },
+    {
+      "name": "FriBidi",
+      "license": "LGPL-2.1-or-later",
+      "url": "https://github.com/fribidi/fribidi"
+    },
+    {
+      "name": "FreeType",
+      "license": "FTL OR GPL-2.0-only",
+      "url": "https://freetype.org",
+      "note": "Portions of this software are copyright (c) The FreeType Project (www.freetype.org). All rights reserved."
+    },
+    {
+      "name": "Fontconfig",
+      "license": "MIT-style",
+      "url": "https://www.freedesktop.org/wiki/Software/fontconfig/"
+    },
+    {
+      "name": "OpenSSL 3",
+      "license": "Apache-2.0",
+      "url": "https://www.openssl.org"
+    },
+    {
+      "name": "libffi",
+      "license": "MIT",
+      "url": "https://sourceware.org/libffi/"
+    },
+    {
+      "name": "zlib",
+      "license": "Zlib",
+      "url": "https://zlib.net"
+    },
+    {
+      "name": "libpng",
+      "license": "libpng-2.0",
+      "url": "http://www.libpng.org/pub/png/libpng.html"
+    },
+    {
+      "name": "GNU gettext runtime (libintl) and libiconv",
+      "license": "LGPL-2.1-or-later",
+      "url": "https://www.gnu.org/software/gettext/"
+    },
+    {
+      "name": "Adwaita icon theme",
+      "license": "LGPL-3.0-or-later OR CC-BY-SA-3.0",
+      "url": "https://gitlab.gnome.org/GNOME/adwaita-icon-theme"
+    },
+    {
+      "name": "hicolor icon theme",
+      "license": "GPL-2.0-only",
+      "url": "https://www.freedesktop.org/wiki/Software/icon-theme/"
+    },
+    {
+      "name": "Python",
+      "license": "PSF-2.0",
+      "url": "https://www.python.org"
+    },
+    {
+      "name": "PyInstaller bootloader",
+      "license": "GPL-2.0-or-later WITH Bootloader-exception",
+      "url": "https://pyinstaller.org",
+      "note": "The bootloader exception allows distributing the bundled application under any license."
+    },
+    {
+      "name": "JBIG-KIT and LZO",
+      "license": "GPL-2.0-or-later",
+      "url": "https://www.cl.cam.ac.uk/~mgk25/jbigkit/",
+      "note": "JBIG-KIT (https://www.cl.cam.ac.uk/~mgk25/jbigkit/) and LZO (https://www.oberhumer.com/opensource/lzo/) are GPL-2.0-or-later libraries pulled in by the imaging stack; they are combined here under Gossip's GPL-3.0-or-later license."
+    },
+    {
+      "name": "GnuTLS",
+      "license": "LGPL-2.1-or-later",
+      "url": "https://www.gnutls.org"
+    },
+    {
+      "name": "GMP, Nettle, libidn2, libunistring",
+      "license": "LGPL-3.0-or-later OR GPL-2.0-or-later",
+      "url": "https://gmplib.org"
+    },
+    {
+      "name": "libstdc++ and libgcc runtime",
+      "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+      "url": "https://gcc.gnu.org"
+    },
+    {
+      "name": "util-linux and systemd libraries (libmount, libblkid, libuuid, libsystemd)",
+      "license": "LGPL-2.1-or-later",
+      "url": "https://github.com/util-linux/util-linux"
+    },
+    {
+      "name": "xz (liblzma)",
+      "license": "0BSD",
+      "url": "https://tukaani.org/xz/"
+    },
+    {
+      "name": "Zstandard",
+      "license": "BSD-3-Clause OR GPL-2.0-only",
+      "url": "https://facebook.github.io/zstd/"
+    },
+    {
+      "name": "libjpeg-turbo",
+      "license": "IJG AND BSD-3-Clause AND Zlib",
+      "url": "https://libjpeg-turbo.org"
+    },
+    {
+      "name": "libtiff",
+      "license": "libtiff (BSD-style)",
+      "url": "https://libtiff.gitlab.io/libtiff/"
+    },
+    {
+      "name": "libwebp",
+      "license": "BSD-3-Clause",
+      "url": "https://chromium.googlesource.com/webm/libwebp"
+    },
+    {
+      "name": "ICU",
+      "license": "Unicode-3.0",
+      "url": "https://icu.unicode.org"
+    },
+    {
+      "name": "libxml2, expat, libyaml",
+      "license": "MIT",
+      "url": "https://gitlab.gnome.org/GNOME/libxml2"
+    },
+    {
+      "name": "X11 and xcb libraries",
+      "license": "MIT/X11",
+      "url": "https://www.x.org"
+    },
+    {
+      "name": "curl, MIT Kerberos, OpenLDAP and Cyrus SASL (Linux packages)",
+      "license": "curl, BSD-style, OpenLDAP",
+      "url": "https://curl.se"
+    }
+  ]
+}

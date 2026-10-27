@@ -1,0 +1,1525 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Gossip GCP 0.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-21 17:40+0200\n"
+"PO-Revision-Date: 2026-10-21 17:40+0200\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Gossip GCP"
+msgstr "Gossip GCP"
+
+msgid "Project: %s"
+msgstr "Project: %s"
+
+msgid "Detecting..."
+msgstr "Detecting..."
+
+msgid "No project"
+msgstr "No project"
+
+msgid "Switch GCP Project"
+msgstr "Switch GCP Project"
+
+msgid "Reload secrets"
+msgstr "Reload secrets"
+
+msgid "Toggle light/dark theme"
+msgstr "Toggle light/dark theme"
+
+msgid "About Gossip GCP"
+msgstr "About Gossip GCP"
+
+msgid "Google Cloud Platform Secret Manager explorer and manager with GTK4 and Libadwaita."
+msgstr "Google Cloud Platform Secret Manager explorer and manager with GTK4 and Libadwaita."
+
+msgid "Search secrets..."
+msgstr "Search secrets..."
+
+msgid "Create new secret"
+msgstr "Create new secret"
+
+msgid "Querying Secret Manager..."
+msgstr "Querying Secret Manager..."
+
+msgid "No secrets"
+msgstr "No secrets"
+
+msgid "No secrets found in this project."
+msgstr "No secrets found in this project."
+
+msgid "+ Create first secret"
+msgstr "+ Create first secret"
+
+msgid "Connection error"
+msgstr "Connection error"
+
+msgid "Could not connect to Google Cloud."
+msgstr "Could not connect to Google Cloud."
+
+msgid "Retry"
+msgstr "Retry"
+
+msgid "tags"
+msgstr "tags"
+
+msgid "No secret selected"
+msgstr "No secret selected"
+
+msgid "Select a secret from the sidebar to inspect its configuration, versions, and payload."
+msgstr "Select a secret from the sidebar to inspect its configuration, versions, and payload."
+
+msgid "Copy resource name"
+msgstr "Copy resource name"
+
+msgid "New Version"
+msgstr "New Version"
+
+msgid "Add a new version to the secret (update value)"
+msgstr "Add a new version to the secret (update value)"
+
+msgid "Permanently delete this secret"
+msgstr "Permanently delete this secret"
+
+msgid "General Information"
+msgstr "General Information"
+
+msgid "Creation date"
+msgstr "Creation date"
+
+msgid "Unknown"
+msgstr "Unknown"
+
+msgid "Replication"
+msgstr "Replication"
+
+msgid "Automatic"
+msgstr "Automatic"
+
+msgid "Replicated"
+msgstr "Replicated"
+
+msgid "User managed"
+msgstr "User managed"
+
+msgid "Labels"
+msgstr "Labels"
+
+msgid "No labels"
+msgstr "No labels"
+
+msgid "Secret Value"
+msgstr "Secret Value"
+
+msgid "Consulted version"
+msgstr "Consulted version"
+
+msgid "Payload:"
+msgstr "Payload:"
+
+msgid "Show / Hide secret"
+msgstr "Show / Hide secret"
+
+msgid "Copy"
+msgstr "Copy"
+
+msgid "Copy secret to clipboard"
+msgstr "Copy secret to clipboard"
+
+msgid "Loading value..."
+msgstr "Loading value..."
+
+msgid "Fetching secret..."
+msgstr "Fetching secret..."
+
+msgid "[No active versions]"
+msgstr "[No active versions]"
+
+msgid "Version History"
+msgstr "Version History"
+
+msgid "Version %s"
+msgstr "Version %s"
+
+msgid "Created: %s"
+msgstr "Created: %s"
+
+msgid "Enabled"
+msgstr "Enabled"
+
+msgid "Disabled"
+msgstr "Disabled"
+
+msgid "Destroyed"
+msgstr "Destroyed"
+
+msgid "Disable version %s"
+msgstr "Disable version %s"
+
+msgid "Enable version %s"
+msgstr "Enable version %s"
+
+msgid "Permanently destroy version %s"
+msgstr "Permanently destroy version %s"
+
+msgid "Secret copied to clipboard"
+msgstr "Secret copied to clipboard"
+
+msgid "Resource name copied"
+msgstr "Resource name copied"
+
+msgid "Creating secret '%s'..."
+msgstr "Creating secret '%s'..."
+
+msgid "Secret '%s' created successfully"
+msgstr "Secret '%s' created successfully"
+
+msgid "Adding new version..."
+msgstr "Adding new version..."
+
+msgid "New version added successfully"
+msgstr "New version added successfully"
+
+msgid "Enabling version %s..."
+msgstr "Enabling version %s..."
+
+msgid "Disabling version %s..."
+msgstr "Disabling version %s..."
+
+msgid "Version %s enabled"
+msgstr "Version %s enabled"
+
+msgid "Version %s disabled"
+msgstr "Version %s disabled"
+
+msgid "Destroying version %s..."
+msgstr "Destroying version %s..."
+
+msgid "Version %s permanently destroyed"
+msgstr "Version %s permanently destroyed"
+
+msgid "Deleting secret '%s'..."
+msgstr "Deleting secret '%s'..."
+
+msgid "Secret '%s' permanently deleted"
+msgstr "Secret '%s' permanently deleted"
+
+msgid "Select GCP Project"
+msgstr "Select GCP Project"
+
+msgid "Choose one of the active projects available in your Google Cloud account."
+msgstr "Choose one of the active projects available in your Google Cloud account."
+
+msgid "Search project by ID or name..."
+msgstr "Search project by ID or name..."
+
+msgid "Querying projects in Google Cloud..."
+msgstr "Querying projects in Google Cloud..."
+
+msgid "Error querying projects"
+msgstr "Error querying projects"
+
+msgid "Active"
+msgstr "Active"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Select"
+msgstr "Select"
+
+msgid "New Version: %s"
+msgstr "New Version: %s"
+
+msgid "Enter the new secret payload. A new active version (latest) will be created."
+msgstr "Enter the new secret payload. A new active version (latest) will be created."
+
+msgid "Save Version"
+msgstr "Save Version"
+
+msgid "Copy value from previous version"
+msgstr "Copy value from previous version"
+
+msgid "Create New Secret"
+msgstr "Create New Secret"
+
+msgid "Define the unique identifier and initial payload for the new secret in GCP Secret Manager."
+msgstr "Define the unique identifier and initial payload for the new secret in GCP Secret Manager."
+
+msgid "Secret identifier (ID):"
+msgstr "Secret identifier (ID):"
+
+msgid "e.g. my-production-api-key"
+msgstr "e.g. my-production-api-key"
+
+msgid "Initial payload:"
+msgstr "Initial payload:"
+
+msgid "Labels (optional, comma-separated):"
+msgstr "Labels (optional, comma-separated):"
+
+msgid "env=prod, service=auth"
+msgstr "env=prod, service=auth"
+
+msgid "Create Secret"
+msgstr "Create Secret"
+
+msgid "Destroy Version %s?"
+msgstr "Destroy Version %s?"
+
+msgid "The contents of this version will be purged from GCP permanently and irreversibly.\n\nThis action cannot be undone."
+msgstr "The contents of this version will be purged from GCP permanently and irreversibly.\n\nThis action cannot be undone."
+
+msgid "Destroy Version"
+msgstr "Destroy Version"
+
+msgid "Delete Secret '%s'?"
+msgstr "Delete Secret '%s'?"
+
+msgid "The complete secret and all its versions will be deleted from Google Cloud Platform.\n\nThis action cannot be undone."
+msgstr "The complete secret and all its versions will be deleted from Google Cloud Platform.\n\nThis action cannot be undone."
+
+msgid "Delete Secret"
+msgstr "Delete Secret"
+
+msgid "Error: No display server (X11 or Wayland) detected."
+msgstr "Error: No display server (X11 or Wayland) detected."
+
+msgid "Switch language (ES / EN)"
+msgstr "Switch language (ES / EN)"
+
+msgid "Gossip"
+msgstr "Gossip"
+
+msgid "About Gossip"
+msgstr "About Gossip"
+
+msgid "GCP Project: %s"
+msgstr "GCP Project: %s"
+
+msgid "AWS: %s (%s)"
+msgstr "AWS: %s (%s)"
+
+msgid "Switch AWS Profile & Region"
+msgstr "Switch AWS Profile & Region"
+
+msgid "Select AWS Profile & Region"
+msgstr "Select AWS Profile & Region"
+
+msgid "Choose the AWS credentials profile and target region for Secrets Manager."
+msgstr "Choose the AWS credentials profile and target region for Secrets Manager."
+
+msgid "AWS Profile"
+msgstr "AWS Profile"
+
+msgid "Configured Profile"
+msgstr "Configured Profile"
+
+msgid "AWS Region"
+msgstr "AWS Region"
+
+msgid "Target Region"
+msgstr "Target Region"
+
+msgid "Apply"
+msgstr "Apply"
+
+msgid "Create New AWS Secret"
+msgstr "Create New AWS Secret"
+
+msgid "Create New GCP Secret"
+msgstr "Create New GCP Secret"
+
+msgid "Define the unique identifier, initial payload, and optional tags for AWS Secrets Manager."
+msgstr "Define the unique identifier, initial payload, and optional tags for AWS Secrets Manager."
+
+msgid "Description (optional):"
+msgstr "Description (optional):"
+
+msgid "e.g. Credentials for database cluster"
+msgstr "e.g. Credentials for database cluster"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Tags (optional, comma-separated key=value):"
+msgstr "Tags (optional, comma-separated key=value):"
+
+msgid "Tags"
+msgstr "Tags"
+
+msgid "Querying GCP Secret Manager..."
+msgstr "Querying GCP Secret Manager..."
+
+msgid "Querying AWS Secrets Manager..."
+msgstr "Querying AWS Secrets Manager..."
+
+msgid "No secrets found in this GCP project."
+msgstr "No secrets found in this GCP project."
+
+msgid "No secrets found in this AWS region."
+msgstr "No secrets found in this AWS region."
+
+msgid "Could not connect to AWS."
+msgstr "Could not connect to AWS."
+
+msgid "Single region"
+msgstr "Single region"
+
+msgid "Current"
+msgstr "Current"
+
+msgid "Previous"
+msgstr "Previous"
+
+msgid "Cloud Secret Manager explorer and manager for Google Cloud Platform (GCP) & Amazon Web Services (AWS) with GTK4 and Libadwaita."
+msgstr "Cloud Secret Manager explorer and manager for Google Cloud Platform (GCP) & Amazon Web Services (AWS) with GTK4 and Libadwaita."
+
+msgid "The complete secret and all its versions will be deleted from %s.\n\nThis action cannot be undone."
+msgstr "The complete secret and all its versions will be deleted from %s.\n\nThis action cannot be undone."
+
+msgid "The contents of this version will be purged permanently and irreversibly.\n\nThis action cannot be undone."
+msgstr "The contents of this version will be purged permanently and irreversibly.\n\nThis action cannot be undone."
+
+msgid "Azure Vault: %s"
+msgstr "Azure Vault: %s"
+
+msgid "No vault selected"
+msgstr "No vault selected"
+
+msgid "Switch Azure Key Vault"
+msgstr "Switch Azure Key Vault"
+
+msgid "Select Azure Key Vault"
+msgstr "Select Azure Key Vault"
+
+msgid "Enter the Key Vault name or choose from available vaults in your Azure account."
+msgstr "Enter the Key Vault name or choose from available vaults in your Azure account."
+
+msgid "Key Vault Identifier"
+msgstr "Key Vault Identifier"
+
+msgid "e.g. my-keyvault or https://my-keyvault.vault.azure.net/"
+msgstr "e.g. my-keyvault or https://my-keyvault.vault.azure.net/"
+
+msgid "Available Key Vaults (Azure CLI)"
+msgstr "Available Key Vaults (Azure CLI)"
+
+msgid "Querying Azure Key Vault..."
+msgstr "Querying Azure Key Vault..."
+
+msgid "No secrets found in this Azure Key Vault."
+msgstr "No secrets found in this Azure Key Vault."
+
+msgid "Could not connect to Azure."
+msgstr "Could not connect to Azure."
+
+msgid "Create New Azure Secret"
+msgstr "Create New Azure Secret"
+
+msgid "Define the unique identifier, initial payload, and optional tags for Azure Key Vault."
+msgstr "Define the unique identifier, initial payload, and optional tags for Azure Key Vault."
+
+msgid "Content Type / Description (optional):"
+msgstr "Content Type / Description (optional):"
+
+msgid "Content Type / Description"
+msgstr "Content Type / Description"
+
+msgid "Multi-Cloud Secret Manager explorer and manager for Google Cloud Platform (GCP), Amazon Web Services (AWS), and Microsoft Azure (Key Vault) with GTK4 and Libadwaita."
+msgstr "Multi-Cloud Secret Manager explorer and manager for Google Cloud Platform (GCP), Amazon Web Services (AWS), Microsoft Azure (Key Vault), and Ansible Vault with GTK4 and Libadwaita."
+
+msgid "Multi-Cloud Secret Manager explorer and manager for Google Cloud Platform (GCP), Amazon Web Services (AWS), Microsoft Azure (Key Vault), and Ansible Vault with GTK4 and Libadwaita."
+msgstr "Multi-Cloud Secret Manager explorer and manager for Google Cloud Platform (GCP), Amazon Web Services (AWS), Microsoft Azure (Key Vault), and Ansible Vault with GTK4 and Libadwaita."
+
+msgid "Ansible Vault: %s"
+msgstr "Ansible Vault: %s"
+
+msgid "No vault file selected"
+msgstr "No vault file selected"
+
+msgid "Switch Ansible Vault File & Password"
+msgstr "Switch Ansible Vault File & Password"
+
+msgid "Select Ansible Vault"
+msgstr "Select Ansible Vault"
+
+msgid "Choose your Ansible Vault YAML file and unlock it with your password or password file."
+msgstr "Choose your Ansible Vault YAML file and unlock it with your password or password file."
+
+msgid "Vault File"
+msgstr "Vault File"
+
+msgid "File Path"
+msgstr "File Path"
+
+msgid "e.g. vault.yml or group_vars/all/vault.yml"
+msgstr "e.g. vault.yml or group_vars/all/vault.yml"
+
+msgid "Browse vault file..."
+msgstr "Browse vault file..."
+
+msgid "Select Ansible Vault File"
+msgstr "Select Ansible Vault File"
+
+msgid "Detected in Project"
+msgstr "Detected in Project"
+
+msgid "Choose a detected file..."
+msgstr "Choose a detected file..."
+
+msgid "Vault Authentication"
+msgstr "Vault Authentication"
+
+msgid "Vault Password"
+msgstr "Vault Password"
+
+msgid "Or Password File (.vault_pass)"
+msgstr "Or Password File (.vault_pass)"
+
+msgid "Browse password file..."
+msgstr "Browse password file..."
+
+msgid "Select Password File"
+msgstr "Select Password File"
+
+msgid "Unlock Vault"
+msgstr "Unlock Vault"
+
+msgid "Please enter a valid vault file path."
+msgstr "Please enter a valid vault file path."
+
+msgid "Create New Ansible Variable"
+msgstr "Create New Ansible Variable"
+
+msgid "Define the variable name (key) and initial value to store in the Ansible Vault."
+msgstr "Define the variable name (key) and initial value to store in the Ansible Vault."
+
+msgid "Variable name (key):"
+msgstr "Variable name (key):"
+
+msgid "e.g. database_password"
+msgstr "e.g. database_password"
+
+msgid "Variable value:"
+msgstr "Variable value:"
+
+msgid "Delete Variable '%s'?"
+msgstr "Delete Variable '%s'?"
+
+msgid "The variable '%s' will be removed from Ansible Vault.\n\nThis action cannot be undone."
+msgstr "The variable '%s' will be removed from Ansible Vault.\n\nThis action cannot be undone."
+
+msgid "Decrypting Ansible Vault..."
+msgstr "Decrypting Ansible Vault..."
+
+msgid "No variables found in this Ansible Vault."
+msgstr "No variables found in this Ansible Vault."
+
+msgid "Could not unlock or read Ansible Vault."
+msgstr "Could not unlock or read Ansible Vault."
+
+msgid "Type / Length"
+msgstr "Type / Length"
+
+msgid "Data Type"
+msgstr "Data Type"
+
+msgid "AWS Profile & Region"
+msgstr "AWS Profile & Region"
+
+msgid "AWS Secrets Manager error"
+msgstr "AWS Secrets Manager error"
+
+msgid "Ansible Vault"
+msgstr "Ansible Vault"
+
+msgid "Ansible Vault file path is not configured."
+msgstr "Ansible Vault file path is not configured."
+
+msgid "Azure Key Vault"
+msgstr "Azure Key Vault"
+
+msgid "Azure Key Vault error"
+msgstr "Azure Key Vault error"
+
+msgid ""
+"Azure authentication error.\n"
+"Log in with the Azure CLI by running:\n"
+"  az login\n"
+"or set AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, and AZURE_TENANT_ID environment variables."
+msgstr ""
+"Azure authentication error.\n"
+"Log in with the Azure CLI by running:\n"
+"  az login\n"
+"or set AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, and AZURE_TENANT_ID environment variables."
+
+msgid "Binary data"
+msgstr "Binary data"
+
+msgid "Could not query GCP projects"
+msgstr "Could not query GCP projects"
+
+msgid "Could not read backup version"
+msgstr "Could not read backup version"
+
+msgid "Decrypted content of '{filename}' is not valid YAML: {detail}"
+msgstr "Decrypted content of '{filename}' is not valid YAML: {detail}"
+
+msgid "Error accessing secret"
+msgstr "Error accessing secret"
+
+msgid "Error adding version"
+msgstr "Error adding version"
+
+msgid "Error adding version in AWS"
+msgstr "Error adding version in AWS"
+
+msgid "Error adding version in Azure"
+msgstr "Error adding version in Azure"
+
+msgid "Error creating secret"
+msgstr "Error creating secret"
+
+msgid "Error creating secret in AWS"
+msgstr "Error creating secret in AWS"
+
+msgid "Error creating secret in Azure"
+msgstr "Error creating secret in Azure"
+
+msgid "Error decrypting Ansible Vault"
+msgstr "Error decrypting Ansible Vault"
+
+msgid "Error deleting secret"
+msgstr "Error deleting secret"
+
+msgid "Error deleting secret in AWS"
+msgstr "Error deleting secret in AWS"
+
+msgid "Error deleting secret in Azure"
+msgstr "Error deleting secret in Azure"
+
+msgid "Error destroying version"
+msgstr "Error destroying version"
+
+msgid "Error disabling version"
+msgstr "Error disabling version"
+
+msgid "Error enabling version"
+msgstr "Error enabling version"
+
+msgid "Error fetching secret versions"
+msgstr "Error fetching secret versions"
+
+msgid "Error initializing AWS client"
+msgstr "Error initializing AWS client"
+
+msgid "Error listing secret versions"
+msgstr "Error listing secret versions"
+
+msgid "Error listing versions"
+msgstr "Error listing versions"
+
+msgid "Error querying Azure Key Vault secrets"
+msgstr "Error querying Azure Key Vault secrets"
+
+msgid "Error retrieving secret value"
+msgstr "Error retrieving secret value"
+
+msgid "Error while trying to {action} version in Azure: {message}"
+msgstr "Error while trying to {action} version in Azure: {message}"
+
+msgid "GCP Project"
+msgstr "GCP Project"
+
+msgid "GCP Secret Manager API error"
+msgstr "GCP Secret Manager API error"
+
+msgid "GCP authentication error"
+msgstr "GCP authentication error"
+
+msgid ""
+"Incorrect password or failed to decrypt Ansible Vault '{filename}'.\n"
+"Detail: {detail}"
+msgstr ""
+"Incorrect password or failed to decrypt Ansible Vault '{filename}'.\n"
+"Detail: {detail}"
+
+msgid ""
+"No Ansible Vault file selected.\n"
+"Use the file switcher button to choose or create a vault.yml file."
+msgstr ""
+"No Ansible Vault file selected.\n"
+"Use the file switcher button to choose or create a vault.yml file."
+
+msgid ""
+"No Azure Key Vault configured.\n"
+"Use the vault switcher button to enter your Key Vault name or set the AZURE_KEYVAULT_NAME environment variable."
+msgstr ""
+"No Azure Key Vault configured.\n"
+"Use the vault switcher button to enter your Key Vault name or set the AZURE_KEYVAULT_NAME environment variable."
+
+msgid "No GCP project ID specified."
+msgstr "No GCP project ID specified."
+
+msgid ""
+"No active AWS credentials found.\n"
+"Run in your terminal:\n"
+"  aws configure\n"
+"or set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables."
+msgstr ""
+"No active AWS credentials found.\n"
+"Run in your terminal:\n"
+"  aws configure\n"
+"or set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables."
+
+msgid ""
+"No active GCP credentials found.\n"
+"Run in your terminal:\n"
+"  gcloud auth application-default login\n"
+"or set the GOOGLE_APPLICATION_CREDENTIALS environment variable."
+msgstr ""
+"No active GCP credentials found.\n"
+"Run in your terminal:\n"
+"  gcloud auth application-default login\n"
+"or set the GOOGLE_APPLICATION_CREDENTIALS environment variable."
+
+msgid ""
+"No password provided to unlock Ansible Vault.\n"
+"Enter password or select your .vault_pass file."
+msgstr ""
+"No password provided to unlock Ansible Vault.\n"
+"Enter password or select your .vault_pass file."
+
+msgid ""
+"No valid AWS credentials found.\n"
+"Run 'aws configure' or verify your environment variables."
+msgstr ""
+"No valid AWS credentials found.\n"
+"Run 'aws configure' or verify your environment variables."
+
+msgid ""
+"Permission denied accessing Azure Key Vault '{vault}'.\n"
+"Verify that your account has the 'Key Vault Secrets User' / 'Key Vault Secrets Officer' RBAC role or an assigned Access Policy."
+msgstr ""
+"Permission denied accessing Azure Key Vault '{vault}'.\n"
+"Verify that your account has the 'Key Vault Secrets User' / 'Key Vault Secrets Officer' RBAC role or an assigned Access Policy."
+
+msgid ""
+"Permission denied for AWS Secrets Manager in region '{region}'.\n"
+"Detail: {detail}"
+msgstr ""
+"Permission denied for AWS Secrets Manager in region '{region}'.\n"
+"Detail: {detail}"
+
+msgid ""
+"Permission denied for GCP Secret Manager in project '{project}'.\n"
+"Verify that your account has the 'Secret Manager Secret Accessor' or 'Secret Manager Admin' role."
+msgstr ""
+"Permission denied for GCP Secret Manager in project '{project}'.\n"
+"Verify that your account has the 'Secret Manager Secret Accessor' or 'Secret Manager Admin' role."
+
+msgid ""
+"Permission denied to add a new version to the secret.\n"
+"Requires 'roles/secretmanager.secretVersionManager' or 'roles/secretmanager.admin' role."
+msgstr ""
+"Permission denied to add a new version to the secret.\n"
+"Requires 'roles/secretmanager.secretVersionManager' or 'roles/secretmanager.admin' role."
+
+msgid "Permission denied to add version"
+msgstr "Permission denied to add version"
+
+msgid "Permission denied to create secret"
+msgstr "Permission denied to create secret"
+
+msgid "Permission denied to create secrets in Azure Key Vault"
+msgstr "Permission denied to create secrets in Azure Key Vault"
+
+msgid ""
+"Permission denied to create secrets in project.\n"
+"Requires 'roles/secretmanager.admin' role."
+msgstr ""
+"Permission denied to create secrets in project.\n"
+"Requires 'roles/secretmanager.admin' role."
+
+msgid "Permission denied to delete secret"
+msgstr "Permission denied to delete secret"
+
+msgid "Permission denied to delete secret in Azure"
+msgstr "Permission denied to delete secret in Azure"
+
+msgid ""
+"Permission denied to delete secret.\n"
+"Requires 'roles/secretmanager.admin' role."
+msgstr ""
+"Permission denied to delete secret.\n"
+"Requires 'roles/secretmanager.admin' role."
+
+msgid "Permission denied to destroy version."
+msgstr "Permission denied to destroy version."
+
+msgid "Permission denied to disable version."
+msgstr "Permission denied to disable version."
+
+msgid "Permission denied to enable version."
+msgstr "Permission denied to enable version."
+
+msgid ""
+"Permission denied to read secret value for '{secret}' in region '{region}'.\n"
+"Detail: {detail}"
+msgstr ""
+"Permission denied to read secret value for '{secret}' in region '{region}'.\n"
+"Detail: {detail}"
+
+msgid ""
+"Permission denied to read secret value for '{secret}'.\n"
+"Requires 'secrets/get' permission or 'Key Vault Secrets User' role."
+msgstr ""
+"Permission denied to read secret value for '{secret}'.\n"
+"Requires 'secrets/get' permission or 'Key Vault Secrets User' role."
+
+msgid "Permission denied to update secret"
+msgstr "Permission denied to update secret"
+
+msgid "Permission denied to {action} version in Azure: {message}"
+msgstr "Permission denied to {action} version in Azure: {message}"
+
+msgid ""
+"Permission denied while accessing secret payload.\n"
+"Requires 'roles/secretmanager.secretAccessor' role."
+msgstr ""
+"Permission denied while accessing secret payload.\n"
+"Requires 'roles/secretmanager.secretAccessor' role."
+
+msgid "Permission denied while listing secret versions."
+msgstr "Permission denied while listing secret versions."
+
+msgid "Permission denied while listing versions"
+msgstr "Permission denied while listing versions"
+
+msgid "Permission denied while listing versions in Azure"
+msgstr "Permission denied while listing versions in Azure"
+
+msgid "The AWS profile '{profile}' does not exist in your ~/.aws/credentials or ~/.aws/config file."
+msgstr "The AWS profile '{profile}' does not exist in your ~/.aws/credentials or ~/.aws/config file."
+
+msgid "The Ansible Vault file '{path}' does not exist."
+msgstr "The Ansible Vault file '{path}' does not exist."
+
+msgid "The Azure Key Vault '{vault}' does not exist or was not found."
+msgstr "The Azure Key Vault '{vault}' does not exist or was not found."
+
+msgid "The GCP project '{project}' was not found."
+msgstr "The GCP project '{project}' was not found."
+
+msgid "The secret '{secret}' does not exist in Azure Key Vault."
+msgstr "The secret '{secret}' does not exist in Azure Key Vault."
+
+msgid "The secret '{secret}' does not exist."
+msgstr "The secret '{secret}' does not exist."
+
+msgid "The secret or version '{secret}' was not found."
+msgstr "The secret or version '{secret}' was not found."
+
+msgid "The secret or version '{version}' does not exist."
+msgstr "The secret or version '{version}' does not exist."
+
+msgid "The variable '{variable}' already exists in the vault. Use 'New Version' to modify it."
+msgstr "The variable '{variable}' already exists in the vault. Use 'New Version' to modify it."
+
+msgid "The variable '{variable}' does not exist in the Ansible Vault file."
+msgstr "The variable '{variable}' does not exist in the Ansible Vault file."
+
+msgid "disable"
+msgstr "disable"
+
+msgid "enable"
+msgstr "enable"
+
+msgid "Could not create a backup of '{filename}'; save aborted to avoid data loss."
+msgstr "Could not create a backup of '{filename}'; save aborted to avoid data loss."
+
+msgid "Ignoring password file '{path}': it is accessible to other users. Run: chmod 600 '{path}'"
+msgstr "Ignoring password file '{path}': it is accessible to other users. Run: chmod 600 '{path}'"
+
+msgid "No matching secrets"
+msgstr "No matching secrets"
+
+msgid "Try another search or filter by label, e.g. label:env=prod"
+msgstr "Try another search or filter by label, e.g. label:env=prod"
+
+msgid "Search by name, description or label. Use label:key=value to filter by label and -word to exclude."
+msgstr "Search by name, description or label. Use label:key=value to filter by label and -word to exclude."
+
+msgid "[Hidden after inactivity]"
+msgstr "[Hidden after inactivity]"
+
+msgid "Secret hidden after inactivity"
+msgstr "Secret hidden after inactivity"
+
+msgid "Compare two versions"
+msgstr "Compare two versions"
+
+msgid "Compare versions"
+msgstr "Compare versions"
+
+msgid "From"
+msgstr "From"
+
+msgid "To"
+msgstr "To"
+
+msgid "Compare"
+msgstr "Compare"
+
+msgid "Values are shown in clear text."
+msgstr "Values are shown in clear text."
+
+msgid "Select two different versions"
+msgstr "Select two different versions"
+
+msgid "Comparing..."
+msgstr "Comparing..."
+
+msgid "No differences between these versions"
+msgstr "No differences between these versions"
+
+msgid "%d added, %d removed"
+msgstr "%d added, %d removed"
+
+msgid "Export secrets"
+msgstr "Export secrets"
+
+msgid "Export secrets…"
+msgstr "Export secrets…"
+
+msgid "Import secrets"
+msgstr "Import secrets"
+
+msgid "Import secrets…"
+msgstr "Import secrets…"
+
+msgid "Import / Export"
+msgstr "Import / Export"
+
+msgid "Export %d secrets from %s to a JSON file. Values are not included unless you tick the box below."
+msgstr "Export %d secrets from %s to a JSON file. Values are not included unless you tick the box below."
+
+msgid "Include secret values (the file will contain them in clear text)"
+msgstr "Include secret values (the file will contain them in clear text)"
+
+msgid "Export"
+msgstr "Export"
+
+msgid "Import"
+msgstr "Import"
+
+msgid "Import %d secrets into %s? %d of them include a value. Existing secrets are never overwritten."
+msgstr "Import %d secrets into %s? %d of them include a value. Existing secrets are never overwritten."
+
+msgid "Import finished"
+msgstr "Import finished"
+
+msgid "Created: %d\nSkipped (already exist): %d\nFailed: %d"
+msgstr "Created: %d\nSkipped (already exist): %d\nFailed: %d"
+
+msgid "… and %d more"
+msgstr "… and %d more"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "No secrets to export"
+msgstr "No secrets to export"
+
+msgid "Exporting secrets..."
+msgstr "Exporting secrets..."
+
+msgid "Importing secrets..."
+msgstr "Importing secrets..."
+
+msgid "Exported %d secrets to %s"
+msgstr "Exported %d secrets to %s"
+
+msgid "Exported %d secrets to %s (%d without value)"
+msgstr "Exported %d secrets to %s (%d without value)"
+
+msgid "Entry %d is invalid: labels must be a key/value mapping."
+msgstr "Entry %d is invalid: labels must be a key/value mapping."
+
+msgid "Entry %d is invalid: expected an object."
+msgstr "Entry %d is invalid: expected an object."
+
+msgid "Entry %d is invalid: missing secret id."
+msgstr "Entry %d is invalid: missing secret id."
+
+msgid "The import file is empty."
+msgstr "The import file is empty."
+
+msgid "The import file is not valid JSON or YAML"
+msgstr "The import file is not valid JSON or YAML"
+
+msgid "Unrecognised import file: expected a 'secrets' list or an id/value mapping."
+msgstr "Unrecognised import file: expected a 'secrets' list or an id/value mapping."
+
+msgid "The import file contains no secrets."
+msgstr "The import file contains no secrets."
+
+msgid "Too many secrets in one import (maximum %d)."
+msgstr "Too many secrets in one import (maximum %d)."
+
+msgid "The import file is too large."
+msgstr "The import file is too large."
+
+msgid "Error: {detail}"
+msgstr "Error: {detail}"
+
+msgid "Latest"
+msgstr "Latest"
+
+msgid "Error {status} while querying projects: {detail}"
+msgstr "Error {status} while querying projects: {detail}"
+
+msgid "Gossip: explorer and manager for secrets in Google Cloud Platform, AWS Secrets Manager, Azure Key Vault and Ansible Vault"
+msgstr "Gossip: explorer and manager for secrets in Google Cloud Platform, AWS Secrets Manager, Azure Key Vault and Ansible Vault"
+
+msgid "Initial secret provider (gcp, aws, azure or ansible; default: gcp)"
+msgstr "Initial secret provider (gcp, aws, azure or ansible; default: gcp)"
+
+msgid "GCP project ID to query (skips autodetection)"
+msgstr "GCP project ID to query (skips autodetection)"
+
+msgid "AWS credentials profile to use (skips autodetection)"
+msgstr "AWS credentials profile to use (skips autodetection)"
+
+msgid "AWS region to query (e.g. eu-west-1, us-east-1)"
+msgstr "AWS region to query (e.g. eu-west-1, us-east-1)"
+
+msgid "Azure Key Vault name or URL (skips autodetection)"
+msgstr "Azure Key Vault name or URL (skips autodetection)"
+
+msgid "Path to the encrypted Ansible Vault file (skips autodetection)"
+msgstr "Path to the encrypted Ansible Vault file (skips autodetection)"
+
+msgid "Path to the Ansible Vault password file (must be readable only by you)"
+msgstr "Path to the Ansible Vault password file (must be readable only by you)"
+
+msgid "Interface language (es, en)"
+msgstr "Interface language (es, en)"
+
+msgid "Start the window maximized"
+msgstr "Start the window maximized"
+
+msgid "Initial window width in pixels (default: 1280)"
+msgstr "Initial window width in pixels (default: 1280)"
+
+msgid "Initial window height in pixels (default: 820)"
+msgstr "Initial window height in pixels (default: 820)"
+
+msgid "GTK4 / GSK renderer (GSK_RENDERER: ngl, gl, vulkan, cairo)"
+msgstr "GTK4 / GSK renderer (GSK_RENDERER: ngl, gl, vulkan, cairo)"
+
+msgid "Force Cairo software rendering (useful in VMs or drivers without 3D acceleration)"
+msgstr "Force Cairo software rendering (useful in VMs or drivers without 3D acceleration)"
+
+msgid "Write detailed diagnostics to stderr (same as GOSSIP_DEBUG=1)"
+msgstr "Write detailed diagnostics to stderr (same as GOSSIP_DEBUG=1)"
+
+msgid "Seconds of inactivity before secrets are hidden (0 disables; default 300)"
+msgstr "Seconds of inactivity before secrets are hidden (0 disables; default 300)"
+
+msgid "Check that all dependencies load correctly and exit (no GUI)"
+msgstr "Check that all dependencies load correctly and exit (no GUI)"
+
+msgid "{type} ({count} characters)"
+msgstr "{type} ({count} characters)"
+
+msgid "Backup %d"
+msgstr "Backup %d"
+
+msgid "The variable '{variable}' does not exist in that backup."
+msgstr "The variable '{variable}' does not exist in that backup."
+
+msgid "Third-party notices"
+msgstr "Third-party notices"
+
+msgid "Built with"
+msgstr "Built with"
+
+msgid "Python libraries and runtime"
+msgstr "Python libraries and runtime"
+
+msgid "Gossip bundles Python and open-source libraries (boto3, the Google Cloud and Azure SDKs, cryptography, PyYAML, gRPC and others) under their own licenses, mostly Apache-2.0, MIT, BSD and MPL-2.0. Their names, versions and complete license texts are in the THIRD_PARTY_NOTICES file shipped with every package and at %s"
+msgstr "Gossip bundles Python and open-source libraries (boto3, the Google Cloud and Azure SDKs, cryptography, PyYAML, gRPC and others) under their own licenses, mostly Apache-2.0, MIT, BSD and MPL-2.0. Their names, versions and complete license texts are in the THIRD_PARTY_NOTICES file shipped with every package and at %s"
+
+msgid "AI-assisted development"
+msgstr "AI-assisted development"
+
+msgid "Change Vault server"
+msgstr "Change Vault server"
+
+msgid "Querying Vault..."
+msgstr "Querying Vault..."
+
+msgid "No secrets found in this Vault mount."
+msgstr "No secrets found in this Vault mount."
+
+msgid "Could not connect to Vault."
+msgstr "Could not connect to Vault."
+
+msgid "Vault: no server selected"
+msgstr "Vault: no server selected"
+
+msgid "Vault: %s"
+msgstr "Vault: %s"
+
+msgid "No Vault server configured.\nUse the server button to enter its address or set VAULT_ADDR."
+msgstr "No Vault server configured.\nUse the server button to enter its address or set VAULT_ADDR."
+
+msgid "No Vault token available.\nEnter it in the server dialog, set VAULT_TOKEN or run 'vault login'."
+msgstr "No Vault token available.\nEnter it in the server dialog, set VAULT_TOKEN or run 'vault login'."
+
+msgid "Invalid Vault address '{address}'. Use a URL such as https://vault.example.com:8200."
+msgstr "Invalid Vault address '{address}'. Use a URL such as https://vault.example.com:8200."
+
+msgid "Refusing to send the Vault token over plain HTTP to '{host}'. Use an https:// address."
+msgstr "Refusing to send the Vault token over plain HTTP to '{host}'. Use an https:// address."
+
+msgid "A version number is required."
+msgstr "A version number is required."
+
+msgid "The version of '{secret}' has no data."
+msgstr "The version of '{secret}' has no data."
+
+msgid "Not found in Vault."
+msgstr "Not found in Vault."
+
+msgid "Vault error: {detail}"
+msgstr "Vault error: {detail}"
+
+msgid "The secret '{secret}' or that version does not exist (it may be disabled)."
+msgstr "The secret '{secret}' or that version does not exist (it may be disabled)."
+
+msgid "Could not reach Vault: {detail}"
+msgstr "Could not reach Vault: {detail}"
+
+msgid "Vault denied access ({status}): {detail}"
+msgstr "Vault denied access ({status}): {detail}"
+
+msgid "The secret '{secret}' already exists. Use 'New Version' to modify it."
+msgstr "The secret '{secret}' already exists. Use 'New Version' to modify it."
+
+msgid "Vault / OpenBao server"
+msgstr "Vault / OpenBao server"
+
+msgid "Plain HTTP is only accepted for localhost. Leave the token empty to use VAULT_TOKEN or the token from 'vault login'."
+msgstr "Plain HTTP is only accepted for localhost. Leave the token empty to use VAULT_TOKEN or the token from 'vault login'."
+
+msgid "Server address (https://...)"
+msgstr "Server address (https://...)"
+
+msgid "KV v2 mount"
+msgstr "KV v2 mount"
+
+msgid "Namespace (optional)"
+msgstr "Namespace (optional)"
+
+msgid "Token (kept in memory only)"
+msgstr "Token (kept in memory only)"
+
+msgid "Create New Vault Secret"
+msgstr "Create New Vault Secret"
+
+msgid "Define the secret path and its value. A JSON object is stored as several keys; any other text is stored under the key 'value'."
+msgstr "Define the secret path and its value. A JSON object is stored as several keys; any other text is stored under the key 'value'."
+
+msgid "Mount"
+msgstr "Mount"
+
+msgid "Gossip: explorer and manager for secrets in Google Cloud Platform, AWS Secrets Manager, Azure Key Vault, Ansible Vault and HashiCorp Vault / OpenBao"
+msgstr "Gossip: explorer and manager for secrets in Google Cloud Platform, AWS Secrets Manager, Azure Key Vault, Ansible Vault and HashiCorp Vault / OpenBao"
+
+msgid "Initial secret provider (gcp, aws, azure, ansible or vault; default: gcp)"
+msgstr "Initial secret provider (gcp, aws, azure, ansible or vault; default: gcp)"
+
+msgid "HashiCorp Vault / OpenBao server URL (default: VAULT_ADDR)"
+msgstr "HashiCorp Vault / OpenBao server URL (default: VAULT_ADDR)"
+
+msgid "KV v2 mount path on the Vault server (default: secret)"
+msgstr "KV v2 mount path on the Vault server (default: secret)"
+
+msgid "Querying AWS Parameter Store..."
+msgstr "Querying AWS Parameter Store..."
+
+msgid "No parameters found in this AWS region."
+msgstr "No parameters found in this AWS region."
+
+msgid "Parameter Store: %s (%s)"
+msgstr "Parameter Store: %s (%s)"
+
+msgid "Parameter Store error: {detail}"
+msgstr "Parameter Store error: {detail}"
+
+msgid "Permission denied for Parameter Store in region '{region}'.\nDetail: {detail}"
+msgstr "Permission denied for Parameter Store in region '{region}'.\nDetail: {detail}"
+
+msgid "The parameter or version '{name}' was not found."
+msgstr "The parameter or version '{name}' was not found."
+
+msgid "The parameter '{name}' already exists. Use 'New Version' to modify it."
+msgstr "The parameter '{name}' already exists. Use 'New Version' to modify it."
+
+msgid "Create New AWS Parameter"
+msgstr "Create New AWS Parameter"
+
+msgid "Define the parameter name (e.g. /app/db/password), its value and optional tags. It is stored as an encrypted SecureString."
+msgstr "Define the parameter name (e.g. /app/db/password), its value and optional tags. It is stored as an encrypted SecureString."
+
+msgid "Choose the AWS credentials profile and target region."
+msgstr "Choose the AWS credentials profile and target region."
+
+msgid "Gossip: explorer and manager for secrets in Google Cloud Platform, AWS Secrets Manager, AWS Parameter Store, Azure Key Vault, Ansible Vault and HashiCorp Vault / OpenBao"
+msgstr "Gossip: explorer and manager for secrets in Google Cloud Platform, AWS Secrets Manager, AWS Parameter Store, Azure Key Vault, Ansible Vault and HashiCorp Vault / OpenBao"
+
+msgid "Initial secret provider (gcp, aws, ssm, azure, ansible or vault; default: gcp)"
+msgstr "Initial secret provider (gcp, aws, ssm, azure, ansible or vault; default: gcp)"
+
+msgid "Switch Kubernetes context & namespace"
+msgstr "Switch Kubernetes context & namespace"
+
+msgid "Querying Kubernetes..."
+msgstr "Querying Kubernetes..."
+
+msgid "No secrets found in this namespace."
+msgstr "No secrets found in this namespace."
+
+msgid "Could not connect to the Kubernetes cluster."
+msgstr "Could not connect to the Kubernetes cluster."
+
+msgid "Kubernetes: no context selected"
+msgstr "Kubernetes: no context selected"
+
+msgid "Kubernetes: %s"
+msgstr "Kubernetes: %s"
+
+msgid "No Kubernetes context selected.\nUse the context button to choose one from your kubeconfig."
+msgstr "No Kubernetes context selected.\nUse the context button to choose one from your kubeconfig."
+
+msgid "The credential plugin '{command}' failed: {detail}"
+msgstr "The credential plugin '{command}' failed: {detail}"
+
+msgid "The context '{name}' does not point to a cluster with a server."
+msgstr "The context '{name}' does not point to a cluster with a server."
+
+msgid "The context '{name}' disables TLS verification, which Gossip does not allow. Add the cluster's certificate-authority instead."
+msgstr "The context '{name}' disables TLS verification, which Gossip does not allow. Add the cluster's certificate-authority instead."
+
+msgid "The context '{name}' uses a legacy authentication method that is not supported."
+msgstr "The context '{name}' uses a legacy authentication method that is not supported."
+
+msgid "The credential plugin '{command}' could not run: {detail}"
+msgstr "The credential plugin '{command}' could not run: {detail}"
+
+msgid "The credential plugin '{command}' returned invalid output."
+msgstr "The credential plugin '{command}' returned invalid output."
+
+msgid "Kubernetes Secret values must be strings."
+msgstr "Kubernetes Secret values must be strings."
+
+msgid "Not found in the cluster."
+msgstr "Not found in the cluster."
+
+msgid "Kubernetes error: {detail}"
+msgstr "Kubernetes error: {detail}"
+
+msgid "Could not reach the cluster: {detail}"
+msgstr "Could not reach the cluster: {detail}"
+
+msgid "Kubernetes denied access ({status}): {detail}"
+msgstr "Kubernetes denied access ({status}): {detail}"
+
+msgid "The value of '{key}' starts with 'base64:' but is not valid base64."
+msgstr "The value of '{key}' starts with 'base64:' but is not valid base64."
+
+msgid "Kubernetes context"
+msgstr "Kubernetes context"
+
+msgid "Choose a context from your kubeconfig and the namespace whose Secrets to manage."
+msgstr "Choose a context from your kubeconfig and the namespace whose Secrets to manage."
+
+msgid "Context"
+msgstr "Context"
+
+msgid "Namespace"
+msgstr "Namespace"
+
+msgid "Create New Kubernetes Secret"
+msgstr "Create New Kubernetes Secret"
+
+msgid "Define the Secret name and its keys. A JSON object of strings becomes several keys; any other text is stored under the key 'value'."
+msgstr "Define the Secret name and its keys. A JSON object of strings becomes several keys; any other text is stored under the key 'value'."
+
+msgid "Gossip: explorer and manager for secrets in Google Cloud Platform, AWS Secrets Manager, AWS Parameter Store, Azure Key Vault, Ansible Vault, HashiCorp Vault / OpenBao and Kubernetes Secrets"
+msgstr "Gossip: explorer and manager for secrets in Google Cloud Platform, AWS Secrets Manager, AWS Parameter Store, Azure Key Vault, Ansible Vault, HashiCorp Vault / OpenBao and Kubernetes Secrets"
+
+msgid "Initial secret provider (gcp, aws, ssm, azure, ansible, vault or k8s; default: gcp)"
+msgstr "Initial secret provider (gcp, aws, ssm, azure, ansible, vault or k8s; default: gcp)"
+
+msgid "Kubeconfig context to use (default: the current context)"
+msgstr "Kubeconfig context to use (default: the current context)"
+
+msgid "Kubernetes namespace whose Secrets to manage (default: the context namespace)"
+msgstr "Kubernetes namespace whose Secrets to manage (default: the context namespace)"
+
+msgid "Initial secret provider (gcp, aws, ssm, azure, ansible, vault or k8s; default: the last one used, otherwise gcp)"
+msgstr "Initial secret provider (gcp, aws, ssm, azure, ansible, vault or k8s; default: the last one used, otherwise gcp)"
+
+msgid "Available namespaces"
+msgstr "Available namespaces"
+
+msgid "Not available: type the namespace below"
+msgstr "Not available: type the namespace below"
+
+msgid "Loading..."
+msgstr "Loading..."
+
+msgid "Delete immediately, without a recovery window"
+msgstr "Delete immediately, without a recovery window"
+
+msgid "The secret will be scheduled for deletion from AWS Secrets Manager and can be restored during the next 7 days."
+msgstr "The secret will be scheduled for deletion from AWS Secrets Manager and can be restored during the next 7 days."
+
+msgid "Secret '%s' scheduled for deletion (recoverable for 7 days)"
+msgstr "Secret '%s' scheduled for deletion (recoverable for 7 days)"
+
+msgid "Could not list vaults with the Azure CLI ({reason}). Type the name above."
+msgstr "Could not list vaults with the Azure CLI ({reason}). Type the name above."
+
+msgid "The value starts with 'base64:' but is not valid base64."
+msgstr "The value starts with 'base64:' but is not valid base64."
+
+msgid "Read-only mode: changes are disabled"
+msgstr "Read-only mode: changes are disabled"
+
+msgid "read-only"
+msgstr "read-only"
+
+msgid "Browse and copy only: creating, editing, deleting and importing are disabled"
+msgstr "Browse and copy only: creating, editing, deleting and importing are disabled"
+
+msgid "Record what is revealed, copied and changed (never the values) in a local file (default file: audit.jsonl next to the saved state)"
+msgstr "Record what is revealed, copied and changed (never the values) in a local file (default file: audit.jsonl next to the saved state)"
+
+msgid "Read-only mode is on: click to allow changes"
+msgstr "Read-only mode is on: click to allow changes"
+
+msgid "Read-only mode is off: click to block creating, editing and deleting"
+msgstr "Read-only mode is off: click to block creating, editing and deleting"
+
+msgid "Read-only mode enabled"
+msgstr "Read-only mode enabled"
+
+msgid "Read-only mode disabled"
+msgstr "Read-only mode disabled"
+
+msgid "{service} did not answer in time or could not be reached ({detail}). Check your network connection and the endpoint, then try again."
+msgstr "{service} did not answer in time or could not be reached ({detail}). Check your network connection and the endpoint, then try again."
+
+msgid "Read-only mode is locked: it was started with --read-only"
+msgstr "Read-only mode is locked: it was started with --read-only"
+
+msgid "Browse and copy only (locked for the session): creating, editing, deleting and importing are disabled"
+msgstr "Browse and copy only (locked for the session): creating, editing, deleting and importing are disabled"
+
+msgid "Secret hidden because the session was locked"
+msgstr "Secret hidden because the session was locked"
+
+msgid "[Hidden: session locked]"
+msgstr "[Hidden: session locked]"
+
+msgid "Restore Version %s?"
+msgstr "Restore Version %s?"
+
+msgid "Its value will be saved as a new version and become the current one. The versions you already have are kept."
+msgstr "Its value will be saved as a new version and become the current one. The versions you already have are kept."
+
+msgid "Restore"
+msgstr "Restore"
+
+msgid "Restoring version %s..."
+msgstr "Restoring version %s..."
+
+msgid "Version %s restored as the current version"
+msgstr "Version %s restored as the current version"
+
+msgid "Restore version %s as the current version"
+msgstr "Restore version %s as the current version"
+
+msgid "One label per line as key=value. Removing a line removes that label."
+msgstr "One label per line as key=value. Removing a line removes that label."
+
+msgid "Labels / tags"
+msgstr "Labels / tags"
+
+msgid "Edit '%s'"
+msgstr "Edit '%s'"
+
+msgid "Changes to '%s' saved"
+msgstr "Changes to '%s' saved"
+
+msgid "Saving changes to '%s'..."
+msgstr "Saving changes to '%s'..."
+
+msgid "Edit labels and description"
+msgstr "Edit labels and description"
+
+msgid "No GCP project ID configured."
+msgstr "No GCP project ID configured."
+
+msgid "Permission denied to create secret.\nRequires 'roles/secretmanager.admin' role."
+msgstr "Permission denied to create secret.\nRequires 'roles/secretmanager.admin' role."
+
+msgid "Permission denied to add version.\nRequires 'roles/secretmanager.admin' role."
+msgstr "Permission denied to add version.\nRequires 'roles/secretmanager.admin' role."
+
+msgid "Permission denied to edit the secret.\nRequires 'roles/secretmanager.admin' role."
+msgstr "Permission denied to edit the secret.\nRequires 'roles/secretmanager.admin' role."
+
+msgid "Error editing secret"
+msgstr "Error editing secret"
+
+msgid "Permission denied to edit the secret"
+msgstr "Permission denied to edit the secret"
+
+msgid "Show the keys of this value as a table"
+msgstr "Show the keys of this value as a table"
+
+msgid "Copy the value of '%s'"
+msgstr "Copy the value of '%s'"
+
+msgid "Length"
+msgstr "Length"
+
+msgid "Lowercase letters"
+msgstr "Lowercase letters"
+
+msgid "Uppercase letters"
+msgstr "Uppercase letters"
+
+msgid "Digits"
+msgstr "Digits"
+
+msgid "Symbols"
+msgstr "Symbols"
+
+msgid "Avoid look-alike characters (0 O 1 l I)"
+msgstr "Avoid look-alike characters (0 O 1 l I)"
+
+msgid "Generate"
+msgstr "Generate"
+
+msgid "Generate a random password"
+msgstr "Generate a random password"
+
+msgid "Created: %d\nNew version added: %d\nSkipped (already exist): %d\nFailed: %d"
+msgstr "Created: %d\nNew version added: %d\nSkipped (already exist): %d\nFailed: %d"
+
+msgid "When a secret already exists"
+msgstr "When a secret already exists"
+
+msgid "Import into %s: %d new, %d already exist. %d of the entries include a value."
+msgstr "Import into %s: %d new, %d already exist. %d of the entries include a value."
+
+msgid "Already exists"
+msgstr "Already exists"
+
+msgid "New"
+msgstr "New"
+
+msgid "Skip it (keep the current value)"
+msgstr "Skip it (keep the current value)"
+
+msgid "Add the imported value as a new version"
+msgstr "Add the imported value as a new version"
+
+msgid "no value"
+msgstr "no value"
+
+msgid "Compare with another secret (another environment or provider)"
+msgstr "Compare with another secret (another environment or provider)"
+
+msgid "Compare with another secret"
+msgstr "Compare with another secret"
+
+msgid "Current: %s"
+msgstr "Current: %s"
+
+msgid "Compare with"
+msgstr "Compare with"
+
+msgid "Filter secrets"
+msgstr "Filter secrets"
+
+msgid "%d secrets"
+msgstr "%d secrets"
+
+msgid "The two values are identical"
+msgstr "The two values are identical"
+
+msgid "Initial window width in pixels (default: the last one used, otherwise 1280)"
+msgstr "Initial window width in pixels (default: the last one used, otherwise 1280)"
+
+msgid "Initial window height in pixels (default: the last one used, otherwise 820)"
+msgstr "Initial window height in pixels (default: the last one used, otherwise 820)"
+
+msgid "New secret"
+msgstr "New secret"
+
+msgid "Search secrets"
+msgstr "Search secrets"
+
+msgid "Show / hide the value"
+msgstr "Show / hide the value"
+
+msgid "Copy the value"
+msgstr "Copy the value"
+
+msgid "Delete the secret"
+msgstr "Delete the secret"
+
+msgid "Show the keyboard shortcuts"
+msgstr "Show the keyboard shortcuts"
+
+msgid "Keyboard shortcuts"
+msgstr "Keyboard shortcuts"
+
+msgid "%d d"
+msgstr "%d d"
+
+msgid "Not changed for %d days; consider rotating it"
+msgstr "Not changed for %d days; consider rotating it"
+
+msgid "changed %d days ago"
+msgstr "changed %d days ago"
+
+msgid "Flag secrets not changed for this many days (0 disables; default 90)"
+msgstr "Flag secrets not changed for this many days (0 disables; default 90)"
+
+msgid "Explorer and manager for secrets in Google Cloud, AWS (Secrets Manager and Parameter Store), Azure Key Vault, Ansible Vault, HashiCorp Vault / OpenBao and Kubernetes, with GTK4 and Libadwaita."
+msgstr "Explorer and manager for secrets in Google Cloud, AWS (Secrets Manager and Parameter Store), Azure Key Vault, Ansible Vault, HashiCorp Vault / OpenBao and Kubernetes, with GTK4 and Libadwaita."
+
+msgid "Secret hidden because the window lost focus"
+msgstr "Secret hidden because the window lost focus"
+
+msgid "Secret hidden automatically"
+msgstr "Secret hidden automatically"
+
+msgid "Seconds a revealed value stays visible (0 keeps it; default 120)"
+msgstr "Seconds a revealed value stays visible (0 keeps it; default 120)"
+
+msgid "Hide revealed values when the window loses focus"
+msgstr "Hide revealed values when the window loses focus"

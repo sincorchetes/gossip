@@ -1,0 +1,48 @@
+name: Update build dependencies
+
+# Weekly refresh of the hashed lock used by release builds (requirements-build.txt).
+# Opens a pull request; it needs "Allow GitHub Actions to create and approve pull requests"
+# enabled in Settings -> Actions -> General. Pull requests opened with GITHUB_TOKEN do not
+# trigger other workflows, so the real check is the next tagged release build.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    name: Refresh pinned dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+
+      - name: Re-resolve pinned dependencies and regenerate the third-party notices and Flatpak sources
+        run: |
+          for name in requirements requirements-build requirements-windows requirements-audit; do
+            uv pip compile "$name.in" --universal --python-version 3.14 \
+              --generate-hashes --upgrade -o "$name.txt"
+          done
+          python3 scripts/generate_third_party_notices.py
+          python3 scripts/generate_flatpak_sources.py
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: deps/update-build-requirements
+          commit-message: "build(deps): refresh pinned dependencies"
+          title: "build(deps): refresh pinned dependencies"
+          body: |
+            Automated weekly refresh of the hashed dependencies (`requirements.txt` for development, `requirements-build.txt` for releases)
+            (`uv pip compile --universal --python-version 3.14 --upgrade`).
+
+            Review the diff, then tag a release to exercise it on every platform.
+          delete-branch: true

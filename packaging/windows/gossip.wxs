@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Gossip Windows installer (WiX v4/v5).
+  Build (needs: wix extension add -g WixToolset.UI.wixext/<same version as wix>):
+    wix build -arch x64 -ext WixToolset.UI.wixext -d Version=<a.b.c> -d SourceDir=<pyinstaller dist/gossip>
+      -d IconFile=<gossip.ico> -d LicenseRtf=<LICENSE.rtf> -o gossip.msi packaging/windows/gossip.wxs
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package
+    Name="Gossip"
+    Manufacturer="sincorchetes"
+    Version="$(Version)"
+    UpgradeCode="e3609037-cbec-4691-9102-f4661bb70d2e"
+    Scope="perMachine"
+    Language="1033">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Gossip is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="AppIcon" SourceFile="$(IconFile)" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+
+    <!-- Wizard: license acceptance, installation progress and a "completed" page, so the user
+         sees that the installation finished instead of a progress bar that just vanishes. -->
+    <WixVariable Id="WixUILicenseRtf" Value="$(LicenseRtf)" />
+    <ui:WixUI Id="WixUI_Minimal" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Gossip">
+        <Files Include="$(SourceDir)\**" />
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Component Id="StartMenuShortcut" Guid="*">
+        <Shortcut
+          Id="GossipShortcut"
+          Name="Gossip"
+          Description="Multi-Cloud Secret Manager"
+          Target="[INSTALLFOLDER]gossip.exe"
+          WorkingDirectory="INSTALLFOLDER"
+          Icon="AppIcon" />
+        <RegistryValue Root="HKLM" Key="Software\Gossip" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+
+  </Package>
+</Wix>

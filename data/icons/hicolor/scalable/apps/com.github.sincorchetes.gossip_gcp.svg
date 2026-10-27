@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f2335"/>
+      <stop offset="100%" stop-color="#131520"/>
+    </linearGradient>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Background Squircle (GNOME HIG style) -->
+  <rect x="8" y="8" width="112" height="112" rx="26" ry="26" fill="url(#bgGrad)" stroke="#30364d" stroke-width="2" filter="url(#shadow)"/>
+
+  <!-- Multi-cloud network contour lines -->
+  <path d="M32 76 C32 64 42 56 54 56 C57 44 70 38 82 44 C92 42 102 50 100 62 C106 66 106 76 98 80 C98 80 36 80 32 76 Z" 
+        fill="none" stroke="#2e3856" stroke-width="3" stroke-dasharray="4 3"/>
+
+  <!-- Center Shield / Safe Padlock Body -->
+  <g filter="url(#shadow)">
+    <!-- Shackle -->
+    <path d="M48 58 L48 42 C48 33 55 26 64 26 C73 26 80 33 80 42 L80 58" 
+          fill="none" stroke="url(#goldGrad)" stroke-width="7" stroke-linecap="round"/>
+    
+    <!-- Lock Body -->
+    <rect x="36" y="54" width="56" height="46" rx="12" ry="12" fill="url(#primaryGrad)"/>
+    <rect x="38" y="56" width="52" height="42" rx="10" ry="10" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.25"/>
+
+    <!-- Keyhole -->
+    <circle cx="64" cy="73" r="5" fill="#131520"/>
+    <polygon points="61,74 67,74 69,87 59,87" fill="#131520"/>
+    <circle cx="64" cy="73" r="2.5" fill="url(#goldGrad)"/>
+  </g>
+
+  <!-- Cloud Provider Indicators (4 dots for GCP, AWS, Azure, Ansible) -->
+  <circle cx="28" cy="36" r="3.5" fill="#4285f4"/> <!-- GCP blue -->
+  <circle cx="100" cy="36" r="3.5" fill="#ff9900"/> <!-- AWS orange -->
+  <circle cx="28" cy="92" r="3.5" fill="#0078d4"/> <!-- Azure blue -->
+  <circle cx="100" cy="92" r="3.5" fill="#ee0000"/> <!-- Ansible red -->
+</svg>

@@ -1,0 +1,5 @@
+# Tools that scan the pinned dependencies: vulnerability audit and SBOM generation.
+# Regenerate the pinned, hashed lock with:
+#   uv pip compile requirements-audit.in --universal --python-version 3.14 --generate-hashes -o requirements-audit.txt
+pip-audit
+cyclonedx-bom
