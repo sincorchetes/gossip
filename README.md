@@ -61,6 +61,8 @@ Developed on **NixOS** and configured with **devenv** and **uv**.
 ### 1. NixOS & devenv
 The project includes a ready-to-use `devenv.nix` configured with GTK4, Libadwaita, GObject Introspection, `uv`, and Python 3.14.
 
+**Just want to use it on Nix/NixOS?** The repository is also a flake: `nix run github:sincorchetes/gossip`, or add it to your configuration as described in [docs/getting-started/installation.md](docs/getting-started/installation.md#2-nix-nixos-devenv).
+
 ### 2. Google Cloud Platform (GCP)
 ```bash
 gcloud auth application-default login
