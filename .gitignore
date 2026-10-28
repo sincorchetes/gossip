@@ -96,6 +96,9 @@ develop-eggs/
 Thumbs.db
 desktop.ini
 .aider.model.metadata.json
+sonar-project.properties
+.scannerwork/
+
 # ==============================================================================
 # Logs & Runtime Dumps
 # ==============================================================================

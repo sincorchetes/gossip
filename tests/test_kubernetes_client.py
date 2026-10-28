@@ -449,7 +449,9 @@ class TestClient(unittest.TestCase):
             patch("src.providers.kubernetes.client.resolve_context") as resolve,
             patch("src.providers.kubernetes.client.KubeHTTP") as http,
         ):
-            self.assertIs(client._http(), client._http())
+            first = client._http()
+            second = client._http()
+            self.assertIs(first, second)
             resolve.assert_called_once_with("dev")
             http.assert_called_once_with(resolve.return_value)
 
