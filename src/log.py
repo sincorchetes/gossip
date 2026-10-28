@@ -18,7 +18,7 @@ _SECRET_ASSIGNMENT = re.compile(
 )
 _AUTHORIZATION = re.compile(r"(?i)\b(authorization)(\s*[=:]\s*).*")
 _BEARER = re.compile(r"(?i)\b(bearer|basic)\s+\S+")
-_URL_USERINFO = re.compile(r"(\w+://)[^/\s:@]+:[^/\s@]+@")
+_URL_USERINFO = re.compile(r"(\w+://)[^/\s:@]++:[^/\s@]++@")
 _LONG_TOKEN = re.compile(r"\b[A-Za-z0-9+/_=-]{32,}\b")
 
 
