@@ -19,6 +19,8 @@
     gettext
     xvfb-run
     ruff
+    sonar-scanner-cli
+    openjdk
   ];
 
   env = {
@@ -53,6 +55,9 @@
       ln -sf "${pkgs.ruff}/bin/ruff" .devenv/state/venv/bin/ruff
     fi
     export NO_MKDOCS_2_WARNING=1
+    # Configure SonarQube scanner to use NixOS JDK (avoids dynamically linked executable error)
+    export SONAR_SCANNER_JAVA_EXE_PATH="${pkgs.openjdk}/bin/java"
+    export JAVA_HOME="${pkgs.openjdk}"
   '';
 
   # Scripts / shortcuts
