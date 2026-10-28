@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import threading
-from typing import Callable, List, Optional
+from typing import Any, Callable, List, Optional
 
 import gi
 
@@ -41,6 +41,44 @@ def _render_diff(buffer: Gtk.TextBuffer, lines: List[DiffLine]) -> None:
                 buffer.get_iter_at_offset(start),
                 buffer.get_iter_at_offset(start + len(line.text)),
             )
+
+
+def _build_diff_view(win: Any) -> Gtk.ScrolledWindow:
+    """Create the read-only, tagged text view for the diff and bind its buffer to win."""
+    scrolled = Gtk.ScrolledWindow()
+    scrolled.set_vexpand(True)
+    scrolled.add_css_class("card")
+    view = Gtk.TextView()
+    view.set_editable(False)
+    view.set_cursor_visible(False)
+    view.set_monospace(True)
+    view.set_wrap_mode(Gtk.WrapMode.CHAR)
+    win.diff_buffer = view.get_buffer()
+    for kind, color in _TAG_STYLES.items():
+        rgba = Gdk.RGBA()
+        rgba.parse(color)
+        win.diff_buffer.create_tag(kind, background_rgba=rgba)
+    scrolled.set_child(view)
+    return scrolled
+
+
+def _show_diff_result(
+    win: Any, lines: List[DiffLine], error: Optional[str], identical_message: str
+) -> None:
+    """Show a comparison result (diff, error or "no differences") on the GTK main thread."""
+    win.spinner.stop()
+    win.compare_btn.set_sensitive(True)
+    if error:
+        win.status_label.set_label(_("Error: {detail}").format(detail=error))
+        return
+    if not lines:
+        win.diff_buffer.set_text("")
+        win.status_label.set_label(identical_message)
+        return
+    _render_diff(win.diff_buffer, lines)
+    added = sum(1 for line in lines if line.kind == ADDED)
+    removed = sum(1 for line in lines if line.kind == REMOVED)
+    win.status_label.set_label(_("%d added, %d removed") % (added, removed))
 
 
 def show_compare_versions_dialog(
@@ -101,37 +139,11 @@ def show_compare_versions_dialog(
     win.status_label = Gtk.Label(label="", xalign=0)
     body.append(win.status_label)
 
-    scrolled = Gtk.ScrolledWindow()
-    scrolled.set_vexpand(True)
-    scrolled.add_css_class("card")
-    view = Gtk.TextView()
-    view.set_editable(False)
-    view.set_cursor_visible(False)
-    view.set_monospace(True)
-    view.set_wrap_mode(Gtk.WrapMode.CHAR)
-    win.diff_buffer = view.get_buffer()
-    for kind, color in _TAG_STYLES.items():
-        rgba = Gdk.RGBA()
-        rgba.parse(color)
-        win.diff_buffer.create_tag(kind, background_rgba=rgba)
-    scrolled.set_child(view)
-    body.append(scrolled)
+    body.append(_build_diff_view(win))
 
     def on_done(lines: List[DiffLine], error: Optional[str]) -> None:
         """Show the comparison result on the GTK main thread."""
-        win.spinner.stop()
-        win.compare_btn.set_sensitive(True)
-        if error:
-            win.status_label.set_label(_("Error: {detail}").format(detail=error))
-            return
-        if not lines:
-            win.diff_buffer.set_text("")
-            win.status_label.set_label(_("No differences between these versions"))
-            return
-        _render_diff(win.diff_buffer, lines)
-        added = sum(1 for line in lines if line.kind == ADDED)
-        removed = sum(1 for line in lines if line.kind == REMOVED)
-        win.status_label.set_label(_("%d added, %d removed") % (added, removed))
+        _show_diff_result(win, lines, error, _("No differences between these versions"))
 
     def on_compare(_btn: Gtk.Button) -> None:
         """Fetch both payloads in the background and diff them."""

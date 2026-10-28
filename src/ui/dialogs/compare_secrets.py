@@ -10,12 +10,12 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, GLib, Gtk
+from gi.repository import Adw, GLib, Gtk
 
-from src.diffing import ADDED, REMOVED, DiffLine, diff_payloads
+from src.diffing import DiffLine, diff_payloads
 from src.i18n import _
 from src.models import SecretItem
-from src.ui.dialogs.compare import _TAG_STYLES, _render_diff
+from src.ui.dialogs.compare import _build_diff_view, _show_diff_result
 
 
 @dataclass
@@ -102,21 +102,7 @@ def show_compare_secrets_dialog(
     warning.add_css_class("dim-label")
     body.append(warning)
 
-    scrolled = Gtk.ScrolledWindow()
-    scrolled.set_vexpand(True)
-    scrolled.add_css_class("card")
-    view = Gtk.TextView()
-    view.set_editable(False)
-    view.set_cursor_visible(False)
-    view.set_monospace(True)
-    view.set_wrap_mode(Gtk.WrapMode.CHAR)
-    win.diff_buffer = view.get_buffer()
-    for kind, color in _TAG_STYLES.items():
-        rgba = Gdk.RGBA()
-        rgba.parse(color)
-        win.diff_buffer.create_tag(kind, background_rgba=rgba)
-    scrolled.set_child(view)
-    body.append(scrolled)
+    body.append(_build_diff_view(win))
 
     def selected_target() -> Optional[CompareTarget]:
         index = win.target_row.get_selected()
@@ -174,19 +160,7 @@ def show_compare_secrets_dialog(
 
     def on_done(lines: List[DiffLine], error: Optional[str]) -> None:
         """Show the comparison result on the GTK main thread."""
-        win.spinner.stop()
-        win.compare_btn.set_sensitive(True)
-        if error:
-            win.status_label.set_label(_("Error: {detail}").format(detail=error))
-            return
-        if not lines:
-            win.diff_buffer.set_text("")
-            win.status_label.set_label(_("The two values are identical"))
-            return
-        _render_diff(win.diff_buffer, lines)
-        added = sum(1 for line in lines if line.kind == ADDED)
-        removed = sum(1 for line in lines if line.kind == REMOVED)
-        win.status_label.set_label(_("%d added, %d removed") % (added, removed))
+        _show_diff_result(win, lines, error, _("The two values are identical"))
 
     def on_compare(_btn: Gtk.Button) -> None:
         """Fetch both values in the background and diff them."""
