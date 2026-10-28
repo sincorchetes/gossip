@@ -111,9 +111,12 @@
               runHook postInstall
             '';
 
+            # PYTHONPATH is unset so a foreign pygobject (e.g. from a devenv shell)
+            # cannot shadow the one in pythonEnv: mixing two builds breaks Gio.
             preFixup = ''
               makeWrapper ${pythonEnv.interpreter} $out/bin/gossip \
                 --add-flags $out/lib/gossip/src/main.py \
+                --unset PYTHONPATH \
                 "''${gappsWrapperArgs[@]}"
             '';
 
