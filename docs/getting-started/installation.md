@@ -118,9 +118,70 @@ The sandbox gives Gossip network access and read-only access to the credential f
 
 ---
 
-## 2. Nix Flake & Devenv
+## 2. Nix, NixOS & Devenv
 
-If you use Nix or [devenv.sh](https://devenv.sh), Gossip includes a reproducible developer environment with all GTK4, Libadwaita, and Python dependencies pre-configured:
+The repository ships a `flake.nix` that builds Gossip with GTK4, Libadwaita and every Python dependency, so it works on NixOS and on any Linux with Nix and flakes enabled (`x86_64-linux` and `aarch64-linux`). Gossip is not in nixpkgs yet.
+
+### Try it without installing
+
+```bash
+# Run it once
+nix run github:sincorchetes/gossip
+
+# Or open a shell with `gossip` in the PATH (gone when you exit)
+nix shell github:sincorchetes/gossip
+gossip
+```
+
+Pass options after `--`: `nix run github:sincorchetes/gossip -- --provider aws --lang en`. Add `--refresh` to pick up a newer commit, or pin a tag or commit: `github:sincorchetes/gossip/v0.0.1`.
+
+### Install it for your user
+
+```bash
+nix profile install github:sincorchetes/gossip
+nix profile remove gossip      # to uninstall
+```
+
+The desktop launcher and icon are installed too, so Gossip shows up in your application menu.
+
+### NixOS or Home Manager configuration
+
+Add the flake as an input and install the package:
+
+```nix
+# flake.nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    gossip.url = "github:sincorchetes/gossip";
+    # Optional: reuse your nixpkgs instead of fetching another one.
+    # It must provide Python 3.14.
+    # gossip.inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  outputs = { nixpkgs, gossip, ... }: {
+    nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
+      modules = [
+        ({ pkgs, ... }: {
+          environment.systemPackages = [
+            gossip.packages.${pkgs.stdenv.hostPlatform.system}.default
+          ];
+          # Home Manager: home.packages = [ ...same package... ];
+        })
+      ];
+    };
+  };
+}
+```
+
+Then `sudo nixos-rebuild switch --flake .#myhost`.
+
+> [!NOTE]
+> The wrapper clears `PYTHONPATH`, so a Python environment inherited from your shell (for example a devenv shell) cannot shadow Gossip's own dependencies.
+
+### Development environment (devenv)
+
+If you want to work on Gossip, [devenv.sh](https://devenv.sh) gives you a reproducible environment with all GTK4, Libadwaita and Python dependencies pre-configured:
 
 ```bash
 # Clone the repository
@@ -138,6 +199,8 @@ Or run tests directly:
 ```bash
 devenv test
 ```
+
+You can also build the flake from a checkout with `nix build .#gossip` and run `./result/bin/gossip`.
 
 ---
 
