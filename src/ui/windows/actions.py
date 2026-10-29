@@ -34,7 +34,7 @@ class WindowActionsMixin(WindowBase):
     def _show_toast(self, text: str) -> None: ...  # Defined in WindowNavMixin
     def _load_secrets_async(self) -> None: ...  # Defined in WindowDataMixin
     def _load_versions_async(self, secret_name: str) -> None: ...  # Defined in WindowDataMixin
-    def _audit(
+    def _audit(  # pragma: no cover - contract stub, implemented by WindowNavMixin
         self, action: str, secret: Optional[str] = None, **extra: object
     ) -> None: ...  # WindowNavMixin
 

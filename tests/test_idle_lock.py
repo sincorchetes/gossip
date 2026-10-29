@@ -316,3 +316,14 @@ class TestRevealedValueHiding(WindowCase):
         with patch("gi.repository.Gdk.Display.get_default", return_value=None):
             self.window._lock_after_idle()
         self.assertIsNone(self.window._reveal_timer_id)
+
+
+class TestIdleEdgeCases(WindowCase):
+    def test_hide_revealed_without_revealed_payload_is_a_noop(self):
+        self.window.is_payload_revealed = False
+        self.window._hide_revealed("nothing to hide")
+
+    def test_key_activity_marks_activity_without_consuming_the_event(self):
+        self.window._last_activity = 0.0
+        self.assertFalse(self.window._on_key_activity())
+        self.assertGreater(self.window._last_activity, 0.0)

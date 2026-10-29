@@ -34,7 +34,7 @@ class WindowTransferMixin(WindowBase):
     """Exports the listed secrets to a JSON file and imports secrets from one."""
 
     def _show_toast(self, text: str) -> None: ...  # Defined in WindowNavMixin
-    def _audit(
+    def _audit(  # pragma: no cover - contract stub, implemented by WindowNavMixin
         self, action: str, secret: Optional[str] = None, **extra: object
     ) -> None: ...  # WindowNavMixin
     def _load_secrets_async(self) -> None: ...  # Defined in WindowDataMixin

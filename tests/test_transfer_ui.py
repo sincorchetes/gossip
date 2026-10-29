@@ -106,6 +106,12 @@ class TestTransferDialogs(WindowCase):
             dialog = dialogs.show_import_result_dialog(self.window, ImportResult(created=["a"]))
         self.assertNotIn("•", dialog.get_body())
 
+    def test_result_dialog_with_a_few_failures(self):
+        result = ImportResult(created=["a"], failed=[("s0", "boom")])
+        with self._present_patch():
+            dialog = dialogs.show_import_result_dialog(self.window, result)
+        self.assertIn("s0: boom", dialog.get_body())
+
 
 class TestExportFlow(WindowCase):
     def test_no_secrets_shows_a_toast(self):

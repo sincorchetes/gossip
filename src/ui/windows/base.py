@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from src.providers import BaseSecretProvider
 
 
-class WindowBase:
+class WindowBase:  # pragma: no cover
     """Shared declarations for the MainWindow mixins (plain class; MainWindow adds the GTK base)."""
 
     # -- state: one plain object; the attributes below read and write it

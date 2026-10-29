@@ -243,6 +243,7 @@ class TestDialogs(unittest.TestCase):
     def test_show_change_azure_vault_dialog_success(self):
         mock_azure = MagicMock(spec=AzureSecretClient)
         mock_azure.vault_name = "my-kv"
+        mock_azure.discovery_problems = []
         vaults = [
             AzureVaultItem(
                 name="my-kv", vault_uri="https://my-kv.vault.azure.net", location="westeurope"
@@ -722,6 +723,17 @@ class TestKubernetesNamespaceList(TestKubernetesDialog):
         self.assertEqual(entry.get_text(), "team")
         dialog.emit("response", "apply")
         client.configure.assert_called_once_with("dev", "team")
+
+    def test_picking_the_namespace_already_in_the_entry_changes_nothing(self):
+        client = self.make_client("dev")
+        client.list_namespaces.return_value = ["apps", "team"]
+        dialog, combo, entry, _on_success = self.open_with_namespaces(client)
+        row = find_children(dialog.get_extra_child(), Adw.ComboRow)[1]
+        row.set_selected(1)
+        self.assertEqual(entry.get_text(), "team")
+        entry.set_text("apps")
+        row.set_selected(0)  # same text as the picked namespace: no update
+        self.assertEqual(entry.get_text(), "apps")
 
     def test_changing_context_reloads_and_failures_fall_back_to_typing(self):
         client = self.make_client("dev")

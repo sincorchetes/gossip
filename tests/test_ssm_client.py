@@ -131,5 +131,37 @@ class TestSSMClient(unittest.TestCase):
             self.client.create_secret("/a", "x")
 
 
+class TestSSMMetadataErrors(unittest.TestCase):
+    def setUp(self):
+        self.client = SSMClient(profile_name="dev", region_name="eu-west-1")
+        self.ssm = MagicMock()
+        self.client._client = self.ssm
+
+    def test_load_metadata_error(self):
+        from src.models import SecretItem
+
+        self.ssm.list_tags_for_resource.side_effect = error("AccessDeniedException")
+        secret = SecretItem(name="/a", secret_id="/a", provider="ssm")
+        with self.assertRaises(PermissionError):
+            self.client.load_metadata(secret)
+
+    def test_update_metadata_error(self):
+        self.ssm.list_tags_for_resource.side_effect = error("AccessDeniedException")
+        with self.assertRaises(PermissionError):
+            self.client.update_metadata("/a", {"x": "y"}, None)
+
+    def test_update_metadata_remove_only(self):
+        self.ssm.list_tags_for_resource.return_value = {"TagList": [{"Key": "old", "Value": "1"}]}
+        self.client.update_metadata("/a", {}, None)
+        self.ssm.remove_tags_from_resource.assert_called_once()
+        self.ssm.add_tags_to_resource.assert_not_called()
+
+    def test_update_metadata_change_only(self):
+        self.ssm.list_tags_for_resource.return_value = {"TagList": []}
+        self.client.update_metadata("/a", {"x": "y"}, None)
+        self.ssm.add_tags_to_resource.assert_called_once()
+        self.ssm.remove_tags_from_resource.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()

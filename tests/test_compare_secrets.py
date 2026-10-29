@@ -125,6 +125,12 @@ class TestDialog(unittest.TestCase):
         win.compare_btn.emit("clicked")
         self.assertFalse(win.compare_btn.get_sensitive())
 
+    def test_reloading_without_a_selected_place_does_nothing(self):
+        with SYNC[0], SYNC[1], patch.object(Adw.Window, "present"):
+            win = show_compare_secrets_dialog(Gtk.Window(), "x", lambda: "", [])
+        self.assertFalse(win.compare_btn.get_sensitive())
+        self.assertEqual(self.rows(win), [])
+
 
 class TestWindowFlow(WindowCase):
     def setUp(self):

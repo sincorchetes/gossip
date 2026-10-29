@@ -39,6 +39,12 @@ class TestSidebarTree(WindowCase):
         index = next(i for i, row in enumerate(self.rows()) if row[2] == title)
         self.window._on_row_activated(self.window.list_view, index)
 
+    def test_rendering_twice_keeps_the_expanded_folders(self):
+        self.load("a")
+        expanded = self.window._expanded
+        self.window._render_secret_list()  # same provider: expansion is kept
+        self.assertIs(self.window._expanded, expanded)
+
     def test_small_lists_open_expanded_and_the_first_secret_is_selected(self):
         self.load("app/db", "app/api", "top")
         self.assertEqual(

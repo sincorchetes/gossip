@@ -41,7 +41,7 @@ Gossip is built following senior **Clean Code** and **Clean Architecture** guide
 3. **Non-Blocking Asynchronous Concurrency**:
    - Every network and encryption operation is executed in background worker threads, reporting results to the GTK main loop via `GLib.idle_add()`.
 4. **Test Coverage Gate**:
-   - The codebase is verified by an automated test suite (about 780 tests, about 98% statement and branch coverage) and CI fails below **95%**.
+   - The codebase is verified by an automated test suite (800+ tests, 100% statement and branch coverage) and CI fails below **100%**.
 
 ---
 

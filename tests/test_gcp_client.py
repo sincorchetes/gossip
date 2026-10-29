@@ -533,5 +533,77 @@ class TestGCPSecretClient(unittest.TestCase):
             self.assertIn("No fue posible consultar los proyectos de GCP", str(cm.exception))
 
 
+class TestGCPVersionNamePaths(unittest.TestCase):
+    def setUp(self):
+        self.client = GCPSecretClient(project_id="test-project")
+        self.mock_sm_client = MagicMock()
+        self.client._client = self.mock_sm_client
+
+    def test_list_versions_with_short_secret_name(self):
+        self.mock_sm_client.list_secret_versions.return_value = []
+        self.client.list_versions("my-secret")
+        request = self.mock_sm_client.list_secret_versions.call_args.kwargs["request"]
+        self.assertEqual(request.parent, "projects/test-project/secrets/my-secret")
+
+    def test_access_payload_with_version_on_full_name(self):
+        response = MagicMock()
+        response.payload.data = b"v3"
+        self.mock_sm_client.access_secret_version.return_value = response
+        payload, _ = self.client.access_secret_payload("projects/test-project/secrets/s", "3")
+        self.assertEqual(payload, "v3")
+        request = self.mock_sm_client.access_secret_version.call_args.kwargs["request"]
+        self.assertEqual(request.name, "projects/test-project/secrets/s/versions/3")
+
+    def test_access_payload_full_name_without_version_uses_latest(self):
+        response = MagicMock()
+        response.payload.data = b"latest"
+        self.mock_sm_client.access_secret_version.return_value = response
+        self.client.access_secret_payload("projects/test-project/secrets/s")
+        request = self.mock_sm_client.access_secret_version.call_args.kwargs["request"]
+        self.assertEqual(request.name, "projects/test-project/secrets/s/versions/latest")
+
+    def test_add_secret_version_with_full_name(self):
+        version = MagicMock()
+        version.name = "projects/test-project/secrets/s/versions/3"
+        version.state = secretmanager_v1.SecretVersion.State.ENABLED
+        version.create_time = None
+        version.destroy_time = None
+        self.mock_sm_client.add_secret_version.return_value = version
+        self.client.add_secret_version("projects/test-project/secrets/s", "payload")
+        request = self.mock_sm_client.add_secret_version.call_args.kwargs["request"]
+        self.assertEqual(request["parent"], "projects/test-project/secrets/s")
+
+
+class TestGCPUpdateMetadata(unittest.TestCase):
+    def setUp(self):
+        self.client = GCPSecretClient(project_id="test-project")
+        self.mock_sm_client = MagicMock()
+        self.client._client = self.mock_sm_client
+
+    def test_update_metadata_short_name(self):
+        self.client.update_metadata("my-secret", {"env": "prod"}, None)
+        request = self.mock_sm_client.update_secret.call_args.kwargs["request"]
+        self.assertEqual(request["secret"]["name"], "projects/test-project/secrets/my-secret")
+
+    def test_update_metadata_permission_denied(self):
+        self.mock_sm_client.update_secret.side_effect = PermissionDenied("denied")
+        with self.assertRaises(PermissionDeniedError):
+            self.client.update_metadata("my-secret", {}, None)
+
+    def test_update_metadata_not_found(self):
+        self.mock_sm_client.update_secret.side_effect = NotFound("missing")
+        with self.assertRaises(ResourceNotFoundError):
+            self.client.update_metadata("my-secret", {}, None)
+
+    def test_update_metadata_api_error(self):
+        from google.api_core.exceptions import GoogleAPICallError
+
+        from src.exceptions import ProviderError
+
+        self.mock_sm_client.update_secret.side_effect = GoogleAPICallError("boom")
+        with self.assertRaises(ProviderError):
+            self.client.update_metadata("my-secret", {}, None)
+
+
 if __name__ == "__main__":
     unittest.main()

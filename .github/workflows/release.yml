@@ -738,7 +738,7 @@ jobs:
             - Cross-platform graphical manager for Google Cloud Platform, AWS Secrets Manager and Parameter Store, Azure Key Vault, Ansible Vault, HashiCorp Vault / OpenBao and Kubernetes Secrets.
             - Modern GTK4 and Libadwaita interface with light and dark theme switching.
             - Full bilingual localization (English / Spanish) with dynamic runtime switching.
-            - Automated test suite with a 95% coverage gate.
+            - Automated test suite with a 100% coverage gate.
 
             ### Available Downloads
             - **Debian / Ubuntu (.deb)**:
