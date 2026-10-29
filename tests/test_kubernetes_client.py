@@ -328,6 +328,7 @@ class TestClient(unittest.TestCase):
         ):
             self.assertTrue(text)
         self.assertFalse(c.supports_version_toggling)
+        self.assertFalse(c.supports_version_restore)
         with patch("src.providers.kubernetes.client.current_context", return_value=None):
             self.assertIn("no context", KubernetesClient().context_subtitle)
 
@@ -491,3 +492,28 @@ class TestNamespaces(unittest.TestCase):
         self.http.request.side_effect = KubeAPIError(500, "boom")
         with self.assertRaises(RuntimeError):
             self.client.list_namespaces()
+
+
+class TestKubeconfigEdgeCases(KubeconfigCase):
+    def test_merging_multiple_entries_of_the_same_kind(self):
+        doc = kube_doc()
+        doc["clusters"].append({"name": "c2", "cluster": {"server": "https://other"}})
+        doc["contexts"].append({"context": {}})  # entries without a name are skipped
+        path = self.write("config", doc)
+        with patch.dict(os.environ, {"KUBECONFIG": path}):
+            merged = kubeconfig.load_kubeconfig()
+        self.assertIn("c2", merged["clusters"])
+
+    def test_direct_token_skips_token_file(self):
+        path = self.write("config", kube_doc(token="abc"))
+        with patch.dict(os.environ, {"KUBECONFIG": path}):
+            access = kubeconfig.resolve_context("dev")
+        self.assertEqual(access.token, "abc")
+
+    def test_cluster_without_certificate_authority(self):
+        doc = kube_doc()
+        doc["clusters"][0]["cluster"] = {"server": "https://k8s.example.com:6443/"}
+        path = self.write("config", doc)
+        with patch.dict(os.environ, {"KUBECONFIG": path}):
+            access = kubeconfig.resolve_context("dev")
+        self.assertIsNone(access.ca_pem)

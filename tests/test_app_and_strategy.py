@@ -144,6 +144,25 @@ class TestAppAndStrategy(unittest.TestCase):
                 mock_super_startup.assert_called_once_with(app)
                 mock_load_css.assert_called_once()
 
+    def test_do_startup_macos_sets_dock_icon(self):
+        import sys
+
+        from gi.repository import Adw
+
+        from src import dock_icon
+
+        app = GossipApplication()
+        with (
+            patch.object(Adw.Application, "do_startup"),
+            patch.object(app, "_load_css"),
+            patch.object(app, "_register_icon_theme"),
+            patch.object(app, "_apply_saved_theme"),
+            patch.object(sys, "platform", "darwin"),
+            patch.object(dock_icon, "set_dock_icon") as mock_dock,
+        ):
+            app.do_startup()
+            mock_dock.assert_called_once_with()
+
     @patch("src.ui.app.MainWindow")
     def test_do_activate(self, mock_main_window_cls):
         from gi.repository import Adw

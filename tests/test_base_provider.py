@@ -98,6 +98,7 @@ class TestBaseProvider(unittest.TestCase):
         self.assertEqual(dummy.display_name, "Dummy Cloud")
         self.assertTrue(dummy.supports_version_toggling)
         self.assertFalse(dummy.supports_version_destroy)
+        self.assertTrue(dummy.supports_version_restore)
         self.assertEqual(dummy.list_secrets(), [])
         self.assertEqual(dummy.access_secret_payload("v1"), ("dummy-value", False))
 

@@ -505,3 +505,32 @@ class TestAwsCreateConflict(unittest.TestCase):
         )
         with self.assertRaises(SecretConflictError):
             client.create_secret("dup", "x")
+
+
+class TestAWSUpdateMetadataError(unittest.TestCase):
+    def test_client_error_is_translated(self):
+        from src.exceptions import PermissionDeniedError
+
+        client = AWSSecretClient(profile_name="p", region_name="eu-west-1")
+        client._client = MagicMock()
+        client._client.describe_secret.side_effect = ClientError(
+            {"Error": {"Code": "AccessDeniedException", "Message": "no"}}, "DescribeSecret"
+        )
+        with self.assertRaises(PermissionDeniedError):
+            client.update_metadata("sec", {"a": "b"}, None)
+
+    def test_removed_tags_without_changed_tags(self):
+        client = AWSSecretClient(profile_name="p", region_name="eu-west-1")
+        client._client = MagicMock()
+        client._client.describe_secret.return_value = {"Tags": [{"Key": "old", "Value": "1"}]}
+        client.update_metadata("sec", {}, None)
+        client._client.untag_resource.assert_called_once()
+        client._client.tag_resource.assert_not_called()
+
+    def test_changed_tags_without_removed_tags(self):
+        client = AWSSecretClient(profile_name="p", region_name="eu-west-1")
+        client._client = MagicMock()
+        client._client.describe_secret.return_value = {"Tags": []}
+        client.update_metadata("sec", {"a": "b"}, None)
+        client._client.tag_resource.assert_called_once()
+        client._client.untag_resource.assert_not_called()

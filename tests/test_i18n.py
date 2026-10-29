@@ -22,6 +22,27 @@ from src.i18n import (
 )
 
 
+class TestI18nCompilerEdgeCases(unittest.TestCase):
+    def test_compile_po_to_mo_ignores_trailing_msgid_without_msgstr(self):
+        import gettext
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            po_file = os.path.join(tmpdir, "sample.po")
+            mo_file = os.path.join(tmpdir, "sample.mo")
+            with open(po_file, "w") as f:
+                f.write('msgid "hello"\nmsgstr "hola"\n\nmsgid "orphan"\n')
+            compile_po_to_mo(po_file, mo_file)
+            with open(mo_file, "rb") as f:
+                catalog = gettext.GNUTranslations(f)
+            self.assertEqual(catalog.gettext("hello"), "hola")
+            self.assertEqual(catalog.gettext("orphan"), "orphan")
+
+    def test_locale_search_dirs_without_locale_dir(self):
+        from src.i18n_compiler import get_locale_search_dirs as compiler_search_dirs
+
+        self.assertIsInstance(compiler_search_dirs(), list)
+
+
 class TestI18n(unittest.TestCase):
     def setUp(self):
         init_i18n("es")

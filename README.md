@@ -52,7 +52,7 @@ Developed on **NixOS** and configured with **devenv** and **uv**.
 - 🔀 **Version Diff**: Compare any two versions of a secret as a unified diff (JSON-aware).
 - 📦 **Import / Export**: Back up or migrate secrets as JSON; values are opt-in and existing secrets are never overwritten.
 - ⏱️ **Inactivity Lock**: Hides and forgets revealed secrets and wipes the clipboard after 5 idle minutes (configurable).
-- 🛡️ **Tested**: Automated test suite (370+ tests, about 98% coverage) with a CI gate that fails below 95% coverage.
+- 🛡️ **Tested**: Automated test suite (800+ tests, 100% statement and branch coverage) with a CI gate that fails below 100% coverage.
 
 ---
 

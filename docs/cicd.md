@@ -9,7 +9,7 @@ Gossip runs automated quality checks, security scans and multi-platform packagin
 ```mermaid
 flowchart LR
     subgraph Quality ["Quality (every push and pull request)"]
-        Q1["ruff, mypy"] --> Q2["pytest + coverage gate (>= 95%)"]
+        Q1["ruff, mypy"] --> Q2["pytest + coverage gate (>= 100%)"]
         Q2 --> Q3["OpenBao integration tests"]
     end
 

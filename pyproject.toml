@@ -86,7 +86,7 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html:htmlcov",
     "--cov-report=xml:coverage.xml",
-    "--cov-fail-under=95",
+    "--cov-fail-under=100",
 ]
 filterwarnings = [
     "ignore::DeprecationWarning:gi.*",
@@ -104,6 +104,10 @@ omit = [
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
+    # Typing-only blocks never execute at runtime
+    "if TYPE_CHECKING:",
+    # Mixin contract stubs (implemented by another class), e.g. `def _http(self) -> KubeHTTP: ...`
+    ": \\.\\.\\.",
     "def __repr__",
     "raise AssertionError",
     "raise NotImplementedError",

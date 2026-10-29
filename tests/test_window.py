@@ -519,6 +519,16 @@ class TestMainWindow(unittest.TestCase):
         self.window.active_provider = self.mock_azure
         self.window._update_detail_labels()
 
+        # HashiCorp Vault / OpenBao
+        vault_sec = SecretItem(
+            name="secret/data/db", secret_id="db", provider="vault", locations=["secret"]
+        )
+        self.window.selected_secret = vault_sec
+        self.window.active_provider = MagicMock(supports_metadata_edit=False)
+        self.window._update_detail_labels()
+        self.assertFalse(self.window.row_description.get_visible())
+        self.assertEqual(self.window.row_replication.get_subtitle(), "secret")
+
     def test_async_data_loaders(self):
         with (
             patch("gi.repository.GLib.idle_add", side_effect=lambda fn, *a: fn(*a)),
@@ -759,6 +769,13 @@ class TestMainWindow(unittest.TestCase):
         with patch("gi.repository.Gdk.Display.get_default", return_value=None):
             self.assertEqual(resolve_icon_name(["icon-a"], fallback="fb"), "icon-a")
             self.assertEqual(resolve_icon_name([], fallback="fb"), "fb")
+
+
+class TestAboutButton(TestMainWindow):
+    def test_about_button_opens_the_about_dialog(self):
+        self.window.dialogs.about = MagicMock()
+        self.window.about_btn.emit("clicked")
+        self.window.dialogs.about.assert_called_once_with(self.window)
 
 
 if __name__ == "__main__":

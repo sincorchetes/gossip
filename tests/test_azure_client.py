@@ -399,3 +399,18 @@ class TestVaultDiscoveryProblems(unittest.TestCase):
         list_available_vaults(None, None, problems)
         self.assertEqual(problems, ["az not found"])
         list_available_vaults(None, None)  # no sink: still silent
+
+        run.side_effect = None
+        run.return_value = MagicMock(returncode=1, stdout="", stderr="boom")
+        self.assertEqual(list_available_vaults(None, None), [])  # non-zero exit without a sink
+
+
+class TestAzureUpdateMetadataError(unittest.TestCase):
+    def test_http_error_is_translated(self):
+        client = AzureSecretClient(vault_name="test-kv")
+        client._client = MagicMock()
+        err = HttpResponseError(message="Forbidden")
+        err.status_code = 403
+        client._client.update_secret_properties.side_effect = err
+        with self.assertRaises(PermissionError):
+            client.update_metadata("sec", {"a": "b"}, None)

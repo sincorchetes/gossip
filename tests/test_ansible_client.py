@@ -563,5 +563,42 @@ class TestVaultLock(unittest.TestCase):
         self.assertIsNone(GCPSecretClient().lock())
 
 
+class TestAnsibleVersionEdgeCases(unittest.TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.vault_file = os.path.join(self.temp_dir.name, "vault.yml")
+        with open(self.vault_file, "w") as f:
+            f.write("")
+        self.client = AnsibleVaultClient(vault_file=self.vault_file, password="pw123!")
+
+    def tearDown(self):
+        self.temp_dir.cleanup()
+
+    def test_previous_backup_maps_to_first_generation(self):
+        from src.providers.ansible.ops import _backup_generation
+
+        self.assertEqual(_backup_generation("AWSPREVIOUS"), 1)
+        self.assertEqual(_backup_generation("0"), 1)
+
+    def test_variable_name_containing_at_sign(self):
+        self.client.create_secret("db@1", "value")
+        self.assertEqual(self.client.access_secret_payload("db@1"), ("value", False))
+
+    def test_load_vault_data_missing_file(self):
+        from src.providers.ansible.vault import load_vault_data
+
+        with self.assertRaises(FileNotFoundError):
+            load_vault_data(os.path.join(self.temp_dir.name, "missing.yml"), None)
+
+    def test_load_vault_data_encrypted_without_password(self):
+        from src.providers.ansible.vault import load_vault_data
+
+        path = os.path.join(self.temp_dir.name, "encrypted.yml")
+        with open(path, "w") as f:
+            f.write("$ANSIBLE_VAULT;1.1;AES256\n6338...\n")
+        with self.assertRaises(PermissionError):
+            load_vault_data(path, None)
+
+
 if __name__ == "__main__":
     unittest.main()

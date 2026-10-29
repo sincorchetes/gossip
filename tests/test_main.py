@@ -379,3 +379,44 @@ class TestRememberedProvider(unittest.TestCase):
         with patch.object(sys, "argv", ["gossip", "-P", "aws"]):
             main()
         self.assertEqual(mock_run_app.call_args.kwargs["provider"], "aws")
+
+
+class TestRevealAndHideFlags(unittest.TestCase):
+    @patch("src.ui.app.run_app", return_value=0)
+    @patch.dict("os.environ", {"DISPLAY": ":0"})
+    def test_reveal_timeout_and_hide_on_blur_set_environment(self, _mock_run_app):
+        import os
+
+        with patch.object(sys, "argv", ["gossip", "--reveal-timeout", "60", "--hide-on-blur"]):
+            main()
+        self.assertEqual(os.environ["GOSSIP_REVEAL_SECONDS"], "60")
+        self.assertEqual(os.environ["GOSSIP_HIDE_ON_BLUR"], "1")
+
+
+class TestFrozenMacOS(unittest.TestCase):
+    def _run_frozen(self, isdir, env):
+        import os
+
+        from src.main import setup_frozen_environment
+
+        with (
+            patch.object(sys, "frozen", True, create=True),
+            patch.object(sys, "platform", "darwin"),
+            patch.object(sys, "_MEIPASS", "/bundle", create=True),
+            patch("os.path.isdir", side_effect=isdir),
+            patch.dict("os.environ", env, clear=True),
+        ):
+            setup_frozen_environment()
+            return os.environ.get("DYLD_FALLBACK_LIBRARY_PATH", "")
+
+    def test_macos_library_path_includes_frameworks_and_previous(self):
+        dyld = self._run_frozen(lambda path: True, {"DYLD_FALLBACK_LIBRARY_PATH": "/orig/lib"})
+        self.assertIn("Frameworks", dyld)
+        self.assertIn("/orig/lib", dyld)
+
+    def test_macos_library_path_without_previous_value(self):
+        dyld = self._run_frozen(lambda path: True, {})
+        self.assertIn("Frameworks", dyld)
+
+    def test_macos_without_existing_library_dirs(self):
+        self.assertEqual(self._run_frozen(lambda path: False, {}), "")

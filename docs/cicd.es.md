@@ -9,7 +9,7 @@ Gossip ejecuta en GitHub Actions comprobaciones de calidad, análisis de segurid
 ```mermaid
 flowchart LR
     subgraph Quality ["Calidad (cada push y pull request)"]
-        Q1["ruff, mypy"] --> Q2["pytest + control de cobertura (>= 95%)"]
+        Q1["ruff, mypy"] --> Q2["pytest + control de cobertura (>= 100%)"]
         Q2 --> Q3["Pruebas de integración con OpenBao"]
     end
 

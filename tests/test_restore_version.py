@@ -140,6 +140,27 @@ class TestRestoreFlow(WindowCase):
             event = json.loads(handle.readline())
         self.assertEqual((event["action"], event["version"]), ("restore_version", "2"))
 
+    def test_restored_success_without_matching_selection(self):
+        self.window.selected_secret = None
+        with (
+            patch.object(self.window, "_show_toast"),
+            patch.object(self.window, "_load_versions_async") as load,
+        ):
+            self.window._on_version_restored_success(SecretItem(name="s", secret_id="s"), "2")
+        load.assert_not_called()
+
+
+class TestDestroyedVersionButtons(WindowCase):
+    def test_destroyed_version_has_no_toggle_buttons(self):
+        box = Gtk.Box()
+        with patch.dict(os.environ, {ENV_VAR: "0"}):
+            self.window._create_version_action_buttons(
+                box, SecretVersionItem(version_id="1", name="s@1", state="DESTROYED")
+            )
+        icons = [b.get_icon_name() for b in buttons(box)]
+        self.assertNotIn("media-playback-pause-symbolic", icons)
+        self.assertNotIn("media-playback-start-symbolic", icons)
+
 
 class TestRestoreDialog(unittest.TestCase):
     def test_confirm_only_on_restore(self):
