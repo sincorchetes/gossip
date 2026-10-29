@@ -91,27 +91,6 @@
     NO_MKDOCS_2_WARNING=1 python -m mkdocs build "$@"
   '';
 
-  # Graphify knowledge graph (output in graphify-out/, ignored by git).
-  # The semantic pass (docs/images) uses a local OpenAI-compatible server (llama.cpp);
-  # override GRAPHIFY_BASE_URL / GRAPHIFY_MODEL to point elsewhere. Code is indexed with AST only.
-  scripts.graph.exec = ''
-    export OPENAI_BASE_URL="''${GRAPHIFY_BASE_URL:-http://127.0.0.1:9090/v1}"
-    export OPENAI_API_KEY="''${OPENAI_API_KEY:-local}"
-    graphify . --backend openai --model "''${GRAPHIFY_MODEL:-ornith-ai/Ornith-1.5-9B-GGUF}" "$@"
-  '';
-
-  scripts.graph-code.exec = ''
-    graphify . --code-only "$@"
-  '';
-
-  scripts.graph-update.exec = ''
-    graphify update . "$@"
-  '';
-
-  scripts.graph-watch.exec = ''
-    graphify watch . "$@"
-  '';
-
   git-hooks.hooks = {
     ruff.enable = true;
     ruff-format.enable = true;
