@@ -58,23 +58,23 @@ The packages also contain the transitive C libraries these depend on (image, fon
 |---|---|---|---|
 | ansible-core | 2.21.5 | GPL-3.0-or-later | https://ansible.com/ |
 | ansible-vault | 4.1.0 | GPL-3.0-or-later | https://github.com/tomoh1r/ansible-vault |
-| awscrt | 0.36.0 | Apache-2.0 | https://awslabs.github.io/aws-crt-python |
+| awscrt | 0.38.0 | Apache-2.0 | https://awslabs.github.io/aws-crt-python |
 | azure-core | 1.41.0 | MIT | https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core |
-| azure-identity | 1.26.0 | MIT | https://github.com/Azure/azure-sdk-for-python |
-| azure-keyvault-secrets | 4.11.3 | MIT License | https://github.com/Azure/azure-sdk-for-python/tree/main/sdk |
-| boto3 | 1.43.118 | Apache-2.0 | https://github.com/boto/boto3 |
-| botocore | 1.43.118 | Apache-2.0 | https://github.com/boto/botocore |
+| azure-identity | 1.27.0 | MIT | https://github.com/Azure/azure-sdk-for-python |
+| azure-keyvault-secrets | 4.12.0 | MIT License | https://github.com/Azure/azure-sdk-for-python/tree/main/sdk |
+| boto3 | 1.43.123 | Apache-2.0 | https://github.com/boto/boto3 |
+| botocore | 1.43.123 | Apache-2.0 | https://github.com/boto/botocore |
 | certifi | 2026.10.23 | MPL-2.0 | https://github.com/certifi/python-certifi |
 | cffi | 2.1.1 | MIT-0 | https://cffi.readthedocs.io/ |
 | charset-normalizer | 3.5.2 | MIT | https://charset-normalizer.readthedocs.io/ |
 | cryptography | 50.0.2 | Apache-2.0 OR BSD-3-Clause | https://github.com/pyca/cryptography |
-| google-api-core | 2.43.0 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-api-core |
+| google-api-core | 2.43.2 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-api-core |
 | google-auth | 2.62.0 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth |
 | google-cloud-secret-manager | 2.31.0 | Apache-2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-secret-manager |
 | googleapis-common-protos | 1.76.0 | Apache-2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/googleapis-common-protos |
 | grpc-google-iam-v1 | 0.14.6 | Apache 2.0 | https://github.com/googleapis/google-cloud-python |
-| grpcio | 1.84.1 | Apache-2.0 | https://grpc.io |
-| grpcio-status | 1.84.1 | Apache-2.0 | https://grpc.io |
+| grpcio | 1.85.1 | Apache-2.0 | https://grpc.io |
+| grpcio-status | 1.85.1 | Apache-2.0 | https://grpc.io |
 | idna | 3.20 | BSD-3-Clause | https://github.com/kjd/idna |
 | isodate | 0.7.2 | BSD License | https://github.com/gweis/isodate/ |
 | Jinja2 | 3.1.6 | BSD License | https://github.com/pallets/jinja/ |
@@ -82,11 +82,11 @@ The packages also contain the transitive C libraries these depend on (image, fon
 | MarkupSafe | 3.0.4 | BSD-3-Clause | https://github.com/pallets/markupsafe/ |
 | msal | 1.39.0 | MIT | https://msal-python.readthedocs.io/ |
 | msal-extensions | 1.3.1 | MIT License | https://github.com/AzureAD/microsoft-authentication-extensions-for-python/releases |
-| opentelemetry-api | 1.45.1 | Apache-2.0 | https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-api |
+| opentelemetry-api | 1.45.2 | Apache-2.0 | https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-api |
 | packaging | 26.3 | Apache-2.0 OR BSD-2-Clause | https://github.com/pypa/packaging |
 | proto-plus | 1.29.0 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/proto-plus |
 | protobuf | 7.36.2 | 3-Clause BSD License | https://developers.google.com/protocol-buffers/ |
-| pyasn1 | 0.6.4 | BSD-2-Clause | https://github.com/pyasn1/pyasn1 |
+| pyasn1 | 0.6.5 | BSD-2-Clause | https://github.com/pyasn1/pyasn1 |
 | pyasn1_modules | 0.4.2 | BSD | https://github.com/pyasn1/pyasn1-modules |
 | pycparser | 3.12 | BSD-3-Clause | https://github.com/eliben/pycparser |
 | PyJWT | 2.15.1 | MIT | https://github.com/jpadilla/pyjwt |
