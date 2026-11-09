@@ -35,7 +35,8 @@ jobs:
           python-version: "3.14"
 
       - name: Install the audit tools (hash-verified)
-        run: python -m pip install --require-hashes --only-binary :all: -r requirements-audit.txt
+        run: |
+          python -m pip install --require-hashes --only-binary :all: -r requirements-audit.txt
 
       - name: Scan for known vulnerabilities
         run: |
