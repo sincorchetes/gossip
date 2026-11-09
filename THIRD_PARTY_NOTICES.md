@@ -56,21 +56,21 @@ The packages also contain the transitive C libraries these depend on (image, fon
 
 | Package | Version | License | Project |
 |---|---|---|---|
-| ansible-core | 2.21.5 | GPL-3.0-or-later | https://ansible.com/ |
+| ansible-core | 2.22.0 | GPL-3.0-or-later | https://ansible.com/ |
 | ansible-vault | 4.1.0 | GPL-3.0-or-later | https://github.com/tomoh1r/ansible-vault |
 | awscrt | 0.38.0 | Apache-2.0 | https://awslabs.github.io/aws-crt-python |
 | azure-core | 1.41.0 | MIT | https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core |
 | azure-identity | 1.27.0 | MIT | https://github.com/Azure/azure-sdk-for-python |
 | azure-keyvault-secrets | 4.12.0 | MIT License | https://github.com/Azure/azure-sdk-for-python/tree/main/sdk |
-| boto3 | 1.43.123 | Apache-2.0 | https://github.com/boto/boto3 |
-| botocore | 1.43.123 | Apache-2.0 | https://github.com/boto/botocore |
+| boto3 | 1.43.126 | Apache-2.0 | https://github.com/boto/boto3 |
+| botocore | 1.43.126 | Apache-2.0 | https://github.com/boto/botocore |
 | certifi | 2026.10.23 | MPL-2.0 | https://github.com/certifi/python-certifi |
 | cffi | 2.1.1 | MIT-0 | https://cffi.readthedocs.io/ |
 | charset-normalizer | 3.5.2 | MIT | https://charset-normalizer.readthedocs.io/ |
 | cryptography | 50.0.2 | Apache-2.0 OR BSD-3-Clause | https://github.com/pyca/cryptography |
-| google-api-core | 2.43.2 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-api-core |
-| google-auth | 2.62.0 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth |
-| google-cloud-secret-manager | 2.31.0 | Apache-2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-secret-manager |
+| google-api-core | 2.44.0 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-api-core |
+| google-auth | 2.62.1 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth |
+| google-cloud-secret-manager | 2.32.0 | Apache-2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-secret-manager |
 | googleapis-common-protos | 1.76.0 | Apache-2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/googleapis-common-protos |
 | grpc-google-iam-v1 | 0.14.6 | Apache 2.0 | https://github.com/googleapis/google-cloud-python |
 | grpcio | 1.85.1 | Apache-2.0 | https://grpc.io |

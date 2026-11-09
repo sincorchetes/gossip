@@ -6,9 +6,9 @@ altgraph==0.17.5 \
     # via
     #   macholib
     #   pyinstaller
-ansible-core==2.21.5 \
-    --hash=sha256:08886f9f3e23d129aa98a01271c4a47833516e1cb7c737a246788cb474f41222 \
-    --hash=sha256:65bb3148c58ebb843cd5074004c805f404f152114d98476dd823324616c9c6cb
+ansible-core==2.22.0 \
+    --hash=sha256:8285d4cc81c3e3eb2d954e75531724fe0ae154d228475638123451f034a74657 \
+    --hash=sha256:bf50b4a0cfa985e30585c7ba301897ea7050d224ca49d2816cab10e33a160e1c
     # via ansible-vault
 ansible-vault==4.1.0 \
     --hash=sha256:7e985a9329e4728961d7a00f62412fa8ec246a4d832ad6e6d158165e0026529b \
@@ -80,13 +80,13 @@ azure-keyvault-secrets==4.12.0 \
     --hash=sha256:435ea0abb5280baaad9553da7a19e73e1b581048783b852210352bfcb0316aff \
     --hash=sha256:ec5ff84ee0a045094e62d38e9b962769003e60fe7396d8dcf1ac4c78e7d010c6
     # via -r requirements-build.in
-boto3==1.43.123 \
-    --hash=sha256:055fabb990c5d2f31fce4ca569255bd640cdd11a3ca68c9ecad35f4f8a5b83b5 \
-    --hash=sha256:d18d66e1e13faa0c25d0b1b8c5ce946e29fb5fc0b6456b655a93a678ff4cc313
+boto3==1.43.126 \
+    --hash=sha256:5fda4a3dd2782c134a01d1678911962c2860dd8de8cd10bef168ba1507b371a9 \
+    --hash=sha256:dd701a973b02a73930e546a6a15d13edbfbedc3180bb3d55b0a88678c284ccd6
     # via -r requirements-build.in
-botocore==1.43.123 \
-    --hash=sha256:80948cb9b1cdf1a1a25809089a42e3a1bc4af0258d198222db6e97dcc660dd0c \
-    --hash=sha256:e30580f9c1282c321529238ff8ff75066096a2adbd0a293c8ae592c21d1733a3
+botocore==1.43.126 \
+    --hash=sha256:2f2239a47025a2fa173cd145ab8803ac02b76114864bf5b66475ff1cb88e6b0a \
+    --hash=sha256:96996af07d8b703c3cdf44863f69c0b4b8b2d1cb6976c641986ced3e38c072f3
     # via
     #   -r requirements-build.in
     #   boto3
@@ -438,20 +438,20 @@ cryptography==50.0.2 \
     #   google-auth
     #   msal
     #   pyjwt
-google-api-core==2.43.2 \
-    --hash=sha256:5a9d21baab97fd3c0547ccfc186a9e64f4227d8d7026f393835316400b29a6d4 \
-    --hash=sha256:5dfc5e9d52982bcc03bd6af380a893365b5fdf907dc527f63d3a372833c33329
+google-api-core==2.44.0 \
+    --hash=sha256:5ab9a396965c1227d7dea4581e562b7018aa2bca96d2de0be5eb70dc9c8ab3a1 \
+    --hash=sha256:8cb9ad8af28de9bc75121686d69b697ce0937e21fad2ad80c9a7e89f22b26e1f
     # via google-cloud-secret-manager
-google-auth==2.62.0 \
-    --hash=sha256:0bef0ce54bdf9ce226c5d66e4264413bd918141c31bbe49fb52eac882f513d69 \
-    --hash=sha256:4ff4319aeb4ad128409759d397a9fcafad126d0031d241cc0dd6b9a00b43e3f3
+google-auth==2.62.1 \
+    --hash=sha256:015399a5abde39033c69404cc1c079e6d4c2de2993e164c9f4eac6e5376ad72b \
+    --hash=sha256:3c8e1ce2553784ae17fd220e6f88df3281d86ab98019278f436d06dffab17a9e
     # via
     #   -r requirements-build.in
     #   google-api-core
     #   google-cloud-secret-manager
-google-cloud-secret-manager==2.31.0 \
-    --hash=sha256:29bb33b48c3b974495a4d015e06b06b126e23232bccd223d678da1e1a861b6e6 \
-    --hash=sha256:945ef53be34b09f94b86eeabca910e19460fb54680cf5e0a792a77d62355e88e
+google-cloud-secret-manager==2.32.0 \
+    --hash=sha256:104635f69f094f717caf0b68adf623f0f0cf7b3236dcba12d3a503e8637017e8 \
+    --hash=sha256:74eb64fb0bcdd7369ba95b17685860900cfbd2c07a2a8c043680cb25a1197860
     # via -r requirements-build.in
 googleapis-common-protos==1.76.0 \
     --hash=sha256:59e13344a9f3651aa201a03e2bee815a3bf43a4baf1f9ff8a9b62a840ce25fac \
