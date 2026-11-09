@@ -40,10 +40,15 @@ def show_add_version_dialog(
     box.set_margin_start(16)
     box.set_margin_end(16)
 
+    # The payload area grows with the window, which the user can resize, so long secrets stay readable.
     scrolled = Gtk.ScrolledWindow()
-    scrolled.set_min_content_height(160)
-    scrolled.set_max_content_height(280)
-    scrolled.set_min_content_width(380)
+    scrolled.set_min_content_height(220)
+    scrolled.set_min_content_width(520)
+    scrolled.set_hexpand(True)
+    scrolled.set_vexpand(True)
+    box.set_vexpand(True)
+    dialog.set_resizable(True)
+    dialog.set_default_size(640, 520)
 
     text_view = Gtk.TextView()
     text_view.set_monospace(True)
