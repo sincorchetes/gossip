@@ -35,6 +35,7 @@ After 5 minutes without input (`--idle-lock SECONDS`, `GOSSIP_IDLE_LOCK_SECONDS`
 * Certificates are **always verified**. There is no option to disable verification: Kubernetes contexts with `insecure-skip-tls-verify` are refused, and Vault has no equivalent switch. Use a custom CA instead (`VAULT_CACERT`, or the cluster's `certificate-authority`).
 * The Vault token travels in a header, so `http://` addresses are refused except for `localhost`.
 * Connections time out after a few seconds (AWS and Azure retry twice) and report a clear message instead of waiting indefinitely.
+* Azure Key Vault addresses are recognised by their parsed host name, which must end in `.vault.azure.net`; a look-alike such as `https://evil.example/x.vault.azure.net/` is not treated as a vault URL.
 
 ## What is remembered between runs
 
@@ -72,6 +73,8 @@ The *Troubleshooting* section of the About window offers a report for bug report
 ## Releases and supply chain
 
 * Every dependency is pinned with hashes (`--require-hashes`) and GitHub Actions are pinned by commit.
+* Hash-pinned installs use `--only-binary :all:` wherever a wheel exists, so no setup script runs while installing (macOS Intel builds `cryptography` from source because no wheel is published for it). Download steps in CI enforce HTTPS.
+* Workflows run with read-only permissions by default; write access (`pages`, `id-token`, `contents`) is granted per job.
 * A weekly **dependency audit** (`pip-audit`, also on every change to the lock files) scans the pinned versions for known vulnerabilities, and each release ships a **CycloneDX SBOM** of the Python dependencies (`gossip-python-sbom-*.cdx.json`).
 * Each release ships a `SHA256SUMS.txt` and a signed build-provenance attestation. Verify a download with `sha256sum -c SHA256SUMS.txt` or `gh attestation verify <file> -R sincorchetes/gossip`.
 * Third-party licenses are listed in `THIRD_PARTY_NOTICES.md` and in the About dialog. Gossip is licensed under GPL-3.0-or-later.

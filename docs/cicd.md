@@ -68,8 +68,9 @@ The CI job downloads a pinned OpenBao release (checksum verified), starts it in 
 
 1. Work lands on `main` (or arrives through a pull request) and the quality workflow must be green.
 2. For a change to the build itself, run the *Build & Release* workflow by hand (`gh workflow run release.yml --ref main`): it builds every package but publishes nothing.
-3. Tag the commit with SemVer (`git tag vX.Y.Z && git push origin vX.Y.Z`). The tag stamps the version into the sources, builds all platforms and publishes the release with its checksums, attestation and SBOMs.
-4. The `dev` and `pre` branches remain available for staging; `pre` and `release` also run the full build without publishing.
+3. Bump the version in `src/__init__.py`, `pyproject.toml`, `flake.nix` and the newest `<release>` of `data/com.github.sincorchetes.gossip_gcp.metainfo.xml`. The tag stamps the first two at build time, but running from the tree (`gossip -v`, the About dialog, `nix run`) reads them as they are; `tests/test_version_consistency.py` fails if they differ.
+4. Tag the commit with SemVer (`git tag vX.Y.Z && git push origin vX.Y.Z`). The tag stamps the version into the sources, builds all platforms and publishes the release with its checksums, attestation and SBOMs.
+5. The `dev` and `pre` branches remain available for staging; `pre` and `release` also run the full build without publishing.
 
 ---
 

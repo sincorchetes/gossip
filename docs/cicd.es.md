@@ -68,8 +68,9 @@ El trabajo de CI descarga una versión fija de OpenBao (con el checksum verifica
 
 1. El trabajo llega a `main` (directamente o mediante un pull request) y el workflow de calidad debe estar en verde.
 2. Si el cambio afecta a la compilación, ejecuta a mano el workflow *Build & Release* (`gh workflow run release.yml --ref main`): construye todos los paquetes pero no publica nada.
-3. Etiqueta el commit con SemVer (`git tag vX.Y.Z && git push origin vX.Y.Z`). La etiqueta fija la versión en el código, compila todas las plataformas y publica la release con sus checksums, atestación y SBOM.
-4. Las ramas `dev` y `pre` siguen disponibles para preparación; `pre` y `release` también ejecutan la compilación completa sin publicar.
+3. Sube la versión en `src/__init__.py`, `pyproject.toml`, `flake.nix` y el `<release>` más reciente de `data/com.github.sincorchetes.gossip_gcp.metainfo.xml`. La etiqueta fija las dos primeras al compilar, pero al ejecutar desde el árbol (`gossip -v`, el diálogo Acerca de, `nix run`) se leen tal cual; `tests/test_version_consistency.py` falla si difieren.
+4. Etiqueta el commit con SemVer (`git tag vX.Y.Z && git push origin vX.Y.Z`). La etiqueta fija la versión en el código, compila todas las plataformas y publica la release con sus checksums, atestación y SBOM.
+5. Las ramas `dev` y `pre` siguen disponibles para preparación; `pre` y `release` también ejecutan la compilación completa sin publicar.
 
 ---
 

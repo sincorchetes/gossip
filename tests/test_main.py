@@ -352,11 +352,14 @@ class TestHelpLanguage(unittest.TestCase):
         text = self._help("--lang", "en")
         self.assertIn("Start the window maximized", text)
         self.assertNotIn("Inicia la ventana", text)
+        self.assertIn("Show the program's version number and exit", text)
 
     def test_help_is_spanish_with_lang_es(self):
         text = self._help("-l", "es")
         self.assertIn("Inicia la ventana gráfica maximizada", text)
         self.assertNotIn("Start the window maximized", text)
+        self.assertIn("Muestra la versión del programa y termina", text)
+        self.assertNotIn("show program", text)
 
     def test_preparse_language(self):
         from src.main import _preparse_language

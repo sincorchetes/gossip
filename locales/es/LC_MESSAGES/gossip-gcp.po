@@ -1523,3 +1523,9 @@ msgstr "Segundos que un valor revelado permanece visible (0 lo mantiene; por def
 
 msgid "Hide revealed values when the window loses focus"
 msgstr "Ocultar los valores revelados cuando la ventana pierde el foco"
+
+msgid "Show this help message and exit"
+msgstr "Muestra este mensaje de ayuda y termina"
+
+msgid "Show the program's version number and exit"
+msgstr "Muestra la versión del programa y termina"
