@@ -22,4 +22,3 @@ ruff
 mypy
 types-PyYAML
 hypothesis
-graphifyy[openai]
