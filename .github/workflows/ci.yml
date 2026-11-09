@@ -34,6 +34,7 @@ jobs:
           VERSION=2.7.1
           SHA256=0e2f1ce10d124e03112b50dd2fbec6b78003783253bc3a91587938f39d1e2243
           curl -fsSL -o "$RUNNER_TEMP/bao.tar.gz" \
+            --proto "=https" --tlsv1.2 \
             "https://github.com/openbao/openbao/releases/download/v${VERSION}/openbao_${VERSION}_linux_amd64.tar.gz"
           echo "${SHA256}  $RUNNER_TEMP/bao.tar.gz" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/bao"
