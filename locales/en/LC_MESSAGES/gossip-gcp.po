@@ -1523,3 +1523,9 @@ msgstr "Seconds a revealed value stays visible (0 keeps it; default 120)"
 
 msgid "Hide revealed values when the window loses focus"
 msgstr "Hide revealed values when the window loses focus"
+
+msgid "Show this help message and exit"
+msgstr "Show this help message and exit"
+
+msgid "Show the program's version number and exit"
+msgstr "Show the program's version number and exit"

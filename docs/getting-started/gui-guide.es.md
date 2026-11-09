@@ -91,6 +91,7 @@ La barra superior reúne los controles globales, el selector de contexto y los i
   * Ansible Vault conserva las últimas cinco copias al guardar y lista las generaciones en las que existía la variable.
   * Kubernetes no tiene historial: cada Secret tiene una versión (su `resourceVersion`).
 * **Nueva versión** añade un valor nuevo sin cambiar el nombre ni la configuración del secreto. El botón generador de contraseñas (icono de llave) genera una contraseña aleatoria (longitud, tipos de caracteres y una opción para evitar caracteres que se parecen) y la pone en el cuadro de texto; también está disponible al crear un secreto.
+* Los diálogos **Nueva versión** y **Crear secreto** se pueden redimensionar: arrastra sus bordes para dar más espacio a un secreto largo; el cuadro de texto crece con la ventana.
 * **Restaurar** (icono de deshacer en una versión anterior legible): guarda el valor de esa versión de nuevo como versión actual tras confirmar. No se pierde nada; el historial solo crece. Kubernetes no lo ofrece porque no guarda historial.
 
 ---

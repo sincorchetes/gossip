@@ -35,6 +35,7 @@ Tras 5 minutos sin actividad (`--idle-lock SEGUNDOS`, `GOSSIP_IDLE_LOCK_SECONDS`
 * Los certificados **siempre se verifican**. No hay opción para desactivar la verificación: los contextos de Kubernetes con `insecure-skip-tls-verify` se rechazan y Vault no tiene un interruptor equivalente. Usa una CA propia en su lugar (`VAULT_CACERT`, o la `certificate-authority` del clúster).
 * El token de Vault viaja en una cabecera, por eso se rechazan las direcciones `http://` salvo `localhost`.
 * Las conexiones agotan el tiempo en pocos segundos (AWS y Azure reintentan dos veces) y muestran un mensaje claro en lugar de esperar indefinidamente.
+* Las direcciones de Azure Key Vault se reconocen por su nombre de host ya analizado, que debe terminar en `.vault.azure.net`; una dirección parecida como `https://evil.example/x.vault.azure.net/` no se trata como URL de vault.
 
 ## Qué se recuerda entre ejecuciones
 
@@ -72,6 +73,8 @@ La sección *Solución de problemas* de la ventana Acerca de ofrece un informe p
 ## Publicaciones y cadena de suministro
 
 * Todas las dependencias están fijadas con hashes (`--require-hashes`) y las GitHub Actions están fijadas por commit.
+* Las instalaciones con hashes usan `--only-binary :all:` siempre que existe una wheel, de modo que no se ejecuta ningún script de instalación (en macOS Intel `cryptography` se compila desde el código fuente porque no publica wheel para esa plataforma). Las descargas en CI exigen HTTPS.
+* Los workflows se ejecutan con permisos de solo lectura por defecto; el acceso de escritura (`pages`, `id-token`, `contents`) se concede por job.
 * Una **auditoría de dependencias** semanal (`pip-audit`, y también en cada cambio de los ficheros de bloqueo) revisa las versiones fijadas en busca de vulnerabilidades conocidas, y cada publicación incluye un **SBOM CycloneDX** de las dependencias de Python (`gossip-python-sbom-*.cdx.json`).
 * Cada publicación incluye un `SHA256SUMS.txt` y una atestación firmada de procedencia de la compilación. Verifica una descarga con `sha256sum -c SHA256SUMS.txt` o `gh attestation verify <archivo> -R sincorchetes/gossip`.
 * Las licencias de terceros están en `THIRD_PARTY_NOTICES.md` y en el diálogo Acerca de. Gossip se distribuye bajo GPL-3.0-or-later.

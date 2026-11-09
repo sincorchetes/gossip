@@ -56,12 +56,14 @@ def _preparse_language(argv: List[str]) -> Optional[str]:
 def _build_parser() -> argparse.ArgumentParser:
     """Create the command-line parser with help texts in the active language."""
     parser = argparse.ArgumentParser(
+        add_help=False,  # argparse's own -h/-v texts are English-only; defined below so they are translated
         prog="gossip",
         description=_(
             "Gossip: explorer and manager for secrets in Google Cloud Platform, "
             "AWS Secrets Manager, AWS Parameter Store, Azure Key Vault, Ansible Vault, HashiCorp Vault / OpenBao and Kubernetes Secrets"
         ),
     )
+    parser.add_argument("-h", "--help", action="help", help=_("Show this help message and exit"))
     parser.add_argument(
         "-P",
         "--provider",
@@ -175,6 +177,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--version",
         action="version",
         version=f"Gossip {__version__}",
+        help=_("Show the program's version number and exit"),
     )
     return parser
 
