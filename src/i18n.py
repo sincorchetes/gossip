@@ -111,11 +111,13 @@ def detect_system_language() -> str:
     return "es"
 
 
-def init_i18n(preferred_lang: Optional[str] = None) -> None:
+def init_i18n(preferred_lang: Optional[str] = None, *, configure_env: bool = True) -> None:
     """Initialize the gettext translation system with the specified or detected language.
 
     Args:
         preferred_lang: Explicit language code ('es' or 'en'). If None, detects system language.
+        configure_env: Also export LANGUAGE and set the C locale. The import-time default passes
+            False so it does not hide the user's own LANGUAGE/LANG from `detect_system_language`.
     """
     global _current_lang, _current_translation
 
@@ -128,7 +130,8 @@ def init_i18n(preferred_lang: Optional[str] = None) -> None:
         lang = "es"
 
     _current_lang = lang
-    configure_system_locale(lang)
+    if configure_env:
+        configure_system_locale(lang)
 
     try:
         _current_translation = gettext.translation(
@@ -172,7 +175,7 @@ def _(message: str) -> str:
 
 
 # Initialize default Spanish localization on module import
-init_i18n("es")
+init_i18n("es", configure_env=False)
 
 __all__ = [
     "DOMAIN",
