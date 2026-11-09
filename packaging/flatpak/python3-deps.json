@@ -17,16 +17,16 @@
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/78/e6/3ecfa5ad2023bc7e897ccd9f09e6d30d34448c9fddbdb2f7549f7964784e/awscrt-0.36.0-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl",
-      "sha256": "900eb2cf518a3f1c7e9c4ebc320f5a3fac891208992b9428da76e3f0fb0300a5",
+      "url": "https://files.pythonhosted.org/packages/b2/32/1403fa8c73c723c8299b8162f46ce3d42940b8fcb10f0eccc87ae5d6aa8a/awscrt-0.38.0-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl",
+      "sha256": "f54a804f321912f3d5e856721d5fbfb8129eda8120eec3e9cae8eb26bb9349af",
       "only-arches": [
         "aarch64"
       ]
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/0a/94/a5fc3f83e4178f20f4e75fbecfaefc1c8d5a1d848eeba100c46226bf966e/awscrt-0.36.0-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
-      "sha256": "bf8bafef584f9d5fead3a88f3b86e0aea957c85ecab5243d0c47858ea3d9b39a",
+      "url": "https://files.pythonhosted.org/packages/a9/ce/c1b84969cc9b830a96b0c42bbf0fec765ac338945dae5994d5d9124983c0/awscrt-0.38.0-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "b91feaa8bafd264cd06484dc4efa5d95fbd25a9a46204eb71bf12a9dc8640a93",
       "only-arches": [
         "x86_64"
       ]
@@ -38,23 +38,23 @@
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/b2/d5/ae45ce8009d0d015304b206c7c4a6cbab02c03f8f07eedefb32b099ccee3/azure_identity-1.26.0-py3-none-any.whl",
-      "sha256": "3c60d9682b3ac01507388d474cb5a5ffbe54152a96b6cdcaa7013da9315cf186"
+      "url": "https://files.pythonhosted.org/packages/29/1e/6a2fe486576f41884a120ef7b2c3774f334f9143402fb73650c67db94ddd/azure_identity-1.27.0-py3-none-any.whl",
+      "sha256": "92fd2a93c0d2f777dac6c04e5fd7d5734f6643582b983544ef66b4575844e46d"
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/dc/8e/726acb7b6cd8d28cafd06531d6daf7e390667ebbbc4ff39f7cfc5bd75652/azure_keyvault_secrets-4.11.3-py3-none-any.whl",
-      "sha256": "c77cc80f33d07e1b8cbbda5e7b6b8a1da1471ca917796f9895603a0c2b5f9c2f"
+      "url": "https://files.pythonhosted.org/packages/2f/32/48509a0e574485003e7dc22aaebcb985555c69bdf730761427077cd6b854/azure_keyvault_secrets-4.12.0-py3-none-any.whl",
+      "sha256": "ec5ff84ee0a045094e62d38e9b962769003e60fe7396d8dcf1ac4c78e7d010c6"
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/bb/a3/65bb3d64928f3c2da17640b92044084150317f02adf22442cb0c52af2a8b/boto3-1.43.118-py3-none-any.whl",
-      "sha256": "ab8f3d2c622ef039338b4f228d97ea55f1abd573d84bb9b9a5ee8cb6780c0ccd"
+      "url": "https://files.pythonhosted.org/packages/96/b2/a7986c327f80aa6f1544f4cb8f2fa7da4e1fccd472379a21cad0508b8a0e/boto3-1.43.123-py3-none-any.whl",
+      "sha256": "d18d66e1e13faa0c25d0b1b8c5ce946e29fb5fc0b6456b655a93a678ff4cc313"
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/9c/ce/61b39a8e7a69af5ea43c1c3e1b0065a4866b42ccddf107e16686a3143614/botocore-1.43.118-py3-none-any.whl",
-      "sha256": "a45d7ae570674161e4a3542d8c68633bf7503f92d1de781ef7361b79488eda6f"
+      "url": "https://files.pythonhosted.org/packages/db/96/4f2dffd304425c07160ab2c12cb13322d852fd956fe9d4386228c93f02ea/botocore-1.43.123-py3-none-any.whl",
+      "sha256": "e30580f9c1282c321529238ff8ff75066096a2adbd0a293c8ae592c21d1733a3"
     },
     {
       "type": "file",
@@ -100,8 +100,8 @@
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/63/5e/ea85dbdb29e05a1dab94be7e4c07e5099b7048074f9ededf7d39636a878a/google_api_core-2.43.0-py3-none-any.whl",
-      "sha256": "dd588ae9de5e372be89b87c68b1e1555fe89add1809d623182b773d14f96859a"
+      "url": "https://files.pythonhosted.org/packages/b0/1d/a0120c7d937597293fce74510c80fe0cec8e45b1d702a816b567b6754c25/google_api_core-2.43.2-py3-none-any.whl",
+      "sha256": "5a9d21baab97fd3c0547ccfc186a9e64f4227d8d7026f393835316400b29a6d4"
     },
     {
       "type": "file",
@@ -125,24 +125,24 @@
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/28/01/a0207b967ab991bc009030763e3c7e6280cbeda1de06351e16034d34547e/grpcio-1.84.1-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl",
-      "sha256": "b8fb04fe0ded6fb1c5edd4c90ed39193d7b6226214685111b25a153ccb33a52a",
+      "url": "https://files.pythonhosted.org/packages/f2/b5/469b69dadb2c413706f16e0c3e7a2749cc70abaab10d718873603bec29b2/grpcio-1.85.1-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl",
+      "sha256": "421925365f9a665830eded01b8053033abbc2fbabc9bb4e9c59c3b5b12acbab9",
       "only-arches": [
         "aarch64"
       ]
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/4e/b8/73e85d67437fa4324933cc625a6a8e8e5f22fbdfe6757d949a6958b87479/grpcio-1.84.1-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
-      "sha256": "ccd8be89a73d276336cbf223b22bd5c677d9fd15233100f208845c6a0c7cbc72",
+      "url": "https://files.pythonhosted.org/packages/7b/b2/c67c1d8c7b70a094d404b28233458887bc1ca1319daa95d8952621216717/grpcio-1.85.1-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "e0e6d5829b50a2ffcfcd2dbf08d02ac0d6919051a2e97c2ee27c99bc9916a245",
       "only-arches": [
         "x86_64"
       ]
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/c7/e2/b9a35118c6c231a3710a0b4f2174da87f2c09045e743c1edc221b4659900/grpcio_status-1.84.1-py3-none-any.whl",
-      "sha256": "5a1455bf5b39fe2a3d09d71661e59c97622c73888ad11f13109ce82220b88218"
+      "url": "https://files.pythonhosted.org/packages/f1/e9/5e34e2543b586ffddf90721ab242e7b662c063484ee3978bf61ca90d7579/grpcio_status-1.85.1-py3-none-any.whl",
+      "sha256": "ef84cb262c7a05fd7c27e61bb70c9f63bce4484ce8b3366585a381fed738fcb0"
     },
     {
       "type": "file",
@@ -192,8 +192,8 @@
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/1e/41/f7dcf80b81ee8e71c1a2b59f14208bc723edbd89ed027a73b175abf6348e/opentelemetry_api-1.45.1-py3-none-any.whl",
-      "sha256": "b31553efa588ae44bc306f863c785c5333a9ecc091248c6ee68b4b6c87fdedfb"
+      "url": "https://files.pythonhosted.org/packages/a9/2d/610db864d7513158cebb8f36cc88e67e73bd6c7aa1905ef18d89e1281c81/opentelemetry_api-1.45.2-py3-none-any.whl",
+      "sha256": "2cbd737377e710ee740d261c94e93fa0f08e6d037c18f17513cc0a2d94479a34"
     },
     {
       "type": "file",
@@ -212,8 +212,8 @@
     },
     {
       "type": "file",
-      "url": "https://files.pythonhosted.org/packages/9a/3b/6163796d69c3977d1e4287bea4a6979161cbbdd170ebb430511e8e1999ce/pyasn1-0.6.4-py3-none-any.whl",
-      "sha256": "deda9277cfd454080ec40b207fb6df82206a3a2688735233cdcd8d3d565f088b"
+      "url": "https://files.pythonhosted.org/packages/19/1f/3eefd5c84c35cae44549ce1c7f7e58f7945b34f5a6bce07a135438522073/pyasn1-0.6.5-py3-none-any.whl",
+      "sha256": "4017b0fce125096b8573b39c989fdb1a4b19cf761e683398184550fea0e66587"
     },
     {
       "type": "file",
