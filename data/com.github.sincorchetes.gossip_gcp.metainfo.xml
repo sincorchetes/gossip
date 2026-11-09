@@ -50,6 +50,7 @@
     <binary>gossip</binary>
   </provides>
   <releases>
+    <release version="0.0.2" date="2026-11-09"/>
     <release version="0.0.1" date="2026-10-28"/>
   </releases>
 </component>
