@@ -7,7 +7,7 @@ packages = [{ include = "src" }]
 
 [project]
 name = "gossip"
-version = "0.0.1"
+version = "0.0.2"
 description = "Cross-platform graphical secret manager for GCP, AWS, Azure, and Ansible Vault using GTK4 and Libadwaita."
 readme = "README.md"
 requires-python = ">=3.14"
