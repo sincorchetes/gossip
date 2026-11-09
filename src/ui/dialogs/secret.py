@@ -162,7 +162,7 @@ def show_create_secret_dialog(
     box.set_margin_bottom(12)
     box.set_margin_start(16)
     box.set_margin_end(16)
-    box.set_size_request(400, -1)
+    box.set_size_request(520, -1)
 
     # Secret ID / Variable Name Entry
     name_label_text = (
@@ -201,8 +201,12 @@ def show_create_secret_dialog(
     val_label.add_css_class("heading")
 
     scrolled = Gtk.ScrolledWindow()
-    scrolled.set_min_content_height(120)
-    scrolled.set_max_content_height(200)
+    scrolled.set_min_content_height(160)
+    scrolled.set_hexpand(True)
+    scrolled.set_vexpand(True)
+    box.set_vexpand(True)
+    dialog.set_resizable(True)
+    dialog.set_default_size(640, 560)
 
     text_view = Gtk.TextView()
     text_view.set_monospace(True)
