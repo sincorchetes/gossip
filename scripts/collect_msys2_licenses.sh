@@ -18,15 +18,15 @@ declare -A done_packages=()
 
 while IFS= read -r -d '' dll; do
   source_dll="$PREFIX/bin/$(basename "$dll")"
-  [ -e "$source_dll" ] || continue
+  [[ -e "$source_dll" ]] || continue
   package="$(pacman -Qo "$source_dll" 2>/dev/null | sed -n -E 's/.* is owned by ([^ ]+) .*/\1/p' | head -n 1 || true)"
-  [ -n "$package" ] || continue
-  [ -z "${done_packages[$package]:-}" ] || continue
+  [[ -n "$package" ]] || continue
+  [[ -z "${done_packages[$package]:-}" ]] || continue
 
   # MSYS2 installs license files under <prefix>/share/licenses/<name>, with or without the prefix
   short="${package#mingw-w64-ucrt-x86_64-}"
   for candidate in "$package" "$short"; do
-    if [ -d "$PREFIX/share/licenses/$candidate" ]; then
+    if [[ -d "$PREFIX/share/licenses/$candidate" ]]; then
       mkdir -p "$OUT/$short"
       cp -rL "$PREFIX/share/licenses/$candidate/." "$OUT/$short/"
       done_packages[$package]=1

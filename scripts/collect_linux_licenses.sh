@@ -20,19 +20,19 @@ libraries=0
 while IFS= read -r -d '' lib; do
   name="$(basename "$lib")"
   host_path="$(ldconfig -p | awk -v n="$name" '$1 == n { print $NF; exit }')"
-  [ -n "$host_path" ] || continue
+  [[ -n "$host_path" ]] || continue
   libraries=$((libraries + 1))
 
   package="$(dpkg -S "$host_path" 2>/dev/null | head -n 1 | cut -d: -f1 || true)"
-  if [ -z "$package" ]; then
+  if [[ -z "$package" ]]; then
     package="$(dpkg -S "$(readlink -f "$host_path")" 2>/dev/null | head -n 1 | cut -d: -f1 || true)"
   fi
   package="${package%%,*}"
-  [ -n "$package" ] || continue
-  [ -z "${done_packages[$package]:-}" ] || continue
+  [[ -n "$package" ]] || continue
+  [[ -z "${done_packages[$package]:-}" ]] || continue
 
   copyright="/usr/share/doc/$package/copyright"
-  if [ -e "$copyright" ]; then
+  if [[ -e "$copyright" ]]; then
     cp -L "$copyright" "$OUT/$package.copyright"
     done_packages[$package]=1
   fi
