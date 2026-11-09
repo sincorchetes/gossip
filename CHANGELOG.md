@@ -23,6 +23,9 @@ Versions follow [SemVer](https://semver.org/). Releases and their checksums are 
   AppStream metadata, and a test fails if they drift apart.
 
 ### Fixed
+- The interface language is now detected from `LANG`/`LC_ALL`/`LC_MESSAGES`. Importing the i18n
+  module used to export `LANGUAGE=es`, so Gossip always started in Spanish unless `-l` or a saved
+  language was given.
 - The *Dependency audit* workflow was invalid YAML and did not start.
 - The macOS x86_64 release build failed on `cryptography`; the release now includes both macOS
   architectures.
