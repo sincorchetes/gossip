@@ -7,6 +7,7 @@ import os
 import shutil
 import subprocess
 from typing import List, Optional
+from urllib.parse import urlsplit
 
 from src.log import get_logger
 from src.models import AzureVaultItem
@@ -24,8 +25,9 @@ def detect_vault_name() -> Optional[str]:
         val = os.getenv(var)
         if val and val.strip():
             clean = val.strip()
-            if "vault.azure.net" in clean:
-                clean = clean.replace("https://", "").replace("http://", "").split(".")[0]
+            host = urlsplit(clean if "//" in clean else f"//{clean}").hostname or ""
+            if host.endswith(".vault.azure.net"):
+                clean = host.split(".")[0]
             return clean
     return None
 

@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   PYTHONUTF8: "1"
@@ -84,7 +84,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install wheel
           pip install pycairo "PyGObject<3.51.0"
-          pip install --require-hashes -r requirements-build.txt
+          pip install --require-hashes --only-binary :all: -r requirements-build.txt
 
       - name: Build Standalone Linux Executable with PyInstaller
         run: |
@@ -341,7 +341,7 @@ jobs:
           # grpcio-status in the lock needs a newer grpcio than the one MSYS2 ships; the app never imports it
           python scripts/pip_lock_subset.py requirements-windows.txt /tmp/installed.txt --skip grpcio-status > /tmp/pip-only.txt
           echo "Installing from the hashed lock:"; grep -E "^[A-Za-z0-9_.-]+==" /tmp/pip-only.txt | sed "s/ .*//"
-          pip install --break-system-packages --no-deps --require-hashes -r /tmp/pip-only.txt
+          pip install --break-system-packages --no-deps --require-hashes --only-binary :all: -r /tmp/pip-only.txt
           python -c "import gi; import boto3; import azure.identity; import ansible_vault; from google.cloud import secretmanager; import src.main; import src.ui.app; print('ALL WINDOWS IMPORTS SUCCESSFUL!')"
 
       - name: Check the grpcio floor required by Google Cloud (from April 2027)
@@ -551,7 +551,7 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install wheel
           pip install pycairo "PyGObject<3.51.0" || true
-          pip install --require-hashes -r requirements-build.txt
+          pip install --require-hashes --only-binary :all: -r requirements-build.txt
 
       - name: Build macOS Application Bundle with PyInstaller
         env:
@@ -709,7 +709,7 @@ jobs:
 
       - name: Generate the Python dependency SBOMs (CycloneDX)
         run: |
-          python -m pip install --require-hashes -r requirements-audit.txt
+          python -m pip install --require-hashes --only-binary :all: -r requirements-audit.txt
           cyclonedx-py requirements requirements-build.txt --of JSON --sv 1.6 \
             -o "release-assets/gossip-python-sbom-${{ github.ref_name }}.cdx.json"
           cyclonedx-py requirements requirements-windows.txt --of JSON --sv 1.6 \

@@ -172,6 +172,12 @@ class TestAzureSecretClient(unittest.TestCase):
     def test_detect_vault_name_from_url_env(self):
         self.assertEqual(AzureSecretClient.detect_vault_name(), "url-detected-kv")
 
+    @patch.dict("os.environ", {"AZURE_VAULT_URL": "https://evil.example/x.vault.azure.net/"})
+    def test_detect_vault_name_ignores_lookalike_host(self):
+        self.assertEqual(
+            AzureSecretClient.detect_vault_name(), "https://evil.example/x.vault.azure.net/"
+        )
+
     @patch("subprocess.run")
     def test_list_available_vaults_success(self, mock_subproc):
         mock_subproc.return_value = MagicMock(
