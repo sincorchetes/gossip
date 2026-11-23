@@ -56,25 +56,25 @@ The packages also contain the transitive C libraries these depend on (image, fon
 
 | Package | Version | License | Project |
 |---|---|---|---|
-| ansible-core | 2.21.5 | GPL-3.0-or-later | https://ansible.com/ |
+| ansible-core | 2.22.0 | GPL-3.0-or-later | https://ansible.com/ |
 | ansible-vault | 4.1.0 | GPL-3.0-or-later | https://github.com/tomoh1r/ansible-vault |
 | awscrt | 0.38.0 | Apache-2.0 | https://awslabs.github.io/aws-crt-python |
 | azure-core | 1.41.0 | MIT | https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/core/azure-core |
 | azure-identity | 1.27.0 | MIT | https://github.com/Azure/azure-sdk-for-python |
 | azure-keyvault-secrets | 4.12.0 | MIT License | https://github.com/Azure/azure-sdk-for-python/tree/main/sdk |
-| boto3 | 1.43.123 | Apache-2.0 | https://github.com/boto/boto3 |
-| botocore | 1.43.123 | Apache-2.0 | https://github.com/boto/botocore |
-| certifi | 2026.10.23 | MPL-2.0 | https://github.com/certifi/python-certifi |
+| boto3 | 1.44.9 | Apache-2.0 | https://github.com/boto/boto3 |
+| botocore | 1.44.9 | Apache-2.0 | https://github.com/boto/botocore |
+| certifi | 2026.11.20 | MPL-2.0 | https://github.com/certifi/python-certifi |
 | cffi | 2.1.1 | MIT-0 | https://cffi.readthedocs.io/ |
-| charset-normalizer | 3.5.2 | MIT | https://charset-normalizer.readthedocs.io/ |
+| charset-normalizer | 3.5.3 | MIT | https://charset-normalizer.readthedocs.io/ |
 | cryptography | 50.0.2 | Apache-2.0 OR BSD-3-Clause | https://github.com/pyca/cryptography |
-| google-api-core | 2.43.2 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-api-core |
-| google-auth | 2.62.0 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth |
-| google-cloud-secret-manager | 2.31.0 | Apache-2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-secret-manager |
+| google-api-core | 2.44.0 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-api-core |
+| google-auth | 2.63.1 | Apache 2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth |
+| google-cloud-secret-manager | 2.32.0 | Apache-2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-secret-manager |
 | googleapis-common-protos | 1.76.0 | Apache-2.0 | https://github.com/googleapis/google-cloud-python/tree/main/packages/googleapis-common-protos |
 | grpc-google-iam-v1 | 0.14.6 | Apache 2.0 | https://github.com/googleapis/google-cloud-python |
-| grpcio | 1.85.1 | Apache-2.0 | https://grpc.io |
-| grpcio-status | 1.85.1 | Apache-2.0 | https://grpc.io |
+| grpcio | 1.85.3 | Apache-2.0 | https://grpc.io |
+| grpcio-status | 1.85.3 | Apache-2.0 | https://grpc.io |
 | idna | 3.20 | BSD-3-Clause | https://github.com/kjd/idna |
 | isodate | 0.7.2 | BSD License | https://github.com/gweis/isodate/ |
 | Jinja2 | 3.1.6 | BSD License | https://github.com/pallets/jinja/ |
@@ -91,7 +91,7 @@ The packages also contain the transitive C libraries these depend on (image, fon
 | pycparser | 3.12 | BSD-3-Clause | https://github.com/eliben/pycparser |
 | PyJWT | 2.15.1 | MIT | https://github.com/jpadilla/pyjwt |
 | python-dateutil | 2.9.0.post0 | Dual License | https://github.com/dateutil/dateutil |
-| PyYAML | 6.0.3 | MIT | https://pyyaml.org/wiki/PyYAMLDocumentation |
+| PyYAML | 6.0.4 | MIT | https://pyyaml.org/wiki/PyYAMLDocumentation |
 | requests | 2.34.2 | Apache-2.0 | https://github.com/psf/requests |
 | resolvelib | 1.2.1 | ISC License | https://github.com/sarugaku/resolvelib |
 | s3transfer | 0.19.3 | Apache License 2.0 | https://github.com/boto/s3transfer |
